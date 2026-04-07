@@ -1,20 +1,17 @@
-/* تنسيق الورقة باش تجي فـ الوسط */
 .report-paper {
     background: white;
     padding: 15mm;
-    margin: 0 auto !important; /* فرض التوسط في الشاشة والـ PDF */
-    width: 190mm; /* صغرنا العرض شوية باش نخليو هوامش أمان */
+    margin: 0 auto !important; 
+    width: 190mm; 
     box-sizing: border-box;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* تنسيق الجدول */
 .table-report {
-    table-layout: fixed; /* ضروري باش نتحكمو في عرض الخانات */
+    table-layout: fixed;
     width: 100% !important;
     border-collapse: collapse;
     margin-top: 20px;
 }
 
-/* تقسيم الخانات */
 .table-report th:first-child

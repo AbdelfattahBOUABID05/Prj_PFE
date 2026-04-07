@@ -1,0 +1,8 @@
+paramiko
+flask-cors
+flask
+python-dotenv
+google-generativeai
+
+
+#pip install -r requirements.txt
