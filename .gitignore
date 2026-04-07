@@ -4,3 +4,4 @@ venv/
 .env
 static/uploads/*
 !static/uploads/.gitkeep
+MV_Fedora/
