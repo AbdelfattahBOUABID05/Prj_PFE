@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Connexion SSH{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ssh.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="ssh-container mt-5">
+    <div class="text-center mb-5">
+        <h3 class="fw-bold">Analyser via SSH</h3>
+        <p class="text-muted">Connectez-vous à votre serveur Fedora pour extraire les logs</p>
+    </div>
+
+    <div class="card shadow-sm border-0 p-4 mx-auto" style="max-width: 500px; border-radius: 15px;">
+        <form id="sshForm">
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Adresse IP du Serveur</label>
+                <input type="text" id="ip" class="form-control shadow-none" placeholder="ex: 192.168.1.10" required>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label small fw-bold">Nom d'utilisateur</label>
+                    <input type="text" id="username" class="form-control shadow-none" placeholder="ex: root" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label small fw-bold">Mot de passe</label>
+                    <input type="password" id="password" class="form-control shadow-none" placeholder="••••••••" required>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Chemin du fichier Log</label>
+                <input type="text" id="path" class="form-control shadow-none" value="/var/log/messages" required>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label small fw-bold">Nombre de lignes à lire</label>
+                <input type="number" id="limit" class="form-control shadow-none" value="100">
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold" id="submitBtn" style="border-radius: 10px; background: #6d28d9; border: none;">
+                <i class="fas fa-rocket me-2"></i> Lancer l'Analyse
+            </button>
+        </form>
+        
+        <div id="statusMessage" class="mt-3 text-center"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{{ url_for('static', filename='js/ssh-handler.js') }}"></script>
+{% endblock %}

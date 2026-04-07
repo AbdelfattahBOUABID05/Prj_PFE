@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Générer le Rapport{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/report.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+        <h3 class="fw-bold">Rapport Final</h3>
+        <button onclick="downloadPDF()" class="btn btn-success shadow-sm">
+            <i class="fas fa-file-pdf me-2"></i> Exporter en PDF
+        </button>
+    </div>
+
+    <div id="reportContent" class="report-paper">
+        <div class="report-header d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="fw-bold text-primary mb-0">LogAnalyzer AI</h2>
+                <p class="text-muted small">Analyse de Logs Système - Rapport Technique</p>
+            </div>
+            <div class="text-end">
+                <p class="mb-0 fw-bold">Date du rapport:</p>
+                <p id="reportDate" class="text-muted small"></p>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
+            <span class="text-muted">Fichier analysé :</span>
+            <span id="repFilePath" class="fw-bold text-primary" style="word-break: break-all; max-width: 70%;">--</span>
+        </div>
+        <div class="row mb-5">
+            <div class="col-md-7">
+                <h5 class="fw-bold mb-3"><i class="fas fa-info-circle me-2"></i>Résumé Exécutif</h5>
+                <div class="stat-box mb-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Total des lignes analysées:</span>
+                        <span id="repTotal" class="fw-bold text-primary">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2 text-danger">
+                        <span>Erreurs critiques (Critical):</span>
+                        <span id="repErrors" class="fw-bold">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-warning">
+                        <span>Avertissements (Warnings):</span>
+                        <span id="repWarnings" class="fw-bold">0</span>
+                    </div>
+                </div>
+                <p class="text-muted small">Ce rapport contient une analyse détaillée des événements système extraits via SSH depuis le serveur distant Fedora.</p>
+            </div>
+            <div class="col-md-5">
+                <div style="height: 220px;">
+                    <canvas id="reportChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <h5 class="fw-bold mb-3"><i class="fas fa-list me-2"></i>Détails des événements majeurs</h5>
+        <div class="table-responsive">
+            <table class="table table-bordered table-report">
+                <thead>
+                    <tr>
+                        <th width="15%">Priorité</th>
+                        <th>Message du Log</th>
+                    </tr>
+                </thead>
+                <tbody id="reportTableBody">
+                    </tbody>
+            </table>
+        </div>
+        
+        <div class="mt-5 pt-4 border-top text-center text-muted small">
+            <p>Généré automatiquement par LogAnalyzer Pro - PFE 2026</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/report-handler.js') }}"></script>
+{% endblock %}

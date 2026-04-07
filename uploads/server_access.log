@@ -1,0 +1,202 @@
+1234
+[sudo] Mot de passe de logs : 
+2026-04-04T11:45:01-0400 DDEBUG Releasever: 38
+2026-04-04T11:45:01-0400 DEBUG cachedir: /var/cache/dnf
+2026-04-04T11:45:01-0400 DDEBUG Base command: makecache
+2026-04-04T11:45:01-0400 DDEBUG Extra commands: ['makecache', '--timer']
+2026-04-04T11:45:01-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
+2026-04-04T11:45:02-0400 INFO Cache des métadonnées mis à jour récemment.
+2026-04-04T11:45:02-0400 DDEBUG Cleaning up.
+2026-04-04T13:31:01-0400 INFO --- logging initialized ---
+2026-04-04T13:31:01-0400 DDEBUG timer: config: 145 ms
+2026-04-04T13:31:03-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
+2026-04-04T13:31:03-0400 DEBUG DNF version: 4.14.0
+2026-04-04T13:31:03-0400 DDEBUG Command: dnf makecache --timer 
+2026-04-04T13:31:03-0400 DDEBUG Installroot: /
+2026-04-04T13:31:03-0400 DDEBUG Releasever: 38
+2026-04-04T13:31:03-0400 DEBUG cachedir: /var/cache/dnf
+2026-04-04T13:31:03-0400 DDEBUG Base command: makecache
+2026-04-04T13:31:03-0400 DDEBUG Extra commands: ['makecache', '--timer']
+2026-04-04T13:31:04-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
+2026-04-04T13:31:04-0400 INFO Cache des métadonnées mis à jour récemment.
+2026-04-04T13:31:04-0400 DDEBUG Cleaning up.
+2026-04-04T14:35:58-0400 INFO --- logging initialized ---
+2026-04-04T14:35:58-0400 DDEBUG timer: config: 109 ms
+2026-04-04T14:36:03-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
+2026-04-04T14:36:03-0400 DEBUG DNF version: 4.14.0
+2026-04-04T14:36:03-0400 DDEBUG Command: dnf makecache --timer 
+2026-04-04T14:36:03-0400 DDEBUG Installroot: /
+2026-04-04T14:36:03-0400 DDEBUG Releasever: 38
+2026-04-04T14:36:03-0400 DEBUG cachedir: /var/cache/dnf
+2026-04-04T14:36:03-0400 DDEBUG Base command: makecache
+2026-04-04T14:36:03-0400 DDEBUG Extra commands: ['makecache', '--timer']
+2026-04-04T14:36:03-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
+2026-04-04T14:37:20-0400 DEBUG fedora : a expiré et sera réinitialisé.
+2026-04-04T14:37:20-0400 DEBUG fedora-cisco-openh264 : a expiré et sera réinitialisé.
+2026-04-04T14:37:22-0400 DEBUG fedora-modular : a expiré et sera réinitialisé.
+2026-04-04T14:37:41-0400 DEBUG updates : a expiré et sera réinitialisé.
+2026-04-04T14:37:42-0400 DEBUG updates-modular : a expiré et sera réinitialisé.
+2026-04-04T14:37:43-0400 DEBUG countme: no event for fedora: window already counted
+2026-04-04T14:38:25-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30001 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
+2026-04-04T14:39:17-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30003 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
+2026-04-04T14:40:41-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30001 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
+2026-04-04T14:41:44-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30001 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
+2026-04-04T14:42:59-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30051 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
+2026-04-04T14:43:58-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30000 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
+2026-04-04T14:44:30-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30001 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
+2026-04-04T14:45:01-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30013 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
+2026-04-04T14:45:33-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30001 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
+2026-04-04T14:46:26-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30001 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
+2026-04-04T14:47:18-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30010 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
+2026-04-04T14:48:11-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30001 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
+2026-04-04T14:48:11-0400 WARNING Errors during downloading metadata for repository 'fedora':
+  - Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30013 milliseconds]
+  - Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30000 milliseconds]
+  - Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30003 milliseconds]
+  - Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30001 milliseconds]
+  - Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30051 milliseconds]
+  - Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30010 milliseconds]
+2026-04-04T14:48:11-0400 DDEBUG Cleaning up.
+2026-04-04T14:48:11-0400 SUBDEBUG 
+Traceback (most recent call last):
+  File "/usr/lib/python3.11/site-packages/dnf/repo.py", line 573, in load
+    ret = self._repo.load()
+          ^^^^^^^^^^^^^^^^^
+  File "/usr/lib64/python3.11/site-packages/libdnf/repo.py", line 324, in load
+    return _repo.Repo_load(self)
+           ^^^^^^^^^^^^^^^^^^^^^
+libdnf._error.Error: Échec du téléchargement des métadonnées pour le dépôt « fedora » : Cannot prepare internal mirrorlist: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30001 milliseconds]
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3.11/site-packages/dnf/cli/main.py", line 67, in main
+    return _main(base, args, cli_class, option_parser_class)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/site-packages/dnf/cli/main.py", line 106, in _main
+    return cli_run(cli, base)
+           ^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/site-packages/dnf/cli/main.py", line 122, in cli_run
+    cli.run()
+  File "/usr/lib/python3.11/site-packages/dnf/cli/cli.py", line 1057, in run
+    return self.command.run()
+           ^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/site-packages/dnf/cli/commands/makecache.py", line 50, in run
+    return self.base.update_cache(timer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/site-packages/dnf/base.py", line 377, in update_cache
+    self.fill_sack(load_system_repo=False, load_available_repos=True)  # performs the md sync
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/site-packages/dnf/base.py", line 406, in fill_sack
+    self._add_repo_to_sack(r)
+  File "/usr/lib/python3.11/site-packages/dnf/base.py", line 141, in _add_repo_to_sack
+    repo.load()
+  File "/usr/lib/python3.11/site-packages/dnf/repo.py", line 580, in load
+    raise dnf.exceptions.RepoError(str(e))
+dnf.exceptions.RepoError: Échec du téléchargement des métadonnées pour le dépôt « fedora » : Cannot prepare internal mirrorlist: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30001 milliseconds]
+2026-04-04T14:48:11-0400 CRITICAL Erreur : Échec du téléchargement des métadonnées pour le dépôt « fedora » : Cannot prepare internal mirrorlist: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30001 milliseconds]
+2026-04-04T16:45:00-0400 INFO --- logging initialized ---
+2026-04-04T16:45:00-0400 DDEBUG timer: config: 558 ms
+2026-04-04T16:45:02-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
+2026-04-04T16:45:02-0400 DEBUG DNF version: 4.14.0
+2026-04-04T16:45:02-0400 DDEBUG Command: dnf makecache --timer 
+2026-04-04T16:45:02-0400 DDEBUG Installroot: /
+2026-04-04T16:45:02-0400 DDEBUG Releasever: 38
+2026-04-04T16:45:02-0400 DEBUG cachedir: /var/cache/dnf
+2026-04-04T16:45:02-0400 DDEBUG Base command: makecache
+2026-04-04T16:45:02-0400 DDEBUG Extra commands: ['makecache', '--timer']
+2026-04-04T16:45:02-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
+2026-04-04T16:45:02-0400 INFO Cache des métadonnées mis à jour récemment.
+2026-04-04T16:45:02-0400 DDEBUG Cleaning up.
+2026-04-05T08:42:10-0400 INFO --- logging initialized ---
+2026-04-05T08:42:10-0400 DDEBUG timer: config: 713 ms
+2026-04-05T08:42:23-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
+2026-04-05T08:42:23-0400 DEBUG DNF version: 4.14.0
+2026-04-05T08:42:23-0400 DDEBUG Command: dnf makecache --timer 
+2026-04-05T08:42:23-0400 DDEBUG Installroot: /
+2026-04-05T08:42:23-0400 DDEBUG Releasever: 38
+2026-04-05T08:42:23-0400 DEBUG cachedir: /var/cache/dnf
+2026-04-05T08:42:23-0400 DDEBUG Base command: makecache
+2026-04-05T08:42:23-0400 DDEBUG Extra commands: ['makecache', '--timer']
+2026-04-05T08:42:24-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
+2026-04-05T08:42:27-0400 DEBUG fedora : a expiré et sera réinitialisé.
+2026-04-05T08:42:27-0400 DEBUG fedora-cisco-openh264 : a expiré et sera réinitialisé.
+2026-04-05T08:42:28-0400 DEBUG fedora-modular : a expiré et sera réinitialisé.
+2026-04-05T08:42:35-0400 DEBUG updates : a expiré et sera réinitialisé.
+2026-04-05T08:42:36-0400 DEBUG updates-modular : a expiré et sera réinitialisé.
+2026-04-05T08:42:37-0400 DEBUG countme: no event for fedora: window already counted
+2026-04-05T08:42:39-0400 DEBUG relance : « fedora » peut être relancé - la somme de contrôle du méta-lien correspond.
+2026-04-05T08:43:38-0400 DEBUG fedora : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:37:10.
+2026-04-05T08:43:39-0400 DEBUG relance : « fedora-cisco-openh264 » peut être relancé - la somme de contrôle du méta-lien correspond.
+2026-04-05T08:43:40-0400 DEBUG fedora-cisco-openh264 : utilisation des métadonnées depuis le mar. 12 mars 2024 08:17:00.
+2026-04-05T08:43:40-0400 DEBUG countme: no event for fedora-modular: window already counted
+2026-04-05T08:43:41-0400 DEBUG relance : « fedora-modular » peut être relancé - la somme de contrôle du méta-lien correspond.
+2026-04-05T08:43:41-0400 DEBUG fedora-modular : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:30:47.
+2026-04-05T08:43:41-0400 DEBUG countme: no event for updates: window already counted
+2026-04-05T08:43:42-0400 DEBUG relance : « updates » peut être relancé - la somme de contrôle du méta-lien correspond.
+2026-04-05T08:44:44-0400 DEBUG updates : utilisation des métadonnées depuis le mar. 21 mai 2024 11:15:01.
+2026-04-05T08:44:45-0400 DEBUG countme: no event for updates-modular: window already counted
+2026-04-05T08:44:47-0400 DEBUG relance : « updates-modular » peut être relancé - la somme de contrôle du méta-lien correspond.
+2026-04-05T08:44:49-0400 DEBUG updates-modular : utilisation des métadonnées depuis le mer. 06 mars 2024 20:02:11.
+2026-04-05T08:44:49-0400 DEBUG User-Agent: constructed: 'libdnf (Fedora Linux 38; workstation; Linux.x86_64)'
+2026-04-05T08:44:53-0400 DDEBUG timer: sack setup: 136576 ms
+2026-04-05T08:44:53-0400 INFO Cache des métadonnées créé.
+2026-04-05T08:44:53-0400 DDEBUG Cleaning up.
+2026-04-05T09:29:28-0400 INFO --- logging initialized ---
+2026-04-05T09:29:28-0400 DDEBUG timer: config: 242 ms
+2026-04-05T09:29:30-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
+2026-04-05T09:29:30-0400 DEBUG DNF version: 4.14.0
+2026-04-05T09:29:30-0400 DDEBUG Command: dnf check-update 
+2026-04-05T09:29:30-0400 DDEBUG Installroot: /
+2026-04-05T09:29:30-0400 DDEBUG Releasever: 38
+2026-04-05T09:29:30-0400 DEBUG cachedir: /var/cache/dnf
+2026-04-05T09:29:30-0400 DDEBUG Base command: check-update
+2026-04-05T09:29:30-0400 DDEBUG Extra commands: ['check-update']
+2026-04-05T09:29:31-0400 DEBUG User-Agent: constructed: 'libdnf (Fedora Linux 38; workstation; Linux.x86_64)'
+2026-04-05T09:29:38-0400 DEBUG dépôt : utilisation du cache pour : fedora
+2026-04-05T09:29:57-0400 DEBUG fedora : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:37:10.
+2026-04-05T09:29:57-0400 DEBUG dépôt : utilisation du cache pour : fedora-cisco-openh264
+2026-04-05T09:29:57-0400 DEBUG fedora-cisco-openh264 : utilisation des métadonnées depuis le mar. 12 mars 2024 08:17:00.
+2026-04-05T09:29:57-0400 DEBUG dépôt : utilisation du cache pour : fedora-modular
+2026-04-05T09:29:57-0400 DEBUG fedora-modular : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:30:47.
+2026-04-05T09:30:05-0400 DEBUG dépôt : utilisation du cache pour : updates
+2026-04-05T09:30:22-0400 DEBUG updates : utilisation des métadonnées depuis le mar. 21 mai 2024 11:15:01.
+2026-04-05T09:30:22-0400 DEBUG dépôt : utilisation du cache pour : updates-modular
+2026-04-05T09:30:23-0400 DEBUG updates-modular : utilisation des métadonnées depuis le mer. 06 mars 2024 20:02:11.
+2026-04-05T09:30:23-0400 INFO Dernière vérification de l’expiration des métadonnées effectuée il y a 0:45:36 le dim. 05 avril 2026 08:44:47.
+2026-04-05T09:30:24-0400 DDEBUG timer: sack setup: 54044 ms
+2026-04-05T09:30:27-0400 DDEBUG Cleaning up.
+2026-04-06T04:03:48-0400 INFO --- logging initialized ---
+2026-04-06T04:03:48-0400 DDEBUG timer: config: 622 ms
+2026-04-06T04:03:50-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
+2026-04-06T04:03:50-0400 DEBUG DNF version: 4.14.0
+2026-04-06T04:03:50-0400 DDEBUG Command: dnf makecache --timer 
+2026-04-06T04:03:50-0400 DDEBUG Installroot: /
+2026-04-06T04:03:50-0400 DDEBUG Releasever: 38
+2026-04-06T04:03:50-0400 DEBUG cachedir: /var/cache/dnf
+2026-04-06T04:03:50-0400 DDEBUG Base command: makecache
+2026-04-06T04:03:50-0400 DDEBUG Extra commands: ['makecache', '--timer']
+2026-04-06T04:03:50-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
+2026-04-06T04:04:02-0400 DEBUG fedora : a expiré et sera réinitialisé.
+2026-04-06T04:04:02-0400 DEBUG fedora-cisco-openh264 : a expiré et sera réinitialisé.
+2026-04-06T04:04:02-0400 DEBUG fedora-modular : a expiré et sera réinitialisé.
+2026-04-06T04:04:13-0400 DEBUG updates : a expiré et sera réinitialisé.
+2026-04-06T04:04:14-0400 DEBUG updates-modular : a expiré et sera réinitialisé.
+2026-04-06T04:04:14-0400 DEBUG countme: no event for fedora: budget to spend: 1
+2026-04-06T04:04:27-0400 DEBUG relance : « fedora » peut être relancé - la somme de contrôle du méta-lien correspond.
+2026-04-06T04:05:22-0400 DEBUG fedora : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:37:10.
+2026-04-06T04:05:32-0400 DEBUG relance : « fedora-cisco-openh264 » peut être relancé - la somme de contrôle du méta-lien correspond.
+2026-04-06T04:05:32-0400 DEBUG fedora-cisco-openh264 : utilisation des métadonnées depuis le mar. 12 mars 2024 08:17:00.
+2026-04-06T04:05:32-0400 DEBUG countme: no event for fedora-modular: budget to spend: 3
+2026-04-06T04:05:36-0400 DEBUG relance : « fedora-modular » peut être relancé - la somme de contrôle du méta-lien correspond.
+2026-04-06T04:05:37-0400 DEBUG fedora-modular : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:30:47.
+2026-04-06T04:05:37-0400 DEBUG countme: no event for updates: budget to spend: 1
+2026-04-06T04:05:38-0400 DEBUG relance : « updates » peut être relancé - la somme de contrôle du méta-lien correspond.
+2026-04-06T04:06:10-0400 DEBUG updates : utilisation des métadonnées depuis le mar. 21 mai 2024 11:15:01.
+2026-04-06T04:06:10-0400 DEBUG countme: event triggered for updates-modular: bucket 1
+2026-04-06T04:06:12-0400 DEBUG relance : « updates-modular » peut être relancé - la somme de contrôle du méta-lien correspond.
+2026-04-06T04:06:13-0400 DEBUG updates-modular : utilisation des métadonnées depuis le mer. 06 mars 2024 20:02:11.
+2026-04-06T04:06:13-0400 DEBUG User-Agent: constructed: 'libdnf (Fedora Linux 38; workstation; Linux.x86_64)'
+2026-04-06T04:06:15-0400 DDEBUG timer: sack setup: 121046 ms
+2026-04-06T04:06:15-0400 INFO Cache des métadonnées créé.
+2026-04-06T04:06:15-0400 DDEBUG Cleaning up.

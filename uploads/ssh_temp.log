@@ -1,0 +1,50 @@
+2026-04-06T17:10:38-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
+2026-04-06T17:10:40-0400 INFO Cache des métadonnées mis à jour récemment.
+2026-04-06T17:10:40-0400 DDEBUG Cleaning up.
+2026-04-07T04:14:17-0400 INFO --- logging initialized ---
+2026-04-07T04:14:17-0400 DDEBUG timer: config: 81 ms
+2026-04-07T04:14:18-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
+2026-04-07T04:14:18-0400 DEBUG DNF version: 4.14.0
+2026-04-07T04:14:18-0400 DDEBUG Command: dnf makecache --timer 
+2026-04-07T04:14:18-0400 DDEBUG Installroot: /
+2026-04-07T04:14:18-0400 DDEBUG Releasever: 38
+2026-04-07T04:14:18-0400 DEBUG cachedir: /var/cache/dnf
+2026-04-07T04:14:18-0400 DDEBUG Base command: makecache
+2026-04-07T04:14:18-0400 DDEBUG Extra commands: ['makecache', '--timer']
+2026-04-07T04:14:18-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
+2026-04-07T04:14:22-0400 DEBUG fedora : a expiré et sera réinitialisé.
+2026-04-07T04:14:22-0400 DEBUG fedora-cisco-openh264 : a expiré et sera réinitialisé.
+2026-04-07T04:14:23-0400 DEBUG fedora-modular : a expiré et sera réinitialisé.
+2026-04-07T04:14:27-0400 DEBUG updates : a expiré et sera réinitialisé.
+2026-04-07T04:14:27-0400 DEBUG updates-modular : a expiré et sera réinitialisé.
+2026-04-07T04:14:27-0400 DEBUG countme: no event for fedora: window already counted
+2026-04-07T04:14:31-0400 DEBUG relance : « fedora » peut être relancé - la somme de contrôle du méta-lien correspond.
+2026-04-07T04:14:42-0400 DEBUG fedora : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:37:10.
+2026-04-07T04:14:43-0400 DEBUG relance : « fedora-cisco-openh264 » peut être relancé - la somme de contrôle du méta-lien correspond.
+2026-04-07T04:14:43-0400 DEBUG fedora-cisco-openh264 : utilisation des métadonnées depuis le mar. 12 mars 2024 08:17:00.
+2026-04-07T04:14:43-0400 DEBUG countme: no event for fedora-modular: window already counted
+2026-04-07T04:14:45-0400 DEBUG relance : « fedora-modular » peut être relancé - la somme de contrôle du méta-lien correspond.
+2026-04-07T04:14:45-0400 DEBUG fedora-modular : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:30:47.
+2026-04-07T04:14:45-0400 DEBUG countme: no event for updates: window already counted
+2026-04-07T04:14:47-0400 DEBUG relance : « updates » peut être relancé - la somme de contrôle du méta-lien correspond.
+2026-04-07T04:15:00-0400 DEBUG updates : utilisation des métadonnées depuis le mar. 21 mai 2024 11:15:01.
+2026-04-07T04:15:00-0400 DEBUG countme: no event for updates-modular: window already counted
+2026-04-07T04:15:01-0400 DEBUG relance : « updates-modular » peut être relancé - la somme de contrôle du méta-lien correspond.
+2026-04-07T04:15:01-0400 DEBUG updates-modular : utilisation des métadonnées depuis le mer. 06 mars 2024 20:02:11.
+2026-04-07T04:15:01-0400 DEBUG User-Agent: constructed: 'libdnf (Fedora Linux 38; workstation; Linux.x86_64)'
+2026-04-07T04:15:03-0400 DDEBUG timer: sack setup: 35842 ms
+2026-04-07T04:15:03-0400 INFO Cache des métadonnées créé.
+2026-04-07T04:15:03-0400 DDEBUG Cleaning up.
+2026-04-07T05:27:25-0400 INFO --- logging initialized ---
+2026-04-07T05:27:25-0400 DDEBUG timer: config: 542 ms
+2026-04-07T05:27:27-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
+2026-04-07T05:27:27-0400 DEBUG DNF version: 4.14.0
+2026-04-07T05:27:27-0400 DDEBUG Command: dnf makecache --timer 
+2026-04-07T05:27:27-0400 DDEBUG Installroot: /
+2026-04-07T05:27:27-0400 DDEBUG Releasever: 38
+2026-04-07T05:27:27-0400 DEBUG cachedir: /var/cache/dnf
+2026-04-07T05:27:27-0400 DDEBUG Base command: makecache
+2026-04-07T05:27:27-0400 DDEBUG Extra commands: ['makecache', '--timer']
+2026-04-07T05:27:27-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
+2026-04-07T05:27:28-0400 INFO Cache des métadonnées mis à jour récemment.
+2026-04-07T05:27:28-0400 DDEBUG Cleaning up.

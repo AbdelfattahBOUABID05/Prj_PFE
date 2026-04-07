@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Détails des Logs - Analysis{% endblock %}
+
+{% block extra_css %}
+<style>
+    .log-card { background: white; border-radius: 15px; border: none; }
+    .nav-pills .nav-link { color: #64748b; border-radius: 10px; font-weight: 500; }
+    .nav-pills .nav-link.active { background-color: var(--primary-color); }
+    .log-scroll { max-height: 600px; overflow-y: auto; background: #fafafa; border-radius: 8px; padding: 1rem; }
+    .log-item { font-family: 'Fira Code', monospace; font-size: 0.85rem; padding: 8px; border-bottom: 1px solid #eee; white-space: pre-wrap; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card log-card shadow-sm p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0 text-dark">Analyse détaillée des logs</h3>
+        <span id="fileNameBadge" class="badge bg-light text-dark border p-2">Aucun fichier</span>
+    </div>
+
+    <ul class="nav nav-pills mb-4 gap-2" id="logTabs">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#err-pane">
+                Errors <span class="badge bg-danger ms-1" id="count-ERROR">0</span>
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#warn-pane">
+                Warnings <span class="badge bg-warning text-dark ms-1" id="count-WARNING">0</span>
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#info-pane">
+                Info <span class="badge bg-info ms-1" id="count-INFO">0</span>
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content mt-3">
+        <div class="tab-pane fade show active" id="err-pane">
+            <div id="list-ERROR" class="log-scroll text-danger"></div>
+        </div>
+        <div class="tab-pane fade" id="warn-pane">
+            <div id="list-WARNING" class="log-scroll text-warning"></div>
+        </div>
+        <div class="tab-pane fade" id="info-pane">
+            <div id="list-INFO" class="log-scroll text-dark"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const stored = localStorage.getItem('lastAnalysis');
+        if (!stored) return;
+
+        const data = JSON.parse(stored);
+        document.getElementById('fileNameBadge').innerText = data.filename;
+
+        const types = ['ERROR', 'WARNING', 'INFO'];
+        types.forEach(type => {
+            const list = data.segments[type] || [];
+            document.getElementById(`count-${type}`).innerText = list.length;
+            
+            const container = document.getElementById(`list-${type}`);
+            if (list.length > 0) {
+                container.innerHTML = list.map(l => `<div class="log-item">${l}</div>`).join('');
+            } else {
+                container.innerHTML = '<p class="text-center text-muted py-4">Aucun log trouvé.</p>';
+            }
+        });
+    });
+</script>
+{% endblock %}

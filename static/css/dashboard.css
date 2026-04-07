@@ -1,0 +1,42 @@
+/* Dashboard Specific Styles */
+.stat-card {
+    border: none;
+    border-radius: 1.2rem;
+    background: #ffffff;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(109, 40, 217, 0.1);
+}
+
+.stat-icon {
+    font-size: 1.5rem;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+}
+
+.chart-container {
+    position: relative;
+    height: 280px;
+    margin: auto;
+}
+
+.btn-primary-custom {
+    background: #6d28d9;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-weight: 600;
+}
+
+.btn-primary-custom:hover {
+    background: #5b21b6;
+}
