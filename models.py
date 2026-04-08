@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -15,6 +17,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), nullable=False, default="Analyst")
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
 
     def set_password(self, password: str) -> None:
         self.password_hash = generate_password_hash(password)
@@ -25,4 +28,23 @@ class User(db.Model, UserMixin):
     @property
     def is_admin(self) -> bool:
         return (self.role or "").lower() == "admin"
+
+
+class Analysis(db.Model):
+    __tablename__ = "analyses"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc), index=True)
+
+    source_type = db.Column(db.String(20), nullable=False)  # ssh | upload
+    source_path = db.Column(db.Text, nullable=False)
+    server_ip = db.Column(db.String(64), nullable=True)
+
+    # Keep raw payloads for traceability
+    stats = db.Column(db.JSON, nullable=False)
+    segments = db.Column(db.JSON, nullable=False)
+    meta = db.Column(db.JSON, nullable=False)
+
+    user = db.relationship("User", backref=db.backref("analyses", lazy="dynamic"))
 

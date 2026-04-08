@@ -16,7 +16,7 @@ from email.mime.multipart import MIMEMultipart
 
 from src.parser import parse_log_file
 from config import Config
-from models import db, User
+from models import db, User, Analysis
 
 load_dotenv()
 
@@ -88,6 +88,27 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 with app.app_context():
     db.create_all()
     ensure_default_admin()
+
+
+def analyses_query_for_user():
+    if getattr(current_user, "is_admin", False):
+        return Analysis.query
+    return Analysis.query.filter_by(user_id=current_user.id)
+
+
+def save_analysis_for_current_user(*, source_type: str, source_path: str, server_ip: str | None, stats: dict, segments: dict, meta: dict):
+    a = Analysis(
+        user_id=current_user.id,
+        source_type=source_type,
+        source_path=source_path,
+        server_ip=server_ip,
+        stats=stats,
+        segments=segments,
+        meta=meta,
+    )
+    db.session.add(a)
+    db.session.commit()
+    return a
 
 # --- ROUTES DE NAVIGATION ---
 
@@ -178,6 +199,113 @@ def register():
     return render_template('register.html')
 
 
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    if request.method == 'POST':
+        current_password = request.form.get('current_password') or ""
+        new_password = request.form.get('new_password') or ""
+        confirm = request.form.get('confirm_password') or ""
+
+        if not current_password or not new_password or not confirm:
+            flash("Veuillez remplir tous les champs.", "danger")
+            return redirect(url_for("profile"))
+        if not current_user.check_password(current_password):
+            flash("Mot de passe actuel incorrect.", "danger")
+            return redirect(url_for("profile"))
+        if new_password != confirm:
+            flash("Les mots de passe ne correspondent pas.", "danger")
+            return redirect(url_for("profile"))
+        if len(new_password) < 8:
+            flash("Le nouveau mot de passe doit contenir au moins 8 caractères.", "danger")
+            return redirect(url_for("profile"))
+
+        user = db.session.get(User, current_user.id)
+        user.set_password(new_password)
+        db.session.commit()
+        flash("Password updated successfully.", "success")
+        return redirect(url_for("profile"))
+
+    return render_template('profile.html')
+
+
+@app.route('/admin/users', methods=['GET'])
+@admin_required
+def admin_users():
+    users = User.query.order_by(User.created_at.desc()).all()
+    return render_template('admin_users.html', users=users)
+
+
+@app.route('/admin/users/<int:user_id>/edit', methods=['POST'])
+@admin_required
+def admin_user_edit(user_id: int):
+    user = db.session.get(User, user_id)
+    if not user:
+        flash("User not found.", "danger")
+        return redirect(url_for("admin_users"))
+
+    username = (request.form.get("username") or "").strip()
+    email = (request.form.get("email") or "").strip().lower()
+    role = (request.form.get("role") or user.role).strip()
+
+    if role not in ("Admin", "Analyst"):
+        role = user.role
+
+    if not username or not email:
+        flash("Username et email sont obligatoires.", "danger")
+        return redirect(url_for("admin_users"))
+
+    existing = User.query.filter(
+        ((User.username == username) | (User.email == email)) & (User.id != user.id)
+    ).first()
+    if existing:
+        flash("Username ou email déjà utilisé.", "danger")
+        return redirect(url_for("admin_users"))
+
+    user.username = username
+    user.email = email
+    user.role = role
+    db.session.commit()
+    flash("User updated successfully.", "success")
+    return redirect(url_for("admin_users"))
+
+
+@app.route('/admin/users/<int:user_id>/reset-password', methods=['POST'])
+@admin_required
+def admin_user_reset_password(user_id: int):
+    user = db.session.get(User, user_id)
+    if not user:
+        flash("User not found.", "danger")
+        return redirect(url_for("admin_users"))
+
+    temp_password = request.form.get("temp_password") or "Temp@12345"
+    if len(temp_password) < 8:
+        flash("Temporary password must be at least 8 characters.", "danger")
+        return redirect(url_for("admin_users"))
+
+    user.set_password(temp_password)
+    db.session.commit()
+    flash(f"Password reset. Temporary password set for {user.username}.", "success")
+    return redirect(url_for("admin_users"))
+
+
+@app.route('/admin/users/<int:user_id>/delete', methods=['POST'])
+@admin_required
+def admin_user_delete(user_id: int):
+    user = db.session.get(User, user_id)
+    if not user:
+        flash("User not found.", "danger")
+        return redirect(url_for("admin_users"))
+    if user.id == current_user.id:
+        flash("You cannot delete your own account.", "danger")
+        return redirect(url_for("admin_users"))
+
+    db.session.delete(user)
+    db.session.commit()
+    flash("User deleted.", "success")
+    return redirect(url_for("admin_users"))
+
+
 @app.route('/logout')
 @login_required
 def logout():
@@ -232,7 +360,7 @@ def upload_file():
 
         results = parse_log_file(filepath)
         meta = file_metadata(filepath)
-        return jsonify({
+        payload = {
             "status": "success",
             "generated_at": utc_now_iso(),
             "meta": {
@@ -248,7 +376,17 @@ def upload_file():
                 "info": len(results.get('INFO', [])),
                 "total": sum(len(v) for v in results.values())
             }
-        })
+        }
+        analysis = save_analysis_for_current_user(
+            source_type="upload",
+            source_path=payload["meta"]["source_path"],
+            server_ip=None,
+            stats=payload["stats"],
+            segments=payload["segments"],
+            meta=payload["meta"],
+        )
+        payload["analysis_id"] = analysis.id
+        return jsonify(payload)
     except Exception as e:
         return json_error(str(e), 500, code="UPLOAD_FAILED")
 
@@ -293,7 +431,7 @@ def ssh_analyze():
 
         results = parse_log_file(temp_path)
         meta = file_metadata(temp_path)
-        return jsonify({
+        payload = {
             "status": "success",
             "generated_at": utc_now_iso(),
             "meta": {
@@ -309,7 +447,17 @@ def ssh_analyze():
                 "info": len(results.get('INFO', [])),
                 "total": sum(len(v) for v in results.values())
             }
-        })
+        }
+        analysis = save_analysis_for_current_user(
+            source_type="ssh",
+            source_path=payload["meta"]["source_path"],
+            server_ip=payload["meta"]["server_ip"],
+            stats=payload["stats"],
+            segments=payload["segments"],
+            meta=payload["meta"],
+        )
+        payload["analysis_id"] = analysis.id
+        return jsonify(payload)
     except paramiko.AuthenticationException:
         return json_error("Authentication failed", 401, code="SSH_AUTH_FAILED")
     except paramiko.SSHException as e:
@@ -407,6 +555,47 @@ def send_email():
         return jsonify({"status": "success", "message": "Email envoyé avec succès !"})
     except Exception as e:
         return json_error(f"Erreur: {str(e)}", 500, code="SMTP_SEND_FAILED")
+
+
+@app.route('/api/analyses', methods=['GET'])
+@login_required
+def api_analyses_list():
+    q = analyses_query_for_user().order_by(Analysis.created_at.desc())
+    items = q.limit(100).all()
+    return jsonify({
+        "status": "success",
+        "analyses": [
+            {
+                "id": a.id,
+                "user_id": a.user_id,
+                "created_at": a.created_at.isoformat() if a.created_at else None,
+                "source_type": a.source_type,
+                "source_path": a.source_path,
+                "server_ip": a.server_ip,
+                "stats": a.stats,
+            }
+            for a in items
+        ],
+    })
+
+
+@app.route('/api/analyses/<int:analysis_id>', methods=['GET'])
+@login_required
+def api_analysis_get(analysis_id: int):
+    a = analyses_query_for_user().filter_by(id=analysis_id).first()
+    if not a:
+        return json_error("Analysis not found.", 404, code="ANALYSIS_NOT_FOUND")
+    return jsonify({
+        "status": "success",
+        "analysis": {
+            "id": a.id,
+            "user_id": a.user_id,
+            "created_at": a.created_at.isoformat() if a.created_at else None,
+            "meta": a.meta,
+            "stats": a.stats,
+            "segments": a.segments,
+        }
+    })
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

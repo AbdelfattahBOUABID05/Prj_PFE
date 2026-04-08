@@ -127,7 +127,7 @@ function renderSummary(stats, meta, health) {
             <td style="font-weight:900;">${escapeHtml(r[0])}</td>
             <td>${escapeHtml(r[1])}</td>
             <td class="text-muted">${escapeHtml(r[2])}</td>
-        </tr>
+                </tr>
     `).join('');
 }
 

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Profile / Settings{% endblock %}
+
+{% block content %}
+<div class="container fade-in-up">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <div class="text-muted small">Profile</div>
+            <h3 class="fw-bold mb-0">Change Password</h3>
+        </div>
+        <div class="badge badge-source">Signed in as {{ current_user.username }}</div>
+    </div>
+
+    <div class="glass-card p-4" style="max-width: 720px;">
+        <form method="POST" class="needs-validation" novalidate id="changePasswordForm">
+            <div class="mb-3">
+                <label class="form-label fw-bold small">Current password</label>
+                <input type="password" class="form-control input-saas" name="current_password" required minlength="6">
+                <div class="invalid-feedback">Please enter your current password.</div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small">New password</label>
+                    <input type="password" class="form-control input-saas" name="new_password" id="newPassword" required minlength="8">
+                    <div class="invalid-feedback">Password must be at least 8 characters.</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small">Confirm new password</label>
+                    <input type="password" class="form-control input-saas" name="confirm_password" id="confirmNewPassword" required minlength="8">
+                    <div class="invalid-feedback">Passwords must match.</div>
+                </div>
+            </div>
+
+            <button class="btn btn-saas mt-4" type="submit">
+                <i class="fas fa-lock me-2"></i>Update password
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    (() => {
+        const form = document.getElementById('changePasswordForm');
+        const pw = document.getElementById('newPassword');
+        const cpw = document.getElementById('confirmNewPassword');
+
+        function validateMatch() {
+            const ok = pw.value && cpw.value && pw.value === cpw.value;
+            cpw.setCustomValidity(ok || !cpw.value ? '' : 'mismatch');
+        }
+        pw.addEventListener('input', validateMatch);
+        cpw.addEventListener('input', validateMatch);
+
+        form.addEventListener('submit', (e) => {
+            validateMatch();
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+    })();
+</script>
+{% endblock %}
+
