@@ -366,3 +366,261 @@
 2026-04-08T07:31:56.239248-04:00 kali systemd[1]: Started session-8.scope - Session 8 of User kali.
 2026-04-08T07:31:56.463120-04:00 kali systemd[1]: session-8.scope: Deactivated successfully.
 2026-04-08T07:32:39.065970-04:00 kali systemd[1]: Started session-9.scope - Session 9 of User kali.
+2026-04-08T07:32:40.574847-04:00 kali systemd[1]: session-9.scope: Deactivated successfully.
+2026-04-08T07:34:05.098769-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating service name='org.xfce.Xfconf' requested by ':1.28' (uid=1000 pid=1408 comm="xfce4-panel")
+2026-04-08T07:34:05.122670-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.xfce.Xfconf'
+2026-04-08T07:35:01.136627-04:00 kali CRON[12460]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-08T07:35:59.912093-04:00 kali systemd[1]: Starting plocate-updatedb.service - Update the plocate database...
+2026-04-08T07:38:42.390739-04:00 kali systemd[1]: plocate-updatedb.service: Deactivated successfully.
+2026-04-08T07:38:42.405285-04:00 kali systemd[1]: Finished plocate-updatedb.service - Update the plocate database.
+2026-04-08T07:38:42.408301-04:00 kali systemd[1]: plocate-updatedb.service: Consumed 26.278s CPU time over 2min 42.559s wall clock time, 347.7M memory peak.
+2026-04-08T07:39:01.312330-04:00 kali CRON[14360]: (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+2026-04-08T07:39:05.870158-04:00 kali systemd[1]: Starting phpsessionclean.service - Clean php session files...
+2026-04-08T07:39:09.610357-04:00 kali systemd[1]: phpsessionclean.service: Deactivated successfully.
+2026-04-08T07:39:09.643296-04:00 kali systemd[1]: Finished phpsessionclean.service - Clean php session files.
+2026-04-08T07:39:09.651485-04:00 kali systemd[1]: phpsessionclean.service: Consumed 3.450s CPU time over 3.743s wall clock time, 8.6M memory peak.
+2026-04-08T07:42:33.119590-04:00 kali rtkit-daemon[1123]: The canary thread is apparently starving. Taking action.
+2026-04-08T07:42:33.120404-04:00 kali rtkit-daemon[1123]: Demoting known real-time threads.
+2026-04-08T07:42:33.121305-04:00 kali rtkit-daemon[1123]: Successfully demoted thread 1252 of process 1239.
+2026-04-08T07:42:33.121486-04:00 kali rtkit-daemon[1123]: Successfully demoted thread 1239 of process 1239.
+2026-04-08T07:42:33.121550-04:00 kali rtkit-daemon[1123]: Successfully demoted thread 1260 of process 1241.
+2026-04-08T07:42:33.121662-04:00 kali rtkit-daemon[1123]: Successfully demoted thread 1241 of process 1241.
+2026-04-08T07:42:33.121734-04:00 kali rtkit-daemon[1123]: Successfully demoted thread 1253 of process 1238.
+2026-04-08T07:42:33.121791-04:00 kali rtkit-daemon[1123]: Successfully demoted thread 1256 of process 1237.
+2026-04-08T07:42:33.121846-04:00 kali rtkit-daemon[1123]: Successfully demoted thread 1237 of process 1237.
+2026-04-08T07:42:33.122002-04:00 kali rtkit-daemon[1123]: Demoted 7 threads.
+2026-04-08T07:42:34.182514-04:00 kali systemd[1219]: Reached target sound.target - Sound Card.
+2026-04-08T07:42:42.799399-04:00 kali pipewire-pulse[1241]: default: snap_get_audio_permissions: kernel lacks 'fine grained unix mediation'; snap audio permissions won't be honored.
+2026-04-08T07:42:45.289959-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating service name='org.xfce.Xfconf' requested by ':1.27' (uid=1000 pid=1397 comm="xfsettingsd")
+2026-04-08T07:42:47.238676-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.xfce.Xfconf'
+2026-04-08T07:43:05.311759-04:00 kali NetworkManager[695]: <info>  [1775648585.3103] dhcp4 (eth0): state changed new lease, address=192.168.116.129
+2026-04-08T07:43:05.382517-04:00 kali dbus-daemon[536]: [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.4' (uid=0 pid=695 comm="/usr/sbin/NetworkManager --no-daemon")
+2026-04-08T07:43:06.829472-04:00 kali systemd[1]: Starting NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service...
+2026-04-08T07:43:07.648805-04:00 kali dbus-daemon[536]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+2026-04-08T07:43:07.650011-04:00 kali systemd[1]: Started NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service.
+2026-04-08T07:43:11.081657-04:00 kali systemd[1]: Created slice user-110.slice - User Slice of UID 110.
+2026-04-08T07:43:11.094592-04:00 kali systemd[1]: Starting user-runtime-dir@110.service - User Runtime Directory /run/user/110...
+2026-04-08T07:43:15.837902-04:00 kali wireplumber[1239]: <WpNode:0x560be2f39f40> ignoring set_param on already destroyed objects
+2026-04-08T07:43:15.999478-04:00 kali wireplumber[1239]: <WpNode:0x560be2ce4e10> ignoring set_param on already destroyed objects
+2026-04-08T07:43:16.012355-04:00 kali pipewire-pulse[1241]: default: snap_get_audio_permissions: kernel lacks 'fine grained unix mediation'; snap audio permissions won't be honored.
+2026-04-08T07:43:16.012743-04:00 kali pipewire-pulse[1241]: default: snap_get_audio_permissions: kernel lacks 'fine grained unix mediation'; snap audio permissions won't be honored.
+2026-04-08T07:43:16.575429-04:00 kali systemd[1]: Finished user-runtime-dir@110.service - User Runtime Directory /run/user/110.
+2026-04-08T07:43:16.585443-04:00 kali systemd[1]: Starting user@110.service - User Manager for UID 110...
+2026-04-08T07:43:17.633038-04:00 kali pipewire-pulse[1241]: default: snap_get_audio_permissions: kernel lacks 'fine grained unix mediation'; snap audio permissions won't be honored.
+2026-04-08T07:43:17.715475-04:00 kali systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+2026-04-08T07:43:18.857992-04:00 kali pipewire-pulse[1241]: default: snap_get_audio_permissions: kernel lacks 'fine grained unix mediation'; snap audio permissions won't be honored.
+2026-04-08T07:43:18.922516-04:00 kali pipewire-pulse[1241]: default: snap_get_audio_permissions: kernel lacks 'fine grained unix mediation'; snap audio permissions won't be honored.
+2026-04-08T07:43:19.322817-04:00 kali wireplumber[1239]: <WpSiAudioAdapter:0x560be2f80450> Object activation aborted: proxy destroyed
+2026-04-08T07:43:19.383073-04:00 kali wireplumber[1239]: <WpSiAudioAdapter:0x560be2f80450> failed to activate item: Object activation aborted: proxy destroyed
+2026-04-08T07:43:20.117518-04:00 kali systemd[15779]: Queued start job for default target default.target.
+2026-04-08T07:43:20.234478-04:00 kali systemd[15779]: Created slice app.slice - User Application Slice.
+2026-04-08T07:43:20.374996-04:00 kali systemd[15779]: Created slice session.slice - User Core Session Slice.
+2026-04-08T07:43:20.375916-04:00 kali systemd[15779]: Reached target paths.target - Paths.
+2026-04-08T07:43:20.376777-04:00 kali systemd[15779]: Reached target timers.target - Timers.
+2026-04-08T07:43:20.381713-04:00 kali systemd[15779]: Starting dbus.socket - D-Bus User Message Bus Socket...
+2026-04-08T07:43:20.385911-04:00 kali systemd[15779]: Listening on dirmngr.socket - GnuPG network certificate management daemon.
+2026-04-08T07:43:20.386405-04:00 kali systemd[15779]: Listening on gcr-ssh-agent.socket - GCR ssh-agent wrapper.
+2026-04-08T07:43:20.386974-04:00 kali systemd[15779]: Listening on gnome-keyring-daemon.socket - GNOME Keyring daemon.
+2026-04-08T07:43:20.388028-04:00 kali systemd[15779]: Listening on gpg-agent-browser.socket - GnuPG cryptographic agent and passphrase cache (access for web browsers).
+2026-04-08T07:43:20.393837-04:00 kali systemd[15779]: Listening on gpg-agent-extra.socket - GnuPG cryptographic agent and passphrase cache (restricted).
+2026-04-08T07:43:20.394491-04:00 kali systemd[15779]: Listening on gpg-agent-ssh.socket - GnuPG cryptographic agent (ssh-agent emulation).
+2026-04-08T07:43:20.395404-04:00 kali systemd[15779]: Listening on gpg-agent.socket - GnuPG cryptographic agent and passphrase cache.
+2026-04-08T07:43:20.395821-04:00 kali systemd[15779]: Listening on pipewire-pulse.socket - PipeWire PulseAudio.
+2026-04-08T07:43:20.401234-04:00 kali systemd[15779]: Listening on pipewire.socket - PipeWire Multimedia System Sockets.
+2026-04-08T07:43:20.428024-04:00 kali systemd[15779]: Listening on systemd-ask-password.socket - Query the User Interactively for a Password.
+2026-04-08T07:43:20.662780-04:00 kali systemd[15779]: Listening on dbus.socket - D-Bus User Message Bus Socket.
+2026-04-08T07:43:20.681495-04:00 kali systemd[15779]: Reached target sockets.target - Sockets.
+2026-04-08T07:43:20.683409-04:00 kali systemd[15779]: Reached target basic.target - Basic System.
+2026-04-08T07:43:20.694053-04:00 kali systemd[1]: Started user@110.service - User Manager for UID 110.
+2026-04-08T07:43:21.031365-04:00 kali systemd[15779]: Started pipewire.service - PipeWire Multimedia Service.
+2026-04-08T07:43:21.034744-04:00 kali systemd[15779]: Started filter-chain.service - PipeWire filter chain daemon.
+2026-04-08T07:43:21.051816-04:00 kali systemd[1]: Started session-c2.scope - Session c2 of User lightdm.
+2026-04-08T07:43:21.067309-04:00 kali systemd[15779]: Started wireplumber.service - Multimedia Service Session Manager.
+2026-04-08T07:43:23.417838-04:00 kali systemd[15779]: Started pipewire-pulse.service - PipeWire PulseAudio.
+2026-04-08T07:43:23.422288-04:00 kali systemd[15779]: Reached target default.target - Main User Target.
+2026-04-08T07:43:23.423177-04:00 kali systemd[15779]: Startup finished in 3.663s.
+2026-04-08T07:43:24.733438-04:00 kali systemd[15779]: Starting dbus.service - D-Bus User Message Bus...
+2026-04-08T07:43:25.249661-04:00 kali systemd[15779]: Started dbus.service - D-Bus User Message Bus.
+2026-04-08T07:43:25.510133-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:43:25.644820-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:43:25.646710-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:43:25.681729-04:00 kali rtkit-daemon[1123]: Recovering from system lockup, not allowing further RT threads.
+2026-04-08T07:43:25.687380-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:43:25.689882-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:43:25.691245-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:43:25.693908-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:43:25.696436-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:43:25.816324-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:43:25.816924-04:00 kali rtkit-daemon[1123]: Recovering from system lockup, not allowing further RT threads.
+2026-04-08T07:43:25.817532-04:00 kali rtkit-daemon[1123]: Recovering from system lockup, not allowing further RT threads.
+2026-04-08T07:43:26.110539-04:00 kali pipewire[15854]: mod.jackdbus-detect: Failed to receive jackdbus reply: org.freedesktop.DBus.Error.ServiceUnknown: The name org.jackaudio.service was not provided by any .service files
+2026-04-08T07:43:26.161121-04:00 kali rtkit-daemon[1123]: Recovering from system lockup, not allowing further RT threads.
+2026-04-08T07:43:26.164153-04:00 kali rtkit-daemon[1123]: Recovering from system lockup, not allowing further RT threads.
+2026-04-08T07:43:26.282045-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:43:26.283301-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:43:26.340323-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:43:26.538814-04:00 kali rtkit-daemon[1123]: Recovering from system lockup, not allowing further RT threads.
+2026-04-08T07:43:26.539796-04:00 kali rtkit-daemon[1123]: Recovering from system lockup, not allowing further RT threads.
+2026-04-08T07:43:26.562088-04:00 kali dbus-daemon[15881]: [session uid=110 pid=15881] Activating via systemd: service name='org.gtk.vfs.Daemon' unit='gvfs-daemon.service' requested by ':1.8' (uid=110 pid=15859 comm="/usr/bin/wireplumber")
+2026-04-08T07:43:26.602188-04:00 kali systemd[15779]: Starting gvfs-daemon.service - Virtual filesystem service...
+2026-04-08T07:43:28.743038-04:00 kali dbus-daemon[15881]: [session uid=110 pid=15881] Successfully activated service 'org.gtk.vfs.Daemon'
+2026-04-08T07:43:28.745244-04:00 kali systemd[15779]: Started gvfs-daemon.service - Virtual filesystem service.
+2026-04-08T07:43:29.043102-04:00 kali dbus-daemon[15881]: [session uid=110 pid=15881] Activating via systemd: service name='org.a11y.Bus' unit='at-spi-dbus-bus.service' requested by ':1.10' (uid=110 pid=15864 comm="/usr/sbin/lightdm-gtk-greeter")
+2026-04-08T07:43:29.054111-04:00 kali systemd[15779]: Starting at-spi-dbus-bus.service - Accessibility services bus...
+2026-04-08T07:43:29.945871-04:00 kali dbus-daemon[15881]: [session uid=110 pid=15881] Successfully activated service 'org.a11y.Bus'
+2026-04-08T07:43:29.947480-04:00 kali systemd[15779]: Started at-spi-dbus-bus.service - Accessibility services bus.
+2026-04-08T07:43:30.347153-04:00 kali wireplumber[15859]: SPA handle 'api.libcamera.enum.manager' could not be loaded; is it installed?
+2026-04-08T07:43:30.466699-04:00 kali wireplumber[15859]: PipeWire's libcamera SPA missing or broken. libcamera not supported.
+2026-04-08T07:43:32.033652-04:00 kali wireplumber[15859]: GetManagedObjects() failed: org.freedesktop.DBus.Error.NameHasNoOwner
+2026-04-08T07:43:32.608341-04:00 kali pipewire-pulse[15862]: default: snap_get_audio_permissions: kernel lacks 'fine grained unix mediation'; snap audio permissions won't be honored.
+2026-04-08T07:43:32.733313-04:00 kali pipewire-pulse[15862]: default: snap_get_audio_permissions: kernel lacks 'fine grained unix mediation'; snap audio permissions won't be honored.
+2026-04-08T07:43:35.384695-04:00 kali wireplumber[15859]: <WpNode:0x55a63273d160> ignoring set_param on already destroyed objects
+2026-04-08T07:43:35.389793-04:00 kali wireplumber[15859]: <WpNode:0x55a6326b1650> ignoring set_param on already destroyed objects
+2026-04-08T07:43:35.492106-04:00 kali pipewire-pulse[15862]: default: snap_get_audio_permissions: kernel lacks 'fine grained unix mediation'; snap audio permissions won't be honored.
+2026-04-08T07:43:35.767814-04:00 kali pipewire-pulse[15862]: default: snap_get_audio_permissions: kernel lacks 'fine grained unix mediation'; snap audio permissions won't be honored.
+2026-04-08T07:44:17.560310-04:00 kali at-spi-bus-launcher[15943]: dbus-daemon[15943]: Activating service name='org.a11y.atspi.Registry' requested by ':1.0' (uid=110 pid=15864 comm="/usr/sbin/lightdm-gtk-greeter")
+2026-04-08T07:44:21.366077-04:00 kali at-spi-bus-launcher[15943]: dbus-daemon[15943]: Successfully activated service 'org.a11y.atspi.Registry'
+2026-04-08T07:44:21.367321-04:00 kali at-spi-bus-launcher[16012]: SpiRegistry daemon is running with well-known name - org.a11y.atspi.Registry
+2026-04-08T07:45:01.379840-04:00 kali CRON[16260]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-08T07:54:37.129734-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating service name='org.xfce.Xfconf' requested by ':1.28' (uid=1000 pid=1408 comm="xfce4-panel")
+2026-04-08T07:54:37.710795-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.xfce.Xfconf'
+2026-04-08T07:55:03.194735-04:00 kali CRON[20840]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-08T07:56:12.854317-04:00 kali rtkit-daemon[1123]: The canary thread is apparently starving. Taking action.
+2026-04-08T07:56:12.890922-04:00 kali rtkit-daemon[1123]: Demoting known real-time threads.
+2026-04-08T07:56:12.891325-04:00 kali rtkit-daemon[1123]: Demoted 0 threads.
+2026-04-08T07:58:04.633701-04:00 kali NetworkManager[695]: <info>  [1775649484.6324] dhcp4 (eth0): state changed new lease, address=192.168.116.129
+2026-04-08T07:58:04.674282-04:00 kali dbus-daemon[536]: [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.4' (uid=0 pid=695 comm="/usr/sbin/NetworkManager --no-daemon")
+2026-04-08T07:58:04.695945-04:00 kali systemd[1]: Starting NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service...
+2026-04-08T07:58:04.995143-04:00 kali dbus-daemon[536]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+2026-04-08T07:58:05.013298-04:00 kali systemd[1]: Started NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service.
+2026-04-08T07:58:15.044145-04:00 kali systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+2026-04-08T08:00:02.280570-04:00 kali CRON[23019]: (kali) CMD (/home/kali/test1/bonjour.sh)
+2026-04-08T08:04:37.147199-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating service name='org.xfce.Xfconf' requested by ':1.28' (uid=1000 pid=1408 comm="xfce4-panel")
+2026-04-08T08:04:37.878128-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.xfce.Xfconf'
+2026-04-08T08:05:01.398574-04:00 kali CRON[25238]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-08T08:09:03.118057-04:00 kali CRON[27079]: (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+2026-04-08T08:09:38.164240-04:00 kali systemd[1]: Starting phpsessionclean.service - Clean php session files...
+2026-04-08T08:10:06.729900-04:00 kali systemd[1]: phpsessionclean.service: Deactivated successfully.
+2026-04-08T08:10:07.066946-04:00 kali systemd[1]: Finished phpsessionclean.service - Clean php session files.
+2026-04-08T08:10:07.099400-04:00 kali systemd[1]: phpsessionclean.service: Consumed 20.129s CPU time over 28.627s wall clock time, 8.6M memory peak.
+2026-04-08T08:13:04.678983-04:00 kali NetworkManager[695]: <info>  [1775650384.6780] dhcp4 (eth0): state changed new lease, address=192.168.116.129
+2026-04-08T08:13:04.901536-04:00 kali dbus-daemon[536]: [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.4' (uid=0 pid=695 comm="/usr/sbin/NetworkManager --no-daemon")
+2026-04-08T08:13:05.061553-04:00 kali systemd[1]: Starting NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service...
+2026-04-08T08:13:05.288836-04:00 kali dbus-daemon[536]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+2026-04-08T08:13:05.393734-04:00 kali systemd[1]: Started NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service.
+2026-04-08T08:13:15.541217-04:00 kali systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+2026-04-08T08:14:37.107931-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating service name='org.xfce.Xfconf' requested by ':1.28' (uid=1000 pid=1408 comm="xfce4-panel")
+2026-04-08T08:14:48.071700-04:00 kali rtkit-daemon[1123]: The canary thread is apparently starving. Taking action.
+2026-04-08T08:14:55.529509-04:00 kali rtkit-daemon[1123]: Demoting known real-time threads.
+2026-04-08T08:15:00.038307-04:00 kali rtkit-daemon[1123]: Demoted 0 threads.
+2026-04-08T08:15:00.041210-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.xfce.Xfconf'
+2026-04-08T08:16:04.373727-04:00 kali kernel: e1000: eth0 NIC Link is Down
+2026-04-08T08:16:11.694534-04:00 kali kernel: e1000: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
+2026-04-08T08:16:16.917571-04:00 kali rtkit-daemon[1123]: The canary thread is apparently starving. Taking action.
+2026-04-08T08:16:18.658805-04:00 kali rtkit-daemon[1123]: Demoting known real-time threads.
+2026-04-08T08:16:18.924299-04:00 kali rtkit-daemon[1123]: Demoted 0 threads.
+2026-04-08T08:16:18.942510-04:00 kali rtkit-daemon[1123]: The canary thread is apparently starving. Taking action.
+2026-04-08T08:16:18.964120-04:00 kali rtkit-daemon[1123]: Demoting known real-time threads.
+2026-04-08T08:16:19.022406-04:00 kali rtkit-daemon[1123]: Demoted 0 threads.
+2026-04-08T08:16:19.023665-04:00 kali rtkit-daemon[1123]: The canary thread is apparently starving. Taking action.
+2026-04-08T08:16:19.034944-04:00 kali rtkit-daemon[1123]: Demoting known real-time threads.
+2026-04-08T08:16:19.042901-04:00 kali rtkit-daemon[1123]: Demoted 0 threads.
+2026-04-08T08:16:19.238522-04:00 kali rtkit-daemon[1123]: The canary thread is apparently starving. Taking action.
+2026-04-08T08:16:19.265197-04:00 kali rtkit-daemon[1123]: Demoting known real-time threads.
+2026-04-08T08:16:19.265760-04:00 kali rtkit-daemon[1123]: Demoted 0 threads.
+2026-04-08T08:16:19.266269-04:00 kali CRON[29712]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-08T08:16:19.314496-04:00 kali rtkit-daemon[1123]: The canary thread is apparently starving. Taking action.
+2026-04-08T08:16:19.347311-04:00 kali rtkit-daemon[1123]: Demoting known real-time threads.
+2026-04-08T08:16:19.361711-04:00 kali rtkit-daemon[1123]: Demoted 0 threads.
+2026-04-08T08:17:01.276794-04:00 kali CRON[30075]: (root) CMD (cd / && run-parts --report /etc/cron.hourly)
+2026-04-08T08:24:37.277381-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating service name='org.xfce.Xfconf' requested by ':1.28' (uid=1000 pid=1408 comm="xfce4-panel")
+2026-04-08T08:24:38.814427-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.xfce.Xfconf'
+2026-04-08T08:25:01.827027-04:00 kali CRON[33858]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-08T08:28:04.765622-04:00 kali NetworkManager[695]: <info>  [1775651284.7643] dhcp4 (eth0): state changed new lease, address=192.168.116.129
+2026-04-08T08:28:05.060825-04:00 kali dbus-daemon[536]: [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.4' (uid=0 pid=695 comm="/usr/sbin/NetworkManager --no-daemon")
+2026-04-08T08:28:05.298848-04:00 kali systemd[1]: Starting NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service...
+2026-04-08T08:28:05.450548-04:00 kali dbus-daemon[536]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+2026-04-08T08:28:05.466153-04:00 kali systemd[1]: Started NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service.
+2026-04-08T08:28:15.511445-04:00 kali systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+2026-04-08T08:34:37.128449-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating service name='org.xfce.Xfconf' requested by ':1.28' (uid=1000 pid=1408 comm="xfce4-panel")
+2026-04-08T08:34:37.256670-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.xfce.Xfconf'
+2026-04-08T08:35:01.964009-04:00 kali CRON[38649]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-08T08:39:02.068496-04:00 kali CRON[40572]: (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+2026-04-08T08:39:37.508264-04:00 kali systemd[1]: Starting phpsessionclean.service - Clean php session files...
+2026-04-08T08:39:37.991235-04:00 kali systemd[1]: phpsessionclean.service: Deactivated successfully.
+2026-04-08T08:39:38.045725-04:00 kali systemd[1]: Finished phpsessionclean.service - Clean php session files.
+2026-04-08T08:43:04.771184-04:00 kali NetworkManager[695]: <info>  [1775652184.7696] dhcp4 (eth0): state changed new lease, address=192.168.116.129
+2026-04-08T08:43:04.849910-04:00 kali dbus-daemon[536]: [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.4' (uid=0 pid=695 comm="/usr/sbin/NetworkManager --no-daemon")
+2026-04-08T08:43:05.438587-04:00 kali systemd[1]: Starting NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service...
+2026-04-08T08:43:05.531919-04:00 kali dbus-daemon[536]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+2026-04-08T08:43:05.609262-04:00 kali systemd[1]: Started NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service.
+2026-04-08T08:43:15.600502-04:00 kali systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+2026-04-08T08:44:37.131170-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating service name='org.xfce.Xfconf' requested by ':1.28' (uid=1000 pid=1408 comm="xfce4-panel")
+2026-04-08T08:44:37.240873-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.xfce.Xfconf'
+2026-04-08T08:45:01.105437-04:00 kali CRON[43495]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-08T08:48:40.884998-04:00 kali kernel: e1000: eth0 NIC Link is Down
+2026-04-08T08:48:46.905490-04:00 kali kernel: e1000: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
+2026-04-08T08:48:46.956031-04:00 kali NetworkManager[695]: <info>  [1775652526.9549] device (eth0): carrier: link connected
+2026-04-08T08:54:37.118910-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating service name='org.xfce.Xfconf' requested by ':1.28' (uid=1000 pid=1408 comm="xfce4-panel")
+2026-04-08T08:54:37.587892-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.xfce.Xfconf'
+2026-04-08T08:55:02.253930-04:00 kali CRON[48007]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-08T08:58:04.793795-04:00 kali NetworkManager[695]: <info>  [1775653084.7923] dhcp4 (eth0): state changed new lease, address=192.168.116.129
+2026-04-08T08:58:04.866456-04:00 kali dbus-daemon[536]: [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.4' (uid=0 pid=695 comm="/usr/sbin/NetworkManager --no-daemon")
+2026-04-08T08:58:05.465942-04:00 kali systemd[1]: Starting NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service...
+2026-04-08T08:58:05.898854-04:00 kali dbus-daemon[536]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+2026-04-08T08:58:06.015995-04:00 kali systemd[1]: Started NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service.
+2026-04-08T08:58:16.584055-04:00 kali systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+2026-04-08T09:04:37.124723-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating service name='org.xfce.Xfconf' requested by ':1.28' (uid=1000 pid=1408 comm="xfce4-panel")
+2026-04-08T09:04:37.547717-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.xfce.Xfconf'
+2026-04-08T09:05:04.081891-04:00 kali CRON[52271]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-08T09:09:01.530614-04:00 kali systemd[1]: Starting phpsessionclean.service - Clean php session files...
+2026-04-08T09:09:03.336019-04:00 kali CRON[54020]: (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+2026-04-08T09:09:08.288664-04:00 kali systemd[1]: phpsessionclean.service: Deactivated successfully.
+2026-04-08T09:09:08.408865-04:00 kali systemd[1]: Finished phpsessionclean.service - Clean php session files.
+2026-04-08T09:09:08.422664-04:00 kali systemd[1]: phpsessionclean.service: Consumed 4.341s CPU time over 6.832s wall clock time, 8.6M memory peak.
+2026-04-08T09:13:05.354919-04:00 kali NetworkManager[695]: <info>  [1775653985.3541] dhcp4 (eth0): state changed new lease, address=192.168.116.129
+2026-04-08T09:13:10.895492-04:00 kali kernel: sched: RT throttling activated
+2026-04-08T09:13:11.142074-04:00 kali dbus-daemon[536]: [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.4' (uid=0 pid=695 comm="/usr/sbin/NetworkManager --no-daemon")
+2026-04-08T09:13:13.410328-04:00 kali rtkit-daemon[1123]: The canary thread is apparently starving. Taking action.
+2026-04-08T09:13:18.259053-04:00 kali rtkit-daemon[1123]: Demoting known real-time threads.
+2026-04-08T09:13:18.468812-04:00 kali systemd[1]: Starting NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service...
+2026-04-08T09:13:18.821452-04:00 kali rtkit-daemon[1123]: Demoted 0 threads.
+2026-04-08T09:13:18.954009-04:00 kali systemd[1]: Started NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service.
+2026-04-08T09:13:18.968649-04:00 kali dbus-daemon[536]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+2026-04-08T09:13:28.536773-04:00 kali systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+2026-04-08T09:13:29.042396-04:00 kali systemd[1]: NetworkManager-dispatcher.service: Consumed 1.189s CPU time over 12.640s wall clock time, 2M memory peak.
+2026-04-08T09:14:37.113441-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating service name='org.xfce.Xfconf' requested by ':1.28' (uid=1000 pid=1408 comm="xfce4-panel")
+2026-04-08T09:14:37.494570-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.xfce.Xfconf'
+2026-04-08T09:15:01.695517-04:00 kali CRON[56804]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-08T09:17:02.201025-04:00 kali CRON[57759]: (root) CMD (cd / && run-parts --report /etc/cron.hourly)
+2026-04-08T09:24:37.115900-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating service name='org.xfce.Xfconf' requested by ':1.28' (uid=1000 pid=1408 comm="xfce4-panel")
+2026-04-08T09:24:37.237455-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.xfce.Xfconf'
+2026-04-08T09:25:01.519618-04:00 kali CRON[61519]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-08T09:28:05.055361-04:00 kali NetworkManager[695]: <info>  [1775654885.0509] dhcp4 (eth0): state changed new lease, address=192.168.116.129
+2026-04-08T09:28:05.260739-04:00 kali dbus-daemon[536]: [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.4' (uid=0 pid=695 comm="/usr/sbin/NetworkManager --no-daemon")
+2026-04-08T09:28:05.526179-04:00 kali systemd[1]: Starting NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service...
+2026-04-08T09:28:05.749562-04:00 kali dbus-daemon[536]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+2026-04-08T09:28:05.752189-04:00 kali systemd[1]: Started NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service.
+2026-04-08T09:28:15.846540-04:00 kali systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+2026-04-08T09:31:20.006316-04:00 kali kernel: hrtimer: interrupt took 13372248 ns
+2026-04-08T09:34:37.136267-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating service name='org.xfce.Xfconf' requested by ':1.28' (uid=1000 pid=1408 comm="xfce4-panel")
+2026-04-08T09:34:37.319056-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.xfce.Xfconf'
+2026-04-08T09:35:01.868584-04:00 kali CRON[66208]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-08T09:39:03.455239-04:00 kali CRON[68094]: (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+2026-04-08T09:39:42.628373-04:00 kali systemd[1]: Starting phpsessionclean.service - Clean php session files...
+2026-04-08T09:39:59.082412-04:00 kali systemd[1]: phpsessionclean.service: Deactivated successfully.
+2026-04-08T09:39:59.349800-04:00 kali systemd[1]: Finished phpsessionclean.service - Clean php session files.
+2026-04-08T09:39:59.466504-04:00 kali systemd[1]: phpsessionclean.service: Consumed 7.816s CPU time over 16.429s wall clock time, 8.5M memory peak.
+2026-04-08T09:42:24.574211-04:00 kali rtkit-daemon[1123]: The canary thread is apparently starving. Taking action.
+2026-04-08T09:42:24.831302-04:00 kali rtkit-daemon[1123]: Demoting known real-time threads.
+2026-04-08T09:42:25.280660-04:00 kali rtkit-daemon[1123]: Demoted 0 threads.
+2026-04-08T09:43:06.624701-04:00 kali NetworkManager[695]: <info>  [1775655786.6240] dhcp4 (eth0): state changed new lease, address=192.168.116.129
+2026-04-08T09:43:10.270850-04:00 kali dbus-daemon[536]: [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.4' (uid=0 pid=695 comm="/usr/sbin/NetworkManager --no-daemon")
+2026-04-08T09:43:16.534768-04:00 kali systemd[1]: Starting NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service...
+2026-04-08T09:43:17.992376-04:00 kali dbus-daemon[536]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+2026-04-08T09:43:18.692473-04:00 kali systemd[1]: Started NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service.
+2026-04-08T09:43:29.763734-04:00 kali systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+2026-04-08T09:44:37.167474-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating service name='org.xfce.Xfconf' requested by ':1.28' (uid=1000 pid=1408 comm="xfce4-panel")
+2026-04-08T09:44:37.797983-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.xfce.Xfconf'
+2026-04-08T09:45:02.297479-04:00 kali CRON[70639]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-08T09:46:39.325888-04:00 kali systemd[1]: Started session-33.scope - Session 33 of User kali.

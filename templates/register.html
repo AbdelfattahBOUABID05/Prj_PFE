@@ -2,11 +2,15 @@
 
 {% block title %}Register User{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock %}
+
 {% block content %}
-<div class="d-flex align-items-center justify-content-center" style="min-height: calc(100vh - 2rem);">
-    <div class="glass-card p-4 p-md-5 fade-in-up" style="width: min(620px, 100%);">
+<div class="auth-wrap">
+    <div class="glass-card auth-card auth-card--wide p-4 p-md-5 fade-in-up">
         <div class="mb-4">
-            <div class="fw-bold text-primary" style="letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.8rem;">Admin Console</div>
+            <div class="fw-bold text-primary auth-brand">Admin Console</div>
             <h3 class="fw-bold mb-1">Create a new user</h3>
             <div class="text-muted">Assign role and credentials for secure access.</div>
         </div>
@@ -50,36 +54,9 @@
         </form>
     </div>
 </div>
+{% endblock %}
 
-<script>
-    (() => {
-        const form = document.getElementById('registerForm');
-        const pw = document.getElementById('regPassword');
-        const cpw = document.getElementById('confirmPassword');
-        const confirmFeedback = document.getElementById('confirmFeedback');
-
-        function validateMatch() {
-            const ok = pw.value && cpw.value && pw.value === cpw.value;
-            if (!cpw.value) {
-                cpw.setCustomValidity('');
-                return;
-            }
-            cpw.setCustomValidity(ok ? '' : 'mismatch');
-            confirmFeedback.textContent = ok ? '' : 'Passwords must match.';
-        }
-
-        pw.addEventListener('input', validateMatch);
-        cpw.addEventListener('input', validateMatch);
-
-        form.addEventListener('submit', (e) => {
-            validateMatch();
-            if (!form.checkValidity()) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            form.classList.add('was-validated');
-        });
-    })();
-</script>
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
 {% endblock %}
 
