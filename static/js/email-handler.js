@@ -4,6 +4,7 @@ document.getElementById('emailForm')?.addEventListener('submit', async function(
     const status = document.getElementById('statusMail');
     
     const lastAnalysis = JSON.parse(localStorage.getItem('lastAnalysis'));
+    const analysisId = lastAnalysis?.analysis_id;
 
     const payload = {
     sender_email: document.getElementById('sender_email').value,
@@ -11,6 +12,7 @@ document.getElementById('emailForm')?.addEventListener('submit', async function(
     email: document.getElementById('dest_email').value,
     subject: document.getElementById('subject').value,
     message: document.getElementById('message').value,
+    analysis_id: analysisId,
     report_data: lastAnalysis
     };
 

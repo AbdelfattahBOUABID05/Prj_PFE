@@ -215,6 +215,13 @@ function buildActivitySeries(data) {
 }
 
 function parseSyslogDate(line) {
+    // ISO-8601: "2026-04-08T14:56:03" (optionally with ms/timezone)
+    const iso = String(line || '').match(/(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+\-]\d{2}:\d{2})?)/);
+    if (iso) {
+        const d = new Date(iso[1]);
+        if (!Number.isNaN(d.getTime())) return d;
+    }
+
     // Common syslog: "Mar 10 12:34:56 host ..."
     const m = line.match(/^([A-Z][a-z]{2})\s+(\d{1,2})\s+(\d{2}):(\d{2}):(\d{2})/);
     if (!m) return null;
@@ -482,7 +489,11 @@ async function runAiInsight(line) {
 function extractTimestampToken(line) {
     const d = parseSyslogDate(line);
     if (!d) return null;
-    const m = line.match(/^([A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})/);
+    const iso = String(line || '').match(/(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+\-]\d{2}:\d{2})?)/);
+    if (iso) {
+        return { date: d, display: iso[1] };
+    }
+    const m = String(line || '').match(/^([A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})/);
     return {
         date: d,
         display: m ? m[1] : d.toLocaleString()
@@ -497,7 +508,9 @@ function trimMessage(line) {
 function renderHighlightedMessage(line) {
     const safe = escapeHtml(String(line || ''));
     // Highlight timestamp token (syslog) subtly
-    return safe.replace(/^([A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})/, '<span class="log-ts">$1</span>');
+    return safe
+        .replace(/^([A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})/, '<span class="log-ts">$1</span>')
+        .replace(/(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+\-]\d{2}:\d{2})?)/, '<span class="log-ts">$1</span>');
 }
 
 function extractCommands(text) {

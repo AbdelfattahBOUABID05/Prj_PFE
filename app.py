@@ -11,8 +11,11 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 
 import smtplib
 import ssl
+import json
+from openai import OpenAI
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
 
 from src.parser import parse_log_file
 from config import Config
@@ -68,19 +71,187 @@ def ensure_default_admin():
 _gemini_model = None
 
 
+def _looks_like_cursor_key(value: str | None) -> bool:
+    return bool(value and str(value).strip().startswith("crsr_"))
+
+
+def _resolve_ai_config():
+    """
+    Resolve API keys with backward compatibility:
+    - CURSOR_API_KEY is preferred for Cursor endpoint.
+    - If GEMINI_API_KEY contains a Cursor key (crsr_*), treat it as Cursor key.
+    """
+    raw_gemini = (os.getenv("GEMINI_API_KEY") or "").strip()
+    raw_cursor = (os.getenv("CURSOR_API_KEY") or "").strip()
+    raw_openai = (os.getenv("OPENAI_API_KEY") or "").strip()
+
+    cursor_key = raw_cursor or (raw_gemini if _looks_like_cursor_key(raw_gemini) else "")
+    gemini_key = "" if _looks_like_cursor_key(raw_gemini) else raw_gemini
+    openai_key = raw_openai
+
+    cursor_base = (os.getenv("CURSOR_API_BASE_URL") or "https://api.cursor.sh/v1").strip()
+    cursor_model = (os.getenv("CURSOR_MODEL") or "gpt-4o-mini").strip()
+    return {
+        "cursor_key": cursor_key,
+        "cursor_base": cursor_base,
+        "cursor_model": cursor_model,
+        "openai_key": openai_key,
+        "openai_base": (os.getenv("OPENAI_BASE_URL") or "").strip() or None,
+        "openai_model": (os.getenv("OPENAI_MODEL") or "gpt-4o-mini").strip(),
+        "gemini_key": gemini_key,
+    }
+
+
 def get_gemini_model():
     global _gemini_model
     if _gemini_model is not None:
         return _gemini_model
 
-    api_key = os.getenv("GEMINI_API_KEY")
+    api_key = _resolve_ai_config().get("gemini_key")
     if not api_key:
         raise RuntimeError("Missing GEMINI_API_KEY")
 
     import google.generativeai as genai
     genai.configure(api_key=api_key)
-    _gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+    # Use stable model name directly (no explicit API version string).
+    _gemini_model = genai.GenerativeModel("gemini-1.5-flash")
     return _gemini_model
+
+
+def _openai_style_completion(*, api_key: str, base_url: str | None, model_name: str, prompt: str) -> str:
+    """
+    OpenAI-compatible completion helper.
+    Works with Cursor/OpenAI-compatible endpoints when base_url is provided.
+    """
+    client_kwargs = {"api_key": api_key}
+    if base_url:
+        client_kwargs["base_url"] = base_url
+    client = OpenAI(**client_kwargs)
+
+    resp = client.chat.completions.create(
+        model=model_name,
+        messages=[
+            {"role": "system", "content": "You are a senior SOC analyst."},
+            {"role": "user", "content": prompt},
+        ],
+        temperature=0.2,
+    )
+    return (resp.choices[0].message.content or "").strip()
+
+
+def generate_security_summary_text(log_text: str) -> str:
+    """
+    Try Cursor/OpenAI-compatible endpoint first (if CURSOR_API_KEY provided),
+    then OpenAI API key, then Gemini stable model.
+    Returns raw model text (JSON expected by caller).
+    """
+    prompt = (
+        "Analyze the following logs (any type: Auth/Web/System/App/Network).\n"
+        "Focus on security threats, repeated patterns, anomalies, and risk.\n"
+        "Return ONLY valid JSON with keys:\n"
+        "ai_insights (string, 2-5 sentences), security_level (LOW|MEDIUM|HIGH|CRITICAL).\n\n"
+        f"LOGS:\n{log_text}\n"
+    )
+
+    cfg = _resolve_ai_config()
+
+    # 1) Cursor/OpenAI-compatible endpoint (primary path)
+    cursor_key = cfg["cursor_key"]
+    if cursor_key:
+        try:
+            cursor_base = cfg["cursor_base"]
+            preferred = cfg["cursor_model"]
+            model_candidates = [preferred, "gpt-4o-mini", "gpt-4.1-mini", "claude-3-5-sonnet"]
+            tried = set()
+            for candidate in model_candidates:
+                if not candidate or candidate in tried:
+                    continue
+                tried.add(candidate)
+                try:
+                    return _openai_style_completion(
+                        api_key=cursor_key,
+                        base_url=cursor_base,
+                        model_name=candidate,
+                        prompt=prompt,
+                    )
+                except Exception as model_err:
+                    print(f"[Cursor AI Error][{candidate}] {str(model_err)}")
+        except Exception as e:
+            print(f"[Cursor AI Error] {str(e)}")
+
+    # 2) Standard OpenAI-compatible key
+    openai_key = cfg["openai_key"]
+    if openai_key:
+        try:
+            openai_base = cfg["openai_base"]  # optional for proxy/openai-compatible services
+            openai_model = cfg["openai_model"]
+            return _openai_style_completion(
+                api_key=openai_key,
+                base_url=openai_base,
+                model_name=openai_model,
+                prompt=prompt,
+            )
+        except Exception as e:
+            print(f"[OpenAI Fallback Error] {str(e)}")
+
+    # 3) Gemini stable fallback
+    try:
+        model = get_gemini_model()
+        return (model.generate_content(prompt).text or "").strip()
+    except Exception as e:
+        print(f"[Gemini Fallback Error] {str(e)}")
+        raise
+
+
+def _heuristic_security_summary(log_text: str) -> dict:
+    text = str(log_text or "")
+    lines = [ln for ln in text.splitlines() if ln.strip()]
+    low = text.lower()
+    error_hits = sum(1 for t in (" error", "failed", "critical", "denied", "panic", "fatal") if t in low)
+    warn_hits = sum(1 for t in (" warning", "warn", "timeout", "retry", "degraded") if t in low)
+    auth_hits = sum(1 for t in ("auth", "sudo", "ssh", "login", "invalid user", "permission") if t in low)
+
+    if error_hits >= 3:
+        level = "HIGH"
+    elif error_hits >= 1 or warn_hits >= 3:
+        level = "MEDIUM"
+    else:
+        level = "LOW"
+
+    summary = (
+        f"Automated security analysis processed {len(lines)} log lines. "
+        f"Detected {error_hits} critical/error indicators, {warn_hits} warning indicators, "
+        f"and {auth_hits} authentication or access-related signals. "
+        "Review repeated failures and access anomalies, then validate related services and credentials."
+    )
+    return {"ai_insights": summary, "security_level": level}
+
+
+def generate_security_summary(*, model, log_text: str):
+    """
+    Produce a concise security-focused summary for any log type.
+    Returns a dict: {ai_insights, security_level}
+    """
+    import json as _json
+
+    # 'model' is kept for backward compatibility with existing calls.
+    try:
+        text = generate_security_summary_text(log_text)
+    except Exception as e:
+        print(str(e))
+        # Never let AI failures break business flow (email/report).
+        return _heuristic_security_summary(log_text)
+    try:
+        parsed = _json.loads(text)
+        ai_insights = str(parsed.get("ai_insights", "")).strip() or text[:600]
+        security_level = str(parsed.get("security_level", "")).strip().upper()
+        if security_level not in {"LOW", "MEDIUM", "HIGH", "CRITICAL"}:
+            security_level = "MEDIUM"
+        return {"ai_insights": ai_insights, "security_level": security_level}
+    except Exception:
+        if text:
+            return {"ai_insights": text[:600], "security_level": "MEDIUM"}
+        return _heuristic_security_summary(log_text)
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
@@ -479,12 +650,36 @@ def ai_analyze_line():
         log_line = data.get('line')
         if not log_line:
             return json_error("Missing 'line'", 400, code="MISSING_LINE")
-        model = get_gemini_model()
-        prompt = f"En tant qu'expert Linux, analyse ce log de Fedora et donne une solution : {log_line}"
-        response = model.generate_content(prompt)
-        return jsonify({"analysis": response.text})
+        summary = generate_security_summary(model=None, log_text=str(log_line))
+        return jsonify({"analysis": summary["ai_insights"], "security_level": summary["security_level"]})
     except Exception as e:
         return json_error(str(e), 500, code="AI_ANALYZE_FAILED")
+
+
+@app.route('/api/analyses/<int:analysis_id>/report-pdf', methods=['POST'])
+@login_required
+def upload_report_pdf(analysis_id: int):
+    a = analyses_query_for_user().filter_by(id=analysis_id).first()
+    if not a:
+        return json_error("Analysis not found.", 404, code="ANALYSIS_NOT_FOUND")
+
+    if 'pdf' not in request.files:
+        return json_error("No PDF provided.", 400, code="NO_PDF")
+    f = request.files['pdf']
+    if not f.filename:
+        return json_error("Empty PDF filename.", 400, code="EMPTY_PDF_FILENAME")
+
+    reports_dir = os.path.join(app.config['UPLOAD_FOLDER'], "reports")
+    os.makedirs(reports_dir, exist_ok=True)
+
+    filename = secure_filename(f"analysis_{a.id}.pdf")
+    filepath = os.path.join(reports_dir, filename)
+    f.save(filepath)
+
+    a.meta = {**(a.meta or {}), "report_pdf_path": filepath}
+    db.session.commit()
+
+    return jsonify({"status": "success", "pdf_path": filepath})
 
 
 def _smtp_send_with_fallback(sender_email: str, app_password: str, msg: MIMEMultipart):
@@ -527,34 +722,110 @@ def send_email():
     dest_email = (data.get('email') or data.get('dest_email') or "").strip()
     subject = (data.get('subject') or "Rapport LogAnalyzer").strip()
     comment = data.get('message') or ""
+    analysis_id = data.get('analysis_id')
     report_data = data.get('report_data') or {}
+    if not analysis_id and isinstance(report_data, dict):
+        analysis_id = report_data.get("analysis_id")
 
     if not user_sender_email or not user_app_password or not dest_email:
         return json_error("Missing email fields", 400, code="MISSING_EMAIL_FIELDS")
 
-    msg = MIMEMultipart()
+    msg = MIMEMultipart("mixed")
     msg['From'] = user_sender_email
     msg['To'] = dest_email
     msg['Subject'] = subject
 
-    stats = (report_data.get('stats') or {}) if isinstance(report_data, dict) else {}
-    body = f"""
-    Bonjour,
-    
-    Voici le résumé du rapport LogAnalyzer :
-    - Total des logs: {stats.get('total', 'N/A')}
-    - Erreurs: {stats.get('errors', 'N/A')}
-    - Warnings: {stats.get('warnings', 'N/A')}
-    
-    Commentaire : {comment}
+    try:
+        analysis_id_int = int(analysis_id)
+    except Exception:
+        return json_error("Invalid or missing analysis_id.", 400, code="INVALID_ANALYSIS_ID")
+
+    analysis = analyses_query_for_user().filter_by(id=analysis_id_int).first()
+    if not analysis:
+        return json_error("Analysis not found.", 404, code="ANALYSIS_NOT_FOUND")
+
+    stats = analysis.stats or {}
+    meta = analysis.meta or {}
+    pdf_path = meta.get("report_pdf_path")
+    if not pdf_path or not os.path.exists(pdf_path):
+        return json_error(
+            "PDF report not found for this analysis. Please export the PDF first (Report → Export PDF).",
+            400,
+            code="PDF_NOT_FOUND",
+        )
+
+    # Generate security summary for email body
+    seg = analysis.segments or {}
+    sample_lines = []
+    sample_lines += (seg.get("ERROR") or [])[:8]
+    sample_lines += (seg.get("WARNING") or [])[:6]
+    sample_lines += (seg.get("INFO") or [])[:3]
+    sample_text = "\n".join(sample_lines[:15]) or "\n".join((seg.get("INFO") or [])[:15]) or str(analysis.source_path or "")
+
+    sec = generate_security_summary(model=None, log_text=sample_text)
+    verdict = sec.get("ai_insights") or "N/A"
+    security_level = sec.get("security_level") or "MEDIUM"
+
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    filename = os.path.basename(meta.get("source_path") or analysis.source_path or "logs")
+
+    html_body = f"""
+    <html>
+      <body style="font-family: Inter, Arial, sans-serif; color:#111827;">
+        <h2 style="margin:0 0 8px 0;">LogAnalyzer — Security Audit Report</h2>
+        <p style="margin:0 0 16px 0; color:#4b5563;">Please find the PDF report attached.</p>
+
+        <table cellpadding="10" cellspacing="0" style="border-collapse:collapse; width:100%; max-width:680px; border:1px solid #e5e7eb;">
+          <tr style="background:#f8fafc;">
+            <td style="font-weight:700;">Date du Rapport</td>
+            <td>{now_str}</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">Fichier Analysé</td>
+            <td>{filename}</td>
+          </tr>
+          <tr style="background:#f8fafc;">
+            <td style="font-weight:700;">AI Insights</td>
+            <td>{verdict or "N/A"}</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;">Security Level</td>
+            <td>{security_level}</td>
+          </tr>
+        </table>
+
+        <p style="margin-top:16px; color:#6b7280; font-size:12px;">
+          Stats: total={stats.get('total','N/A')} errors={stats.get('errors','N/A')} warnings={stats.get('warnings','N/A')} info={stats.get('info','N/A')}
+        </p>
+
+      </body>
+    </html>
     """
-    msg.attach(MIMEText(body, 'plain'))
+
+    alt = MIMEMultipart("alternative")
+    alt.attach(MIMEText(html_body, "html", "utf-8"))
+    msg.attach(alt)
+
+    if comment:
+        msg.attach(MIMEText(comment, "plain", "utf-8"))
+
+    with open(pdf_path, "rb") as fp:
+        part = MIMEApplication(fp.read(), _subtype="pdf")
+    part.add_header("Content-Disposition", "attachment", filename=os.path.basename(pdf_path))
+    msg.attach(part)
 
     try:
         _smtp_send_with_fallback(user_sender_email, user_app_password, msg)
         return jsonify({"status": "success", "message": "Email envoyé avec succès !"})
     except Exception as e:
         return json_error(f"Erreur: {str(e)}", 500, code="SMTP_SEND_FAILED")
+
+
+# Backwards-compatible alias (if frontend uses a different route name)
+@app.route('/send-report-email', methods=['POST'])
+@login_required
+def send_report_email():
+    return send_email()
 
 
 @app.route('/api/analyses', methods=['GET'])

@@ -363,6 +363,23 @@ function downloadPDF() {
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
-    // Utilisation de la bibliothèque html2pdf pour la conversion
-    html2pdf().set(opt).from(element).save();
+    const rawData = localStorage.getItem('lastAnalysis');
+    const analysisId = rawData ? (JSON.parse(rawData).analysis_id || null) : null;
+
+    // Utilisation de la bibliothèque html2pdf pour la conversion + upload server-side
+    const worker = html2pdf().set(opt).from(element);
+
+    worker.outputPdf('blob').then(async (blob) => {
+        if (analysisId) {
+            try {
+                const fd = new FormData();
+                fd.append('pdf', blob, opt.filename);
+                await fetch(`/api/analyses/${analysisId}/report-pdf`, { method: 'POST', body: fd });
+            } catch (e) {
+                console.error('PDF upload failed', e);
+            }
+        }
+        // Still download locally
+        await worker.save();
+    });
 }
