@@ -1,15 +1,14 @@
 .stat-card {
     border: none;
-    border-radius: 1.2rem;
-    background: #ffffff;
+    border-radius: var(--radius-lg);
+    background: transparent;
     padding: 1.5rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: all 0.3s var(--ease-saas);
+    box-shadow: none;
 }
 
 .stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 24px rgba(109, 40, 217, 0.1);
+    transform: translateY(-3px);
 }
 
 .stat-icon {
@@ -29,13 +28,15 @@
 }
 
 .btn-primary-custom {
-    background: #6d28d9;
-    border: none;
-    border-radius: 12px;
-    padding: 12px 24px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-600) 100%);
+    border: 0;
+    border-radius: 999px;
+    padding: 0.7rem 1.1rem;
     font-weight: 600;
+    box-shadow: 0 10px 24px rgba(0, 123, 255, 0.18);
 }
 
 .btn-primary-custom:hover {
-    background: #5b21b6;
+    transform: translateY(-1px);
+    box-shadow: 0 14px 30px rgba(0, 123, 255, 0.22);
 }

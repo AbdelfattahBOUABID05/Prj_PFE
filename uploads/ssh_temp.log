@@ -1,556 +1,368 @@
-2026-04-03T12:15:08-0400 INFO --- logging initialized ---
-2026-04-03T12:15:08-0400 DDEBUG timer: config: 20 ms
-2026-04-03T12:15:09-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
-2026-04-03T12:15:09-0400 DEBUG DNF version: 4.14.0
-2026-04-03T12:15:09-0400 DDEBUG Command: dnf install openssh-server 
-2026-04-03T12:15:09-0400 DDEBUG Installroot: /
-2026-04-03T12:15:09-0400 DDEBUG Releasever: 38
-2026-04-03T12:15:09-0400 DEBUG cachedir: /var/cache/dnf
-2026-04-03T12:15:09-0400 DDEBUG Base command: install
-2026-04-03T12:15:09-0400 DDEBUG Extra commands: ['install', 'openssh-server']
-2026-04-03T12:15:09-0400 DEBUG User-Agent: constructed: 'libdnf (Fedora Linux 38; workstation; Linux.x86_64)'
-2026-04-03T12:15:11-0400 DEBUG dépôt : téléchargement à distance en provenance de : fedora
-2026-04-03T12:15:11-0400 DEBUG countme: no event for fedora: budget to spend: 1
-2026-04-03T12:15:48-0400 DEBUG error: Curl error (28): Timeout was reached for http://fedora-archive.mirror.liquidtelecom.com/archive/fedora/linux/releases/38/Everything/x86_64/os/repodata/dfa2aec8d2e83459677d698542f1a190d92815888668d027b21dfd46fb86ce01-primary.xml.zck [Operation too slow. Less than 1000 bytes/sec transferred the last 30 seconds] (http://fedora-archive.mirror.liquidtelecom.com/archive/fedora/linux/releases/38/Everything/x86_64/os/repodata/dfa2aec8d2e83459677d698542f1a190d92815888668d027b21dfd46fb86ce01-primary.xml.zck).
-2026-04-03T12:15:49-0400 DEBUG error: Curl error (28): Timeout was reached for http://fedora-archive.mirror.liquidtelecom.com/archive/fedora/linux/releases/38/Everything/x86_64/os/repodata/1ab074f803c33a54eac36ffee514cfe9a60a927416b3ddc34defeaf4b1d63776-comps-Everything.x86_64.xml [Operation too slow. Less than 1000 bytes/sec transferred the last 30 seconds] (http://fedora-archive.mirror.liquidtelecom.com/archive/fedora/linux/releases/38/Everything/x86_64/os/repodata/1ab074f803c33a54eac36ffee514cfe9a60a927416b3ddc34defeaf4b1d63776-comps-Everything.x86_64.xml).
-2026-04-03T12:30:47-0400 DEBUG fedora : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:37:10.
-2026-04-03T12:30:47-0400 DEBUG dépôt : téléchargement à distance en provenance de : fedora-cisco-openh264
-2026-04-03T12:30:55-0400 DEBUG fedora-cisco-openh264 : utilisation des métadonnées depuis le mar. 12 mars 2024 08:17:00.
-2026-04-03T12:30:55-0400 DEBUG dépôt : téléchargement à distance en provenance de : fedora-modular
-2026-04-03T12:30:55-0400 DEBUG countme: no event for fedora-modular: window already counted
-2026-04-03T12:32:35-0400 DEBUG fedora-modular : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:30:47.
-2026-04-03T12:32:35-0400 DEBUG dépôt : téléchargement à distance en provenance de : updates
-2026-04-03T12:32:35-0400 DEBUG countme: event triggered for updates: bucket 1
-2026-04-03T12:33:52-0400 DEBUG error: Curl error (28): Timeout was reached for http://fedora-archive.mirror.liquidtelecom.com/archive/fedora/linux/updates/38/Everything/x86_64/repodata/297caac629291087e27cb50640e0cbc1f2f49ed0d3aee5b5e2f6057c35eb5fcf-prestodelta.xml.zck [Operation too slow. Less than 1000 bytes/sec transferred the last 30 seconds] (http://fedora-archive.mirror.liquidtelecom.com/archive/fedora/linux/updates/38/Everything/x86_64/repodata/297caac629291087e27cb50640e0cbc1f2f49ed0d3aee5b5e2f6057c35eb5fcf-prestodelta.xml.zck).
-2026-04-03T12:38:51-0400 DEBUG error: Curl error (28): Timeout was reached for http://fedora-archive.mirror.liquidtelecom.com/archive/fedora/linux/updates/38/Everything/x86_64/repodata/b9668765e893d475b1f9c0f768f52a570c8875d155c557d433d2d21600997520-filelists.xml.zck [Operation too slow. Less than 1000 bytes/sec transferred the last 30 seconds] (http://fedora-archive.mirror.liquidtelecom.com/archive/fedora/linux/updates/38/Everything/x86_64/repodata/b9668765e893d475b1f9c0f768f52a570c8875d155c557d433d2d21600997520-filelists.xml.zck).
-2026-04-03T12:51:19-0400 DEBUG updates : utilisation des métadonnées depuis le mar. 21 mai 2024 11:15:01.
-2026-04-03T12:51:19-0400 DEBUG dépôt : téléchargement à distance en provenance de : updates-modular
-2026-04-03T12:51:19-0400 DEBUG countme: no event for updates-modular: budget to spend: 2
-2026-04-03T12:51:53-0400 DEBUG error: Curl error (28): Timeout was reached for http://fedora-archive.mirror.liquidtelecom.com/archive/fedora/linux/updates/38/Modular/x86_64/repodata/repomd.xml [Operation too slow. Less than 1000 bytes/sec transferred the last 30 seconds] (http://fedora-archive.mirror.liquidtelecom.com/archive/fedora/linux/updates/38/Modular/x86_64/repodata/repomd.xml).
-2026-04-03T12:52:26-0400 DEBUG error: Curl error (28): Timeout was reached for http://fedora-archive.mirror.liquidtelecom.com/archive/fedora/linux/updates/38/Modular/x86_64/repodata/cbadcdfb4e7f2b358a6311e02cce69931239a3b6a2dcb80d7d6100181bb85d87-primary.xml.zck [Operation too slow. Less than 1000 bytes/sec transferred the last 30 seconds] (http://fedora-archive.mirror.liquidtelecom.com/archive/fedora/linux/updates/38/Modular/x86_64/repodata/cbadcdfb4e7f2b358a6311e02cce69931239a3b6a2dcb80d7d6100181bb85d87-primary.xml.zck).
-2026-04-03T12:52:26-0400 DEBUG error: Curl error (28): Timeout was reached for http://fedora-archive.mirror.liquidtelecom.com/archive/fedora/linux/updates/38/Modular/x86_64/repodata/4ab542a1d5e4f8f8d4720be5188b5941789405491a629f9f570a970786e248a6-filelists.xml.zck [Operation too slow. Less than 1000 bytes/sec transferred the last 30 seconds] (http://fedora-archive.mirror.liquidtelecom.com/archive/fedora/linux/updates/38/Modular/x86_64/repodata/4ab542a1d5e4f8f8d4720be5188b5941789405491a629f9f570a970786e248a6-filelists.xml.zck).
-2026-04-03T12:52:53-0400 DEBUG updates-modular : utilisation des métadonnées depuis le mer. 06 mars 2024 20:02:11.
-2026-04-03T12:52:56-0400 INFO Dernière vérification de l’expiration des métadonnées effectuée il y a 0:00:02 le ven. 03 avril 2026 12:52:32.
-2026-04-03T12:54:40-0400 DDEBUG timer: sack setup: 2370767 ms
-2026-04-03T12:54:41-0400 DEBUG Completion plugin: Generating completion cache...
-2026-04-03T12:54:50-0400 INFO Le paquet openssh-server-9.0p1-14.fc38.1.x86_64 est déjà installé.
-2026-04-03T12:54:50-0400 DEBUG --> Début de la résolution des dépendances
-2026-04-03T12:54:52-0400 DEBUG --> Résolution des dépendances terminée
-2026-04-03T12:54:52-0400 DDEBUG timer: depsolve: 2024 ms
-2026-04-03T12:54:52-0400 INFO Dépendances résolues.
-2026-04-03T12:54:53-0400 INFO Rien à faire.
-2026-04-03T12:54:53-0400 INFO Terminé !
-2026-04-03T12:54:53-0400 DDEBUG Cleaning up.
-2026-04-04T11:04:07-0400 INFO --- logging initialized ---
-2026-04-04T11:04:07-0400 DDEBUG timer: config: 122 ms
-2026-04-04T11:04:09-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
-2026-04-04T11:04:09-0400 DEBUG DNF version: 4.14.0
-2026-04-04T11:04:09-0400 DDEBUG Command: dnf makecache --timer 
-2026-04-04T11:04:09-0400 DDEBUG Installroot: /
-2026-04-04T11:04:09-0400 DDEBUG Releasever: 38
-2026-04-04T11:04:09-0400 DEBUG cachedir: /var/cache/dnf
-2026-04-04T11:04:09-0400 DDEBUG Base command: makecache
-2026-04-04T11:04:09-0400 DDEBUG Extra commands: ['makecache', '--timer']
-2026-04-04T11:04:09-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
-2026-04-04T11:04:10-0400 WARNING N’a pas pu déterminer l’heure du dernier makecache.
-2026-04-04T11:04:12-0400 DEBUG fedora : a expiré et sera réinitialisé.
-2026-04-04T11:04:12-0400 DEBUG fedora-cisco-openh264 : a expiré et sera réinitialisé.
-2026-04-04T11:04:13-0400 DEBUG fedora-modular : a expiré et sera réinitialisé.
-2026-04-04T11:04:15-0400 DEBUG updates : a expiré et sera réinitialisé.
-2026-04-04T11:04:15-0400 DEBUG updates-modular : a expiré et sera réinitialisé.
-2026-04-04T11:04:15-0400 DEBUG countme: no event for fedora: window already counted
-2026-04-04T11:04:23-0400 DEBUG relance : « fedora » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-04T11:04:27-0400 DEBUG fedora : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:37:10.
-2026-04-04T11:04:29-0400 DEBUG relance : « fedora-cisco-openh264 » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-04T11:04:29-0400 DEBUG fedora-cisco-openh264 : utilisation des métadonnées depuis le mar. 12 mars 2024 08:17:00.
-2026-04-04T11:04:29-0400 DEBUG countme: no event for fedora-modular: window already counted
-2026-04-04T11:05:17-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-modular-38&arch=x86_64 [Operation too slow. Less than 1000 bytes/sec transferred the last 30 seconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-modular-38&arch=x86_64).
-2026-04-04T11:05:19-0400 DEBUG relance : « fedora-modular » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-04T11:05:19-0400 DEBUG fedora-modular : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:30:47.
-2026-04-04T11:05:19-0400 DEBUG countme: no event for updates: window already counted
-2026-04-04T11:05:21-0400 DEBUG relance : « updates » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-04T11:05:26-0400 DEBUG updates : utilisation des métadonnées depuis le mar. 21 mai 2024 11:15:01.
-2026-04-04T11:05:26-0400 DEBUG countme: event triggered for updates-modular: bucket 1
-2026-04-04T11:05:28-0400 DEBUG relance : « updates-modular » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-04T11:05:29-0400 DEBUG updates-modular : utilisation des métadonnées depuis le mer. 06 mars 2024 20:02:11.
-2026-04-04T11:05:29-0400 DEBUG User-Agent: constructed: 'libdnf (Fedora Linux 38; workstation; Linux.x86_64)'
-2026-04-04T11:05:31-0400 DDEBUG timer: sack setup: 75623 ms
-2026-04-04T11:05:31-0400 INFO Cache des métadonnées créé.
-2026-04-04T11:05:31-0400 DDEBUG Cleaning up.
-2026-04-04T11:44:59-0400 INFO --- logging initialized ---
-2026-04-04T11:44:59-0400 DDEBUG timer: config: 502 ms
-2026-04-04T11:45:01-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
-2026-04-04T11:45:01-0400 DEBUG DNF version: 4.14.0
-2026-04-04T11:45:01-0400 DDEBUG Command: dnf makecache --timer 
-2026-04-04T11:45:01-0400 DDEBUG Installroot: /
-2026-04-04T11:45:01-0400 DDEBUG Releasever: 38
-2026-04-04T11:45:01-0400 DEBUG cachedir: /var/cache/dnf
-2026-04-04T11:45:01-0400 DDEBUG Base command: makecache
-2026-04-04T11:45:01-0400 DDEBUG Extra commands: ['makecache', '--timer']
-2026-04-04T11:45:01-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
-2026-04-04T11:45:02-0400 INFO Cache des métadonnées mis à jour récemment.
-2026-04-04T11:45:02-0400 DDEBUG Cleaning up.
-2026-04-04T13:31:01-0400 INFO --- logging initialized ---
-2026-04-04T13:31:01-0400 DDEBUG timer: config: 145 ms
-2026-04-04T13:31:03-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
-2026-04-04T13:31:03-0400 DEBUG DNF version: 4.14.0
-2026-04-04T13:31:03-0400 DDEBUG Command: dnf makecache --timer 
-2026-04-04T13:31:03-0400 DDEBUG Installroot: /
-2026-04-04T13:31:03-0400 DDEBUG Releasever: 38
-2026-04-04T13:31:03-0400 DEBUG cachedir: /var/cache/dnf
-2026-04-04T13:31:03-0400 DDEBUG Base command: makecache
-2026-04-04T13:31:03-0400 DDEBUG Extra commands: ['makecache', '--timer']
-2026-04-04T13:31:04-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
-2026-04-04T13:31:04-0400 INFO Cache des métadonnées mis à jour récemment.
-2026-04-04T13:31:04-0400 DDEBUG Cleaning up.
-2026-04-04T14:35:58-0400 INFO --- logging initialized ---
-2026-04-04T14:35:58-0400 DDEBUG timer: config: 109 ms
-2026-04-04T14:36:03-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
-2026-04-04T14:36:03-0400 DEBUG DNF version: 4.14.0
-2026-04-04T14:36:03-0400 DDEBUG Command: dnf makecache --timer 
-2026-04-04T14:36:03-0400 DDEBUG Installroot: /
-2026-04-04T14:36:03-0400 DDEBUG Releasever: 38
-2026-04-04T14:36:03-0400 DEBUG cachedir: /var/cache/dnf
-2026-04-04T14:36:03-0400 DDEBUG Base command: makecache
-2026-04-04T14:36:03-0400 DDEBUG Extra commands: ['makecache', '--timer']
-2026-04-04T14:36:03-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
-2026-04-04T14:37:20-0400 DEBUG fedora : a expiré et sera réinitialisé.
-2026-04-04T14:37:20-0400 DEBUG fedora-cisco-openh264 : a expiré et sera réinitialisé.
-2026-04-04T14:37:22-0400 DEBUG fedora-modular : a expiré et sera réinitialisé.
-2026-04-04T14:37:41-0400 DEBUG updates : a expiré et sera réinitialisé.
-2026-04-04T14:37:42-0400 DEBUG updates-modular : a expiré et sera réinitialisé.
-2026-04-04T14:37:43-0400 DEBUG countme: no event for fedora: window already counted
-2026-04-04T14:38:25-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30001 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-04T14:39:17-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30003 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-04T14:40:41-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30001 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-04T14:41:44-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30001 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-04T14:42:59-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30051 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-04T14:43:58-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30000 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-04T14:44:30-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30001 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-04T14:45:01-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30013 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-04T14:45:33-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30001 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-04T14:46:26-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30001 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-04T14:47:18-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30010 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-04T14:48:11-0400 DEBUG error: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30001 milliseconds] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-04T14:48:11-0400 WARNING Errors during downloading metadata for repository 'fedora':
-  - Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30013 milliseconds]
-  - Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30000 milliseconds]
-  - Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30003 milliseconds]
-  - Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30001 milliseconds]
-  - Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30051 milliseconds]
-  - Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30010 milliseconds]
-2026-04-04T14:48:11-0400 DDEBUG Cleaning up.
-2026-04-04T14:48:11-0400 SUBDEBUG 
-Traceback (most recent call last):
-  File "/usr/lib/python3.11/site-packages/dnf/repo.py", line 573, in load
-    ret = self._repo.load()
-          ^^^^^^^^^^^^^^^^^
-  File "/usr/lib64/python3.11/site-packages/libdnf/repo.py", line 324, in load
-    return _repo.Repo_load(self)
-           ^^^^^^^^^^^^^^^^^^^^^
-libdnf._error.Error: Échec du téléchargement des métadonnées pour le dépôt « fedora » : Cannot prepare internal mirrorlist: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30001 milliseconds]
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/usr/lib/python3.11/site-packages/dnf/cli/main.py", line 67, in main
-    return _main(base, args, cli_class, option_parser_class)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/site-packages/dnf/cli/main.py", line 106, in _main
-    return cli_run(cli, base)
-           ^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/site-packages/dnf/cli/main.py", line 122, in cli_run
-    cli.run()
-  File "/usr/lib/python3.11/site-packages/dnf/cli/cli.py", line 1057, in run
-    return self.command.run()
-           ^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/site-packages/dnf/cli/commands/makecache.py", line 50, in run
-    return self.base.update_cache(timer)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/site-packages/dnf/base.py", line 377, in update_cache
-    self.fill_sack(load_system_repo=False, load_available_repos=True)  # performs the md sync
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/site-packages/dnf/base.py", line 406, in fill_sack
-    self._add_repo_to_sack(r)
-  File "/usr/lib/python3.11/site-packages/dnf/base.py", line 141, in _add_repo_to_sack
-    repo.load()
-  File "/usr/lib/python3.11/site-packages/dnf/repo.py", line 580, in load
-    raise dnf.exceptions.RepoError(str(e))
-dnf.exceptions.RepoError: Échec du téléchargement des métadonnées pour le dépôt « fedora » : Cannot prepare internal mirrorlist: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30001 milliseconds]
-2026-04-04T14:48:11-0400 CRITICAL Erreur : Échec du téléchargement des métadonnées pour le dépôt « fedora » : Cannot prepare internal mirrorlist: Curl error (28): Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [Resolving timed out after 30001 milliseconds]
-2026-04-04T16:45:00-0400 INFO --- logging initialized ---
-2026-04-04T16:45:00-0400 DDEBUG timer: config: 558 ms
-2026-04-04T16:45:02-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
-2026-04-04T16:45:02-0400 DEBUG DNF version: 4.14.0
-2026-04-04T16:45:02-0400 DDEBUG Command: dnf makecache --timer 
-2026-04-04T16:45:02-0400 DDEBUG Installroot: /
-2026-04-04T16:45:02-0400 DDEBUG Releasever: 38
-2026-04-04T16:45:02-0400 DEBUG cachedir: /var/cache/dnf
-2026-04-04T16:45:02-0400 DDEBUG Base command: makecache
-2026-04-04T16:45:02-0400 DDEBUG Extra commands: ['makecache', '--timer']
-2026-04-04T16:45:02-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
-2026-04-04T16:45:02-0400 INFO Cache des métadonnées mis à jour récemment.
-2026-04-04T16:45:02-0400 DDEBUG Cleaning up.
-2026-04-05T08:42:10-0400 INFO --- logging initialized ---
-2026-04-05T08:42:10-0400 DDEBUG timer: config: 713 ms
-2026-04-05T08:42:23-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
-2026-04-05T08:42:23-0400 DEBUG DNF version: 4.14.0
-2026-04-05T08:42:23-0400 DDEBUG Command: dnf makecache --timer 
-2026-04-05T08:42:23-0400 DDEBUG Installroot: /
-2026-04-05T08:42:23-0400 DDEBUG Releasever: 38
-2026-04-05T08:42:23-0400 DEBUG cachedir: /var/cache/dnf
-2026-04-05T08:42:23-0400 DDEBUG Base command: makecache
-2026-04-05T08:42:23-0400 DDEBUG Extra commands: ['makecache', '--timer']
-2026-04-05T08:42:24-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
-2026-04-05T08:42:27-0400 DEBUG fedora : a expiré et sera réinitialisé.
-2026-04-05T08:42:27-0400 DEBUG fedora-cisco-openh264 : a expiré et sera réinitialisé.
-2026-04-05T08:42:28-0400 DEBUG fedora-modular : a expiré et sera réinitialisé.
-2026-04-05T08:42:35-0400 DEBUG updates : a expiré et sera réinitialisé.
-2026-04-05T08:42:36-0400 DEBUG updates-modular : a expiré et sera réinitialisé.
-2026-04-05T08:42:37-0400 DEBUG countme: no event for fedora: window already counted
-2026-04-05T08:42:39-0400 DEBUG relance : « fedora » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-05T08:43:38-0400 DEBUG fedora : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:37:10.
-2026-04-05T08:43:39-0400 DEBUG relance : « fedora-cisco-openh264 » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-05T08:43:40-0400 DEBUG fedora-cisco-openh264 : utilisation des métadonnées depuis le mar. 12 mars 2024 08:17:00.
-2026-04-05T08:43:40-0400 DEBUG countme: no event for fedora-modular: window already counted
-2026-04-05T08:43:41-0400 DEBUG relance : « fedora-modular » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-05T08:43:41-0400 DEBUG fedora-modular : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:30:47.
-2026-04-05T08:43:41-0400 DEBUG countme: no event for updates: window already counted
-2026-04-05T08:43:42-0400 DEBUG relance : « updates » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-05T08:44:44-0400 DEBUG updates : utilisation des métadonnées depuis le mar. 21 mai 2024 11:15:01.
-2026-04-05T08:44:45-0400 DEBUG countme: no event for updates-modular: window already counted
-2026-04-05T08:44:47-0400 DEBUG relance : « updates-modular » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-05T08:44:49-0400 DEBUG updates-modular : utilisation des métadonnées depuis le mer. 06 mars 2024 20:02:11.
-2026-04-05T08:44:49-0400 DEBUG User-Agent: constructed: 'libdnf (Fedora Linux 38; workstation; Linux.x86_64)'
-2026-04-05T08:44:53-0400 DDEBUG timer: sack setup: 136576 ms
-2026-04-05T08:44:53-0400 INFO Cache des métadonnées créé.
-2026-04-05T08:44:53-0400 DDEBUG Cleaning up.
-2026-04-05T09:29:28-0400 INFO --- logging initialized ---
-2026-04-05T09:29:28-0400 DDEBUG timer: config: 242 ms
-2026-04-05T09:29:30-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
-2026-04-05T09:29:30-0400 DEBUG DNF version: 4.14.0
-2026-04-05T09:29:30-0400 DDEBUG Command: dnf check-update 
-2026-04-05T09:29:30-0400 DDEBUG Installroot: /
-2026-04-05T09:29:30-0400 DDEBUG Releasever: 38
-2026-04-05T09:29:30-0400 DEBUG cachedir: /var/cache/dnf
-2026-04-05T09:29:30-0400 DDEBUG Base command: check-update
-2026-04-05T09:29:30-0400 DDEBUG Extra commands: ['check-update']
-2026-04-05T09:29:31-0400 DEBUG User-Agent: constructed: 'libdnf (Fedora Linux 38; workstation; Linux.x86_64)'
-2026-04-05T09:29:38-0400 DEBUG dépôt : utilisation du cache pour : fedora
-2026-04-05T09:29:57-0400 DEBUG fedora : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:37:10.
-2026-04-05T09:29:57-0400 DEBUG dépôt : utilisation du cache pour : fedora-cisco-openh264
-2026-04-05T09:29:57-0400 DEBUG fedora-cisco-openh264 : utilisation des métadonnées depuis le mar. 12 mars 2024 08:17:00.
-2026-04-05T09:29:57-0400 DEBUG dépôt : utilisation du cache pour : fedora-modular
-2026-04-05T09:29:57-0400 DEBUG fedora-modular : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:30:47.
-2026-04-05T09:30:05-0400 DEBUG dépôt : utilisation du cache pour : updates
-2026-04-05T09:30:22-0400 DEBUG updates : utilisation des métadonnées depuis le mar. 21 mai 2024 11:15:01.
-2026-04-05T09:30:22-0400 DEBUG dépôt : utilisation du cache pour : updates-modular
-2026-04-05T09:30:23-0400 DEBUG updates-modular : utilisation des métadonnées depuis le mer. 06 mars 2024 20:02:11.
-2026-04-05T09:30:23-0400 INFO Dernière vérification de l’expiration des métadonnées effectuée il y a 0:45:36 le dim. 05 avril 2026 08:44:47.
-2026-04-05T09:30:24-0400 DDEBUG timer: sack setup: 54044 ms
-2026-04-05T09:30:27-0400 DDEBUG Cleaning up.
-2026-04-06T04:03:48-0400 INFO --- logging initialized ---
-2026-04-06T04:03:48-0400 DDEBUG timer: config: 622 ms
-2026-04-06T04:03:50-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
-2026-04-06T04:03:50-0400 DEBUG DNF version: 4.14.0
-2026-04-06T04:03:50-0400 DDEBUG Command: dnf makecache --timer 
-2026-04-06T04:03:50-0400 DDEBUG Installroot: /
-2026-04-06T04:03:50-0400 DDEBUG Releasever: 38
-2026-04-06T04:03:50-0400 DEBUG cachedir: /var/cache/dnf
-2026-04-06T04:03:50-0400 DDEBUG Base command: makecache
-2026-04-06T04:03:50-0400 DDEBUG Extra commands: ['makecache', '--timer']
-2026-04-06T04:03:50-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
-2026-04-06T04:04:02-0400 DEBUG fedora : a expiré et sera réinitialisé.
-2026-04-06T04:04:02-0400 DEBUG fedora-cisco-openh264 : a expiré et sera réinitialisé.
-2026-04-06T04:04:02-0400 DEBUG fedora-modular : a expiré et sera réinitialisé.
-2026-04-06T04:04:13-0400 DEBUG updates : a expiré et sera réinitialisé.
-2026-04-06T04:04:14-0400 DEBUG updates-modular : a expiré et sera réinitialisé.
-2026-04-06T04:04:14-0400 DEBUG countme: no event for fedora: budget to spend: 1
-2026-04-06T04:04:27-0400 DEBUG relance : « fedora » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-06T04:05:22-0400 DEBUG fedora : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:37:10.
-2026-04-06T04:05:32-0400 DEBUG relance : « fedora-cisco-openh264 » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-06T04:05:32-0400 DEBUG fedora-cisco-openh264 : utilisation des métadonnées depuis le mar. 12 mars 2024 08:17:00.
-2026-04-06T04:05:32-0400 DEBUG countme: no event for fedora-modular: budget to spend: 3
-2026-04-06T04:05:36-0400 DEBUG relance : « fedora-modular » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-06T04:05:37-0400 DEBUG fedora-modular : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:30:47.
-2026-04-06T04:05:37-0400 DEBUG countme: no event for updates: budget to spend: 1
-2026-04-06T04:05:38-0400 DEBUG relance : « updates » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-06T04:06:10-0400 DEBUG updates : utilisation des métadonnées depuis le mar. 21 mai 2024 11:15:01.
-2026-04-06T04:06:10-0400 DEBUG countme: event triggered for updates-modular: bucket 1
-2026-04-06T04:06:12-0400 DEBUG relance : « updates-modular » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-06T04:06:13-0400 DEBUG updates-modular : utilisation des métadonnées depuis le mer. 06 mars 2024 20:02:11.
-2026-04-06T04:06:13-0400 DEBUG User-Agent: constructed: 'libdnf (Fedora Linux 38; workstation; Linux.x86_64)'
-2026-04-06T04:06:15-0400 DDEBUG timer: sack setup: 121046 ms
-2026-04-06T04:06:15-0400 INFO Cache des métadonnées créé.
-2026-04-06T04:06:15-0400 DDEBUG Cleaning up.
-2026-04-06T05:52:53-0400 INFO --- logging initialized ---
-2026-04-06T05:52:53-0400 DDEBUG timer: config: 1347 ms
-2026-04-06T05:53:01-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
-2026-04-06T05:53:01-0400 DEBUG DNF version: 4.14.0
-2026-04-06T05:53:01-0400 DDEBUG Command: dnf makecache --timer 
-2026-04-06T05:53:01-0400 DDEBUG Installroot: /
-2026-04-06T05:53:01-0400 DDEBUG Releasever: 38
-2026-04-06T05:53:01-0400 DEBUG cachedir: /var/cache/dnf
-2026-04-06T05:53:01-0400 DDEBUG Base command: makecache
-2026-04-06T05:53:01-0400 DDEBUG Extra commands: ['makecache', '--timer']
-2026-04-06T05:53:02-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
-2026-04-06T05:53:03-0400 INFO Cache des métadonnées mis à jour récemment.
-2026-04-06T05:53:03-0400 DDEBUG Cleaning up.
-2026-04-06T07:28:10-0400 INFO --- logging initialized ---
-2026-04-06T07:28:10-0400 DDEBUG timer: config: 1588 ms
-2026-04-06T07:28:29-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
-2026-04-06T07:28:29-0400 DEBUG DNF version: 4.14.0
-2026-04-06T07:28:29-0400 DDEBUG Command: dnf makecache --timer 
-2026-04-06T07:28:29-0400 DDEBUG Installroot: /
-2026-04-06T07:28:29-0400 DDEBUG Releasever: 38
-2026-04-06T07:28:29-0400 DEBUG cachedir: /var/cache/dnf
-2026-04-06T07:28:29-0400 DDEBUG Base command: makecache
-2026-04-06T07:28:29-0400 DDEBUG Extra commands: ['makecache', '--timer']
-2026-04-06T07:28:30-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
-2026-04-06T07:30:08-0400 DEBUG fedora : a expiré et sera réinitialisé.
-2026-04-06T07:30:09-0400 DEBUG fedora-cisco-openh264 : a expiré et sera réinitialisé.
-2026-04-06T07:30:16-0400 DEBUG fedora-modular : a expiré et sera réinitialisé.
-2026-04-06T07:30:46-0400 DEBUG updates : a expiré et sera réinitialisé.
-2026-04-06T07:30:47-0400 DEBUG updates-modular : a expiré et sera réinitialisé.
-2026-04-06T07:30:48-0400 DEBUG countme: no event for fedora: window already counted
-2026-04-06T07:30:55-0400 DEBUG relance : « fedora » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-06T07:33:51-0400 DEBUG fedora : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:37:10.
-2026-04-06T07:33:56-0400 DEBUG relance : « fedora-cisco-openh264 » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-06T07:33:56-0400 DEBUG fedora-cisco-openh264 : utilisation des métadonnées depuis le mar. 12 mars 2024 08:17:00.
-2026-04-06T07:33:56-0400 DEBUG countme: no event for fedora-modular: budget to spend: 1
-2026-04-06T07:33:58-0400 DEBUG relance : « fedora-modular » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-06T07:33:58-0400 DEBUG fedora-modular : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:30:47.
-2026-04-06T07:33:58-0400 DEBUG countme: no event for updates: window already counted
-2026-04-06T07:33:59-0400 DEBUG relance : « updates » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-06T07:35:55-0400 DEBUG updates : utilisation des métadonnées depuis le mar. 21 mai 2024 11:15:01.
-2026-04-06T07:35:55-0400 DEBUG countme: no event for updates-modular: window already counted
-2026-04-06T07:35:57-0400 DEBUG relance : « updates-modular » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-06T07:35:57-0400 DEBUG updates-modular : utilisation des métadonnées depuis le mer. 06 mars 2024 20:02:11.
-2026-04-06T07:35:57-0400 DEBUG User-Agent: constructed: 'libdnf (Fedora Linux 38; workstation; Linux.x86_64)'
-2026-04-06T07:36:00-0400 DDEBUG timer: sack setup: 313148 ms
-2026-04-06T07:36:00-0400 INFO Cache des métadonnées créé.
-2026-04-06T07:36:00-0400 DDEBUG Cleaning up.
-2026-04-06T09:28:43-0400 INFO --- logging initialized ---
-2026-04-06T09:28:43-0400 DDEBUG timer: config: 1104 ms
-2026-04-06T09:28:49-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
-2026-04-06T09:28:49-0400 DEBUG DNF version: 4.14.0
-2026-04-06T09:28:49-0400 DDEBUG Command: dnf makecache --timer 
-2026-04-06T09:28:49-0400 DDEBUG Installroot: /
-2026-04-06T09:28:49-0400 DDEBUG Releasever: 38
-2026-04-06T09:28:49-0400 DEBUG cachedir: /var/cache/dnf
-2026-04-06T09:28:49-0400 DDEBUG Base command: makecache
-2026-04-06T09:28:49-0400 DDEBUG Extra commands: ['makecache', '--timer']
-2026-04-06T09:28:50-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
-2026-04-06T09:28:50-0400 INFO Cache des métadonnées mis à jour récemment.
-2026-04-06T09:28:50-0400 DDEBUG Cleaning up.
-2026-04-06T11:13:35-0400 INFO --- logging initialized ---
-2026-04-06T11:13:35-0400 DDEBUG timer: config: 1073 ms
-2026-04-06T11:13:39-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
-2026-04-06T11:13:39-0400 DEBUG DNF version: 4.14.0
-2026-04-06T11:13:39-0400 DDEBUG Command: dnf makecache --timer 
-2026-04-06T11:13:39-0400 DDEBUG Installroot: /
-2026-04-06T11:13:39-0400 DDEBUG Releasever: 38
-2026-04-06T11:13:39-0400 DEBUG cachedir: /var/cache/dnf
-2026-04-06T11:13:39-0400 DDEBUG Base command: makecache
-2026-04-06T11:13:39-0400 DDEBUG Extra commands: ['makecache', '--timer']
-2026-04-06T11:13:40-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
-2026-04-06T11:14:53-0400 DEBUG fedora : a expiré et sera réinitialisé.
-2026-04-06T11:14:53-0400 DEBUG fedora-cisco-openh264 : a expiré et sera réinitialisé.
-2026-04-06T11:14:56-0400 DEBUG fedora-modular : a expiré et sera réinitialisé.
-2026-04-06T11:15:25-0400 DEBUG updates : a expiré et sera réinitialisé.
-2026-04-06T11:15:26-0400 DEBUG updates-modular : a expiré et sera réinitialisé.
-2026-04-06T11:15:27-0400 DEBUG countme: no event for fedora: window already counted
-2026-04-06T11:15:31-0400 DEBUG relance : « fedora » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-06T11:15:56-0400 DEBUG fedora : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:37:10.
-2026-04-06T11:15:59-0400 DEBUG relance : « fedora-cisco-openh264 » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-06T11:15:59-0400 DEBUG fedora-cisco-openh264 : utilisation des métadonnées depuis le mar. 12 mars 2024 08:17:00.
-2026-04-06T11:15:59-0400 DEBUG countme: event triggered for fedora-modular: bucket 1
-2026-04-06T11:16:01-0400 DEBUG relance : « fedora-modular » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-06T11:16:01-0400 DEBUG fedora-modular : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:30:47.
-2026-04-06T11:16:01-0400 DEBUG countme: no event for updates: window already counted
-2026-04-06T11:16:02-0400 DEBUG relance : « updates » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-06T11:16:22-0400 DEBUG updates : utilisation des métadonnées depuis le mar. 21 mai 2024 11:15:01.
-2026-04-06T11:16:22-0400 DEBUG countme: no event for updates-modular: window already counted
-2026-04-06T11:16:26-0400 DEBUG relance : « updates-modular » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-06T11:16:26-0400 DEBUG updates-modular : utilisation des métadonnées depuis le mer. 06 mars 2024 20:02:11.
-2026-04-06T11:16:26-0400 DEBUG User-Agent: constructed: 'libdnf (Fedora Linux 38; workstation; Linux.x86_64)'
-2026-04-06T11:16:29-0400 DDEBUG timer: sack setup: 62819 ms
-2026-04-06T11:16:29-0400 INFO Cache des métadonnées créé.
-2026-04-06T11:16:29-0400 DDEBUG Cleaning up.
-2026-04-06T15:19:57-0400 INFO --- logging initialized ---
-2026-04-06T15:19:57-0400 DDEBUG timer: config: 3131 ms
-2026-04-06T15:20:08-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
-2026-04-06T15:20:08-0400 DEBUG DNF version: 4.14.0
-2026-04-06T15:20:08-0400 DDEBUG Command: dnf makecache --timer 
-2026-04-06T15:20:08-0400 DDEBUG Installroot: /
-2026-04-06T15:20:08-0400 DDEBUG Releasever: 38
-2026-04-06T15:20:08-0400 DEBUG cachedir: /var/cache/dnf
-2026-04-06T15:20:08-0400 DDEBUG Base command: makecache
-2026-04-06T15:20:08-0400 DDEBUG Extra commands: ['makecache', '--timer']
-2026-04-06T15:20:09-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
-2026-04-06T15:20:25-0400 DEBUG fedora : a expiré et sera réinitialisé.
-2026-04-06T15:20:25-0400 DEBUG fedora-cisco-openh264 : a expiré et sera réinitialisé.
-2026-04-06T15:20:26-0400 DEBUG fedora-modular : a expiré et sera réinitialisé.
-2026-04-06T15:20:31-0400 DEBUG updates : a expiré et sera réinitialisé.
-2026-04-06T15:20:31-0400 DEBUG updates-modular : a expiré et sera réinitialisé.
-2026-04-06T15:20:31-0400 DEBUG countme: no event for fedora: window already counted
-2026-04-06T15:20:33-0400 DEBUG relance : « fedora » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-06T15:20:52-0400 DEBUG fedora : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:37:10.
-2026-04-06T15:20:54-0400 DEBUG relance : « fedora-cisco-openh264 » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-06T15:20:55-0400 DEBUG fedora-cisco-openh264 : utilisation des métadonnées depuis le mar. 12 mars 2024 08:17:00.
-2026-04-06T15:20:55-0400 DEBUG countme: no event for fedora-modular: window already counted
-2026-04-06T15:20:56-0400 DEBUG relance : « fedora-modular » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-06T15:20:57-0400 DEBUG fedora-modular : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:30:47.
-2026-04-06T15:20:57-0400 DEBUG countme: no event for updates: window already counted
-2026-04-06T15:20:59-0400 DEBUG relance : « updates » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-06T15:21:25-0400 DEBUG updates : utilisation des métadonnées depuis le mar. 21 mai 2024 11:15:01.
-2026-04-06T15:21:25-0400 DEBUG countme: no event for updates-modular: window already counted
-2026-04-06T15:21:28-0400 DEBUG relance : « updates-modular » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-06T15:21:28-0400 DEBUG updates-modular : utilisation des métadonnées depuis le mer. 06 mars 2024 20:02:11.
-2026-04-06T15:21:28-0400 DEBUG User-Agent: constructed: 'libdnf (Fedora Linux 38; workstation; Linux.x86_64)'
-2026-04-06T15:21:34-0400 DDEBUG timer: sack setup: 63050 ms
-2026-04-06T15:21:34-0400 INFO Cache des métadonnées créé.
-2026-04-06T15:21:34-0400 DDEBUG Cleaning up.
-2026-04-06T17:10:31-0400 INFO --- logging initialized ---
-2026-04-06T17:10:32-0400 DDEBUG timer: config: 1864 ms
-2026-04-06T17:10:37-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
-2026-04-06T17:10:37-0400 DEBUG DNF version: 4.14.0
-2026-04-06T17:10:37-0400 DDEBUG Command: dnf makecache --timer 
-2026-04-06T17:10:37-0400 DDEBUG Installroot: /
-2026-04-06T17:10:37-0400 DDEBUG Releasever: 38
-2026-04-06T17:10:37-0400 DEBUG cachedir: /var/cache/dnf
-2026-04-06T17:10:37-0400 DDEBUG Base command: makecache
-2026-04-06T17:10:37-0400 DDEBUG Extra commands: ['makecache', '--timer']
-2026-04-06T17:10:38-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
-2026-04-06T17:10:40-0400 INFO Cache des métadonnées mis à jour récemment.
-2026-04-06T17:10:40-0400 DDEBUG Cleaning up.
-2026-04-07T04:14:17-0400 INFO --- logging initialized ---
-2026-04-07T04:14:17-0400 DDEBUG timer: config: 81 ms
-2026-04-07T04:14:18-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
-2026-04-07T04:14:18-0400 DEBUG DNF version: 4.14.0
-2026-04-07T04:14:18-0400 DDEBUG Command: dnf makecache --timer 
-2026-04-07T04:14:18-0400 DDEBUG Installroot: /
-2026-04-07T04:14:18-0400 DDEBUG Releasever: 38
-2026-04-07T04:14:18-0400 DEBUG cachedir: /var/cache/dnf
-2026-04-07T04:14:18-0400 DDEBUG Base command: makecache
-2026-04-07T04:14:18-0400 DDEBUG Extra commands: ['makecache', '--timer']
-2026-04-07T04:14:18-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
-2026-04-07T04:14:22-0400 DEBUG fedora : a expiré et sera réinitialisé.
-2026-04-07T04:14:22-0400 DEBUG fedora-cisco-openh264 : a expiré et sera réinitialisé.
-2026-04-07T04:14:23-0400 DEBUG fedora-modular : a expiré et sera réinitialisé.
-2026-04-07T04:14:27-0400 DEBUG updates : a expiré et sera réinitialisé.
-2026-04-07T04:14:27-0400 DEBUG updates-modular : a expiré et sera réinitialisé.
-2026-04-07T04:14:27-0400 DEBUG countme: no event for fedora: window already counted
-2026-04-07T04:14:31-0400 DEBUG relance : « fedora » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-07T04:14:42-0400 DEBUG fedora : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:37:10.
-2026-04-07T04:14:43-0400 DEBUG relance : « fedora-cisco-openh264 » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-07T04:14:43-0400 DEBUG fedora-cisco-openh264 : utilisation des métadonnées depuis le mar. 12 mars 2024 08:17:00.
-2026-04-07T04:14:43-0400 DEBUG countme: no event for fedora-modular: window already counted
-2026-04-07T04:14:45-0400 DEBUG relance : « fedora-modular » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-07T04:14:45-0400 DEBUG fedora-modular : utilisation des métadonnées depuis le jeu. 13 avril 2023 16:30:47.
-2026-04-07T04:14:45-0400 DEBUG countme: no event for updates: window already counted
-2026-04-07T04:14:47-0400 DEBUG relance : « updates » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-07T04:15:00-0400 DEBUG updates : utilisation des métadonnées depuis le mar. 21 mai 2024 11:15:01.
-2026-04-07T04:15:00-0400 DEBUG countme: no event for updates-modular: window already counted
-2026-04-07T04:15:01-0400 DEBUG relance : « updates-modular » peut être relancé - la somme de contrôle du méta-lien correspond.
-2026-04-07T04:15:01-0400 DEBUG updates-modular : utilisation des métadonnées depuis le mer. 06 mars 2024 20:02:11.
-2026-04-07T04:15:01-0400 DEBUG User-Agent: constructed: 'libdnf (Fedora Linux 38; workstation; Linux.x86_64)'
-2026-04-07T04:15:03-0400 DDEBUG timer: sack setup: 35842 ms
-2026-04-07T04:15:03-0400 INFO Cache des métadonnées créé.
-2026-04-07T04:15:03-0400 DDEBUG Cleaning up.
-2026-04-07T05:27:25-0400 INFO --- logging initialized ---
-2026-04-07T05:27:25-0400 DDEBUG timer: config: 542 ms
-2026-04-07T05:27:27-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
-2026-04-07T05:27:27-0400 DEBUG DNF version: 4.14.0
-2026-04-07T05:27:27-0400 DDEBUG Command: dnf makecache --timer 
-2026-04-07T05:27:27-0400 DDEBUG Installroot: /
-2026-04-07T05:27:27-0400 DDEBUG Releasever: 38
-2026-04-07T05:27:27-0400 DEBUG cachedir: /var/cache/dnf
-2026-04-07T05:27:27-0400 DDEBUG Base command: makecache
-2026-04-07T05:27:27-0400 DDEBUG Extra commands: ['makecache', '--timer']
-2026-04-07T05:27:27-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
-2026-04-07T05:27:28-0400 INFO Cache des métadonnées mis à jour récemment.
-2026-04-07T05:27:28-0400 DDEBUG Cleaning up.
-2026-04-07T06:59:22-0400 INFO --- logging initialized ---
-2026-04-07T06:59:22-0400 DDEBUG timer: config: 183 ms
-2026-04-07T06:59:24-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
-2026-04-07T06:59:24-0400 DEBUG DNF version: 4.14.0
-2026-04-07T06:59:24-0400 DDEBUG Command: dnf makecache --timer 
-2026-04-07T06:59:24-0400 DDEBUG Installroot: /
-2026-04-07T06:59:24-0400 DDEBUG Releasever: 38
-2026-04-07T06:59:24-0400 DEBUG cachedir: /var/cache/dnf
-2026-04-07T06:59:24-0400 DDEBUG Base command: makecache
-2026-04-07T06:59:24-0400 DDEBUG Extra commands: ['makecache', '--timer']
-2026-04-07T06:59:25-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
-2026-04-07T06:59:25-0400 INFO Cache des métadonnées mis à jour récemment.
-2026-04-07T06:59:25-0400 DDEBUG Cleaning up.
-2026-04-07T08:25:17-0400 INFO --- logging initialized ---
-2026-04-07T08:25:17-0400 DDEBUG timer: config: 20 ms
-2026-04-07T08:25:17-0400 DEBUG Plugins chargés : builddep, changelog, config-manager, copr, debug, debuginfo-install, download, generate_completion_cache, groups-manager, needs-restarting, notify-packagekit, playground, repoclosure, repodiff, repograph, repomanage, reposync, system-upgrade
-2026-04-07T08:25:17-0400 DEBUG DNF version: 4.14.0
-2026-04-07T08:25:17-0400 DDEBUG Command: dnf makecache --timer 
-2026-04-07T08:25:17-0400 DDEBUG Installroot: /
-2026-04-07T08:25:17-0400 DDEBUG Releasever: 38
-2026-04-07T08:25:17-0400 DEBUG cachedir: /var/cache/dnf
-2026-04-07T08:25:17-0400 DDEBUG Base command: makecache
-2026-04-07T08:25:17-0400 DDEBUG Extra commands: ['makecache', '--timer']
-2026-04-07T08:25:18-0400 DEBUG Création des fichiers de cache pour tous les fichiers de métadonnées.
-2026-04-07T08:25:24-0400 DEBUG fedora : a expiré et sera réinitialisé.
-2026-04-07T08:25:24-0400 DEBUG fedora-cisco-openh264 : a expiré et sera réinitialisé.
-2026-04-07T08:25:25-0400 DEBUG fedora-modular : a expiré et sera réinitialisé.
-2026-04-07T08:25:28-0400 DEBUG updates : a expiré et sera réinitialisé.
-2026-04-07T08:25:28-0400 DEBUG updates-modular : a expiré et sera réinitialisé.
-2026-04-07T08:25:28-0400 DEBUG countme: no event for fedora: window already counted
-2026-04-07T08:25:30-0400 DEBUG error: Curl error (60): SSL peer certificate or SSH remote key was not OK for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [SSL certificate problem: self-signed certificate] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-07T08:25:31-0400 DEBUG error: Curl error (60): SSL peer certificate or SSH remote key was not OK for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [SSL certificate problem: self-signed certificate] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-07T08:25:31-0400 DEBUG error: Curl error (60): SSL peer certificate or SSH remote key was not OK for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [SSL certificate problem: self-signed certificate] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-07T08:25:31-0400 DEBUG error: Curl error (60): SSL peer certificate or SSH remote key was not OK for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [SSL certificate problem: self-signed certificate] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-07T08:25:33-0400 DEBUG error: Curl error (60): SSL peer certificate or SSH remote key was not OK for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [SSL certificate problem: self-signed certificate] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-07T08:25:33-0400 DEBUG error: Curl error (60): SSL peer certificate or SSH remote key was not OK for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [SSL certificate problem: self-signed certificate] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-07T08:25:34-0400 DEBUG error: Curl error (60): SSL peer certificate or SSH remote key was not OK for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [SSL certificate problem: self-signed certificate] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-07T08:25:34-0400 DEBUG error: Curl error (60): SSL peer certificate or SSH remote key was not OK for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [SSL certificate problem: self-signed certificate] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-07T08:25:35-0400 DEBUG error: Curl error (60): SSL peer certificate or SSH remote key was not OK for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [SSL certificate problem: self-signed certificate] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-07T08:25:36-0400 DEBUG error: Curl error (60): SSL peer certificate or SSH remote key was not OK for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [SSL certificate problem: self-signed certificate] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-07T08:25:37-0400 DEBUG error: Curl error (60): SSL peer certificate or SSH remote key was not OK for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [SSL certificate problem: self-signed certificate] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-07T08:25:38-0400 DEBUG error: Curl error (60): SSL peer certificate or SSH remote key was not OK for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [SSL certificate problem: self-signed certificate] (https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64).
-2026-04-07T08:25:38-0400 WARNING Errors during downloading metadata for repository 'fedora':
-  - Curl error (60): SSL peer certificate or SSH remote key was not OK for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [SSL certificate problem: self-signed certificate]
-2026-04-07T08:25:38-0400 DDEBUG Cleaning up.
-2026-04-07T08:25:38-0400 SUBDEBUG 
-Traceback (most recent call last):
-  File "/usr/lib/python3.11/site-packages/dnf/repo.py", line 573, in load
-    ret = self._repo.load()
-          ^^^^^^^^^^^^^^^^^
-  File "/usr/lib64/python3.11/site-packages/libdnf/repo.py", line 324, in load
-    return _repo.Repo_load(self)
-           ^^^^^^^^^^^^^^^^^^^^^
-libdnf._error.Error: Échec du téléchargement des métadonnées pour le dépôt « fedora » : Cannot prepare internal mirrorlist: Curl error (60): SSL peer certificate or SSH remote key was not OK for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [SSL certificate problem: self-signed certificate]
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/usr/lib/python3.11/site-packages/dnf/cli/main.py", line 67, in main
-    return _main(base, args, cli_class, option_parser_class)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/site-packages/dnf/cli/main.py", line 106, in _main
-    return cli_run(cli, base)
-           ^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/site-packages/dnf/cli/main.py", line 122, in cli_run
-    cli.run()
-  File "/usr/lib/python3.11/site-packages/dnf/cli/cli.py", line 1057, in run
-    return self.command.run()
-           ^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/site-packages/dnf/cli/commands/makecache.py", line 50, in run
-    return self.base.update_cache(timer)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/site-packages/dnf/base.py", line 377, in update_cache
-    self.fill_sack(load_system_repo=False, load_available_repos=True)  # performs the md sync
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/site-packages/dnf/base.py", line 406, in fill_sack
-    self._add_repo_to_sack(r)
-  File "/usr/lib/python3.11/site-packages/dnf/base.py", line 141, in _add_repo_to_sack
-    repo.load()
-  File "/usr/lib/python3.11/site-packages/dnf/repo.py", line 580, in load
-    raise dnf.exceptions.RepoError(str(e))
-dnf.exceptions.RepoError: Échec du téléchargement des métadonnées pour le dépôt « fedora » : Cannot prepare internal mirrorlist: Curl error (60): SSL peer certificate or SSH remote key was not OK for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [SSL certificate problem: self-signed certificate]
-2026-04-07T08:25:39-0400 CRITICAL Erreur : Échec du téléchargement des métadonnées pour le dépôt « fedora » : Cannot prepare internal mirrorlist: Curl error (60): SSL peer certificate or SSH remote key was not OK for https://mirrors.fedoraproject.org/metalink?repo=fedora-38&arch=x86_64 [SSL certificate problem: self-signed certificate]
+2026-04-08T07:13:11.569631-04:00 kali systemd[1]: rsyslog.service: Sent signal SIGHUP to main process 560 (rsyslogd) on client request.
+2026-04-08T07:13:11.570106-04:00 kali rsyslogd: [origin software="rsyslogd" swVersion="8.2510.0" x-pid="560" x-info="https://www.rsyslog.com"] rsyslogd was HUPed
+2026-04-08T07:13:11.579622-04:00 kali systemd[1]: logrotate.service: Deactivated successfully.
+2026-04-08T07:13:11.590349-04:00 kali systemd[1]: Finished logrotate.service - Rotate log files.
+2026-04-08T07:13:11.593700-04:00 kali systemd[1]: Startup finished in 15.451s (kernel) + 32.992s (userspace) = 48.443s.
+2026-04-08T07:13:15.072886-04:00 kali systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+2026-04-08T07:13:18.037376-04:00 kali systemd[1]: Created slice user-110.slice - User Slice of UID 110.
+2026-04-08T07:13:18.042675-04:00 kali systemd[1]: Starting user-runtime-dir@110.service - User Runtime Directory /run/user/110...
+2026-04-08T07:13:18.363324-04:00 kali systemd[1]: Finished user-runtime-dir@110.service - User Runtime Directory /run/user/110.
+2026-04-08T07:13:18.477854-04:00 kali systemd[1]: Starting user@110.service - User Manager for UID 110...
+2026-04-08T07:13:19.610923-04:00 kali systemd[1095]: Queued start job for default target default.target.
+2026-04-08T07:13:19.615067-04:00 kali systemd[1095]: Created slice app.slice - User Application Slice.
+2026-04-08T07:13:19.615349-04:00 kali systemd[1095]: Created slice session.slice - User Core Session Slice.
+2026-04-08T07:13:19.615458-04:00 kali systemd[1095]: Reached target paths.target - Paths.
+2026-04-08T07:13:19.615690-04:00 kali systemd[1095]: Reached target timers.target - Timers.
+2026-04-08T07:13:19.622326-04:00 kali systemd[1095]: Starting dbus.socket - D-Bus User Message Bus Socket...
+2026-04-08T07:13:19.623883-04:00 kali systemd[1095]: Listening on dirmngr.socket - GnuPG network certificate management daemon.
+2026-04-08T07:13:19.625610-04:00 kali systemd[1095]: Listening on gcr-ssh-agent.socket - GCR ssh-agent wrapper.
+2026-04-08T07:13:19.625750-04:00 kali systemd[1095]: Listening on gnome-keyring-daemon.socket - GNOME Keyring daemon.
+2026-04-08T07:13:19.625893-04:00 kali systemd[1095]: Listening on gpg-agent-browser.socket - GnuPG cryptographic agent and passphrase cache (access for web browsers).
+2026-04-08T07:13:19.628592-04:00 kali systemd[1095]: Listening on gpg-agent-extra.socket - GnuPG cryptographic agent and passphrase cache (restricted).
+2026-04-08T07:13:19.628742-04:00 kali systemd[1095]: Listening on gpg-agent-ssh.socket - GnuPG cryptographic agent (ssh-agent emulation).
+2026-04-08T07:13:19.633127-04:00 kali systemd[1095]: Listening on gpg-agent.socket - GnuPG cryptographic agent and passphrase cache.
+2026-04-08T07:13:19.635051-04:00 kali systemd[1095]: Listening on pipewire-pulse.socket - PipeWire PulseAudio.
+2026-04-08T07:13:19.635110-04:00 kali systemd[1095]: Listening on pipewire.socket - PipeWire Multimedia System Sockets.
+2026-04-08T07:13:19.638797-04:00 kali systemd[1095]: Listening on systemd-ask-password.socket - Query the User Interactively for a Password.
+2026-04-08T07:13:19.684031-04:00 kali systemd[1095]: Listening on dbus.socket - D-Bus User Message Bus Socket.
+2026-04-08T07:13:19.684580-04:00 kali systemd[1095]: Reached target sockets.target - Sockets.
+2026-04-08T07:13:19.688071-04:00 kali systemd[1095]: Reached target basic.target - Basic System.
+2026-04-08T07:13:19.697082-04:00 kali systemd[1]: Started user@110.service - User Manager for UID 110.
+2026-04-08T07:13:19.702280-04:00 kali systemd[1095]: Started pipewire.service - PipeWire Multimedia Service.
+2026-04-08T07:13:19.704438-04:00 kali systemd[1]: Started session-c1.scope - Session c1 of User lightdm.
+2026-04-08T07:13:19.714266-04:00 kali systemd[1095]: Started filter-chain.service - PipeWire filter chain daemon.
+2026-04-08T07:13:19.728594-04:00 kali systemd[1095]: Started wireplumber.service - Multimedia Service Session Manager.
+2026-04-08T07:13:19.742014-04:00 kali systemd[1095]: Started pipewire-pulse.service - PipeWire PulseAudio.
+2026-04-08T07:13:19.750020-04:00 kali systemd[1095]: Reached target default.target - Main User Target.
+2026-04-08T07:13:19.750140-04:00 kali systemd[1095]: Startup finished in 875ms.
+2026-04-08T07:13:20.362070-04:00 kali systemd[1095]: Starting dbus.service - D-Bus User Message Bus...
+2026-04-08T07:13:20.565976-04:00 kali systemd[1095]: Started dbus.service - D-Bus User Message Bus.
+2026-04-08T07:13:20.584631-04:00 kali dbus-daemon[536]: [system] Activating via systemd: service name='org.freedesktop.RealtimeKit1' unit='rtkit-daemon.service' requested by ':1.14' (uid=110 pid=1115 comm="/usr/bin/wireplumber")
+2026-04-08T07:13:20.689907-04:00 kali systemd[1]: Starting rtkit-daemon.service - RealtimeKit Scheduling Policy Service...
+2026-04-08T07:13:20.897581-04:00 kali dbus-daemon[536]: [system] Successfully activated service 'org.freedesktop.RealtimeKit1'
+2026-04-08T07:13:20.898535-04:00 kali systemd[1]: Started rtkit-daemon.service - RealtimeKit Scheduling Policy Service.
+2026-04-08T07:13:20.902784-04:00 kali rtkit-daemon[1123]: Successfully called chroot.
+2026-04-08T07:13:20.903910-04:00 kali rtkit-daemon[1123]: Successfully dropped privileges.
+2026-04-08T07:13:20.904063-04:00 kali rtkit-daemon[1123]: Successfully limited resources.
+2026-04-08T07:13:20.904150-04:00 kali rtkit-daemon[1123]: Running.
+2026-04-08T07:13:20.904243-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:13:20.907400-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:13:20.908404-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:13:20.908452-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:13:20.908488-04:00 kali rtkit-daemon[1123]: Canary thread running.
+2026-04-08T07:13:20.908585-04:00 kali rtkit-daemon[1123]: Watchdog thread running.
+2026-04-08T07:13:20.910379-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:13:20.910487-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:13:20.910524-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:13:20.911600-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:13:20.912018-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:13:20.912793-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:13:20.912882-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:13:20.913801-04:00 kali rtkit-daemon[1123]: Supervising 0 threads of 0 processes of 0 users.
+2026-04-08T07:13:20.935518-04:00 kali rtkit-daemon[1123]: Successfully made thread 1115 of process 1115 owned by '110' high priority at nice level -11.
+2026-04-08T07:13:20.935642-04:00 kali rtkit-daemon[1123]: Supervising 1 threads of 1 processes of 1 users.
+2026-04-08T07:13:20.945463-04:00 kali rtkit-daemon[1123]: Successfully made thread 1125 of process 1115 owned by '110' RT at priority 20.
+2026-04-08T07:13:20.946731-04:00 kali rtkit-daemon[1123]: Supervising 2 threads of 1 processes of 1 users.
+2026-04-08T07:13:20.954934-04:00 kali rtkit-daemon[1123]: Successfully made thread 1116 of process 1116 owned by '110' high priority at nice level -11.
+2026-04-08T07:13:20.955911-04:00 kali rtkit-daemon[1123]: Supervising 3 threads of 2 processes of 1 users.
+2026-04-08T07:13:20.965590-04:00 kali kernel: pipewire[1113]: memfd_create() called without MFD_EXEC or MFD_NOEXEC_SEAL set
+2026-04-08T07:13:20.966370-04:00 kali pipewire[1113]: mod.jackdbus-detect: Failed to receive jackdbus reply: org.freedesktop.DBus.Error.ServiceUnknown: The name org.jackaudio.service was not provided by any .service files
+2026-04-08T07:13:20.967153-04:00 kali rtkit-daemon[1123]: Successfully made thread 1124 of process 1114 owned by '110' RT at priority 20.
+2026-04-08T07:13:20.967238-04:00 kali rtkit-daemon[1123]: Supervising 4 threads of 3 processes of 1 users.
+2026-04-08T07:13:20.975554-04:00 kali rtkit-daemon[1123]: Successfully made thread 1113 of process 1113 owned by '110' high priority at nice level -11.
+2026-04-08T07:13:20.976081-04:00 kali rtkit-daemon[1123]: Supervising 5 threads of 4 processes of 1 users.
+2026-04-08T07:13:20.981921-04:00 kali rtkit-daemon[1123]: Successfully made thread 1133 of process 1113 owned by '110' RT at priority 20.
+2026-04-08T07:13:20.982856-04:00 kali rtkit-daemon[1123]: Supervising 6 threads of 4 processes of 1 users.
+2026-04-08T07:13:21.586840-04:00 kali dbus-daemon[1118]: [session uid=110 pid=1118] Activating via systemd: service name='org.gtk.vfs.Daemon' unit='gvfs-daemon.service' requested by ':1.7' (uid=110 pid=1115 comm="/usr/bin/wireplumber")
+2026-04-08T07:13:21.698216-04:00 kali systemd[1095]: Starting gvfs-daemon.service - Virtual filesystem service...
+2026-04-08T07:13:21.828256-04:00 kali rtkit-daemon[1123]: Successfully made thread 1139 of process 1116 owned by '110' RT at priority 20.
+2026-04-08T07:13:21.828414-04:00 kali rtkit-daemon[1123]: Supervising 7 threads of 4 processes of 1 users.
+2026-04-08T07:13:22.190804-04:00 kali dbus-daemon[1118]: [session uid=110 pid=1118] Successfully activated service 'org.gtk.vfs.Daemon'
+2026-04-08T07:13:22.191910-04:00 kali systemd[1095]: Started gvfs-daemon.service - Virtual filesystem service.
+2026-04-08T07:13:22.845592-04:00 kali wireplumber[1115]: SPA handle 'api.libcamera.enum.manager' could not be loaded; is it installed?
+2026-04-08T07:13:22.846456-04:00 kali wireplumber[1115]: PipeWire's libcamera SPA missing or broken. libcamera not supported.
+2026-04-08T07:13:23.569608-04:00 kali wireplumber[1115]: Failed to get percentage from UPower: org.freedesktop.DBus.Error.NameHasNoOwner
+2026-04-08T07:13:23.617818-04:00 kali wireplumber[1115]: GetManagedObjects() failed: org.freedesktop.DBus.Error.NameHasNoOwner
+2026-04-08T07:13:24.719484-04:00 kali pipewire-pulse[1116]: default: snap_get_audio_permissions: kernel lacks 'fine grained unix mediation'; snap audio permissions won't be honored.
+2026-04-08T07:13:24.720436-04:00 kali pipewire-pulse[1116]: default: snap_get_audio_permissions: kernel lacks 'fine grained unix mediation'; snap audio permissions won't be honored.
+2026-04-08T07:13:25.882335-04:00 kali dbus-daemon[1118]: [session uid=110 pid=1118] Activating via systemd: service name='org.a11y.Bus' unit='at-spi-dbus-bus.service' requested by ':1.12' (uid=110 pid=1117 comm="/usr/sbin/lightdm-gtk-greeter")
+2026-04-08T07:13:25.931146-04:00 kali systemd[1095]: Starting at-spi-dbus-bus.service - Accessibility services bus...
+2026-04-08T07:13:26.237260-04:00 kali dbus-daemon[1118]: [session uid=110 pid=1118] Successfully activated service 'org.a11y.Bus'
+2026-04-08T07:13:26.237724-04:00 kali systemd[1095]: Started at-spi-dbus-bus.service - Accessibility services bus.
+2026-04-08T07:13:28.629671-04:00 kali wireplumber[1115]: <WpNode:0x564a1f2736a0> ignoring set_param on already destroyed objects
+2026-04-08T07:13:28.631290-04:00 kali wireplumber[1115]: <WpNode:0x564a1f30ded0> ignoring set_param on already destroyed objects
+2026-04-08T07:13:28.631974-04:00 kali wireplumber[1115]: <WpNode:0x564a1f30ded0> ignoring set_param on already destroyed objects
+2026-04-08T07:13:28.641890-04:00 kali pipewire-pulse[1116]: default: snap_get_audio_permissions: kernel lacks 'fine grained unix mediation'; snap audio permissions won't be honored.
+2026-04-08T07:13:28.649992-04:00 kali pipewire-pulse[1116]: default: snap_get_audio_permissions: kernel lacks 'fine grained unix mediation'; snap audio permissions won't be honored.
+2026-04-08T07:13:31.502304-04:00 kali systemd[1]: systemd-hostnamed.service: Deactivated successfully.
+2026-04-08T07:13:32.257816-04:00 kali at-spi-bus-launcher[1171]: dbus-daemon[1171]: Activating service name='org.a11y.atspi.Registry' requested by ':1.0' (uid=110 pid=1117 comm="/usr/sbin/lightdm-gtk-greeter")
+2026-04-08T07:13:32.366492-04:00 kali at-spi-bus-launcher[1171]: dbus-daemon[1171]: Successfully activated service 'org.a11y.atspi.Registry'
+2026-04-08T07:13:32.370720-04:00 kali at-spi-bus-launcher[1194]: SpiRegistry daemon is running with well-known name - org.a11y.atspi.Registry
+2026-04-08T07:13:45.109660-04:00 kali systemd[1]: session-c1.scope: Killing process 1078 (lightdm) with signal SIGTERM.
+2026-04-08T07:13:45.111329-04:00 kali systemd[1]: session-c1.scope: Killing process 1117 (lightdm-gtk-gre) with signal SIGTERM.
+2026-04-08T07:13:45.111729-04:00 kali systemd[1]: Stopping session-c1.scope - Session c1 of User lightdm...
+2026-04-08T07:13:45.373224-04:00 kali systemd[1]: session-c1.scope: Deactivated successfully.
+2026-04-08T07:13:45.383486-04:00 kali systemd[1]: Stopped session-c1.scope - Session c1 of User lightdm.
+2026-04-08T07:13:45.384290-04:00 kali systemd[1]: session-c1.scope: Consumed 3.057s CPU time over 25.670s wall clock time, 129.2M memory peak.
+2026-04-08T07:13:45.461123-04:00 kali systemd[1]: Created slice user-1000.slice - User Slice of UID 1000.
+2026-04-08T07:13:45.461466-04:00 kali systemd[1]: Starting user-runtime-dir@1000.service - User Runtime Directory /run/user/1000...
+2026-04-08T07:13:45.680867-04:00 kali systemd[1095]: Reached target sound.target - Sound Card.
+2026-04-08T07:13:45.749310-04:00 kali systemd[1]: Finished user-runtime-dir@1000.service - User Runtime Directory /run/user/1000.
+2026-04-08T07:13:45.758230-04:00 kali systemd[1]: Starting user@1000.service - User Manager for UID 1000...
+2026-04-08T07:13:46.203258-04:00 kali systemd[1219]: Queued start job for default target default.target.
+2026-04-08T07:13:46.228546-04:00 kali systemd[1219]: Created slice app.slice - User Application Slice.
+2026-04-08T07:13:46.229853-04:00 kali systemd[1219]: Created slice session.slice - User Core Session Slice.
+2026-04-08T07:13:46.234441-04:00 kali systemd[1219]: Reached target paths.target - Paths.
+2026-04-08T07:13:46.235143-04:00 kali systemd[1219]: Reached target timers.target - Timers.
+2026-04-08T07:13:46.235425-04:00 kali systemd[1219]: Starting dbus.socket - D-Bus User Message Bus Socket...
+2026-04-08T07:13:46.235542-04:00 kali systemd[1219]: Listening on dirmngr.socket - GnuPG network certificate management daemon.
+2026-04-08T07:13:46.235668-04:00 kali systemd[1219]: Listening on gcr-ssh-agent.socket - GCR ssh-agent wrapper.
+2026-04-08T07:13:46.235917-04:00 kali systemd[1219]: Listening on gnome-keyring-daemon.socket - GNOME Keyring daemon.
+2026-04-08T07:13:46.236075-04:00 kali systemd[1219]: Listening on gpg-agent-browser.socket - GnuPG cryptographic agent and passphrase cache (access for web browsers).
+2026-04-08T07:13:46.236150-04:00 kali systemd[1219]: Listening on gpg-agent-extra.socket - GnuPG cryptographic agent and passphrase cache (restricted).
+2026-04-08T07:13:46.236277-04:00 kali systemd[1219]: Listening on gpg-agent-ssh.socket - GnuPG cryptographic agent (ssh-agent emulation).
+2026-04-08T07:13:46.236360-04:00 kali systemd[1219]: Listening on gpg-agent.socket - GnuPG cryptographic agent and passphrase cache.
+2026-04-08T07:13:46.236426-04:00 kali systemd[1219]: Listening on pipewire-pulse.socket - PipeWire PulseAudio.
+2026-04-08T07:13:46.236504-04:00 kali systemd[1219]: Listening on pipewire.socket - PipeWire Multimedia System Sockets.
+2026-04-08T07:13:46.245439-04:00 kali systemd[1219]: Listening on systemd-ask-password.socket - Query the User Interactively for a Password.
+2026-04-08T07:13:46.302356-04:00 kali systemd[1219]: Listening on dbus.socket - D-Bus User Message Bus Socket.
+2026-04-08T07:13:46.302517-04:00 kali systemd[1219]: Reached target sockets.target - Sockets.
+2026-04-08T07:13:46.303827-04:00 kali systemd[1219]: Reached target basic.target - Basic System.
+2026-04-08T07:13:46.317439-04:00 kali systemd[1]: Started user@1000.service - User Manager for UID 1000.
+2026-04-08T07:13:46.321821-04:00 kali systemd[1]: Started session-2.scope - Session 2 of User kali.
+2026-04-08T07:13:46.323853-04:00 kali systemd[1219]: Started pipewire.service - PipeWire Multimedia Service.
+2026-04-08T07:13:46.337501-04:00 kali systemd[1219]: Started filter-chain.service - PipeWire filter chain daemon.
+2026-04-08T07:13:46.354221-04:00 kali systemd[1219]: Started wireplumber.service - Multimedia Service Session Manager.
+2026-04-08T07:13:46.382130-04:00 kali systemd[1219]: Started pipewire-pulse.service - PipeWire PulseAudio.
+2026-04-08T07:13:46.382340-04:00 kali systemd[1219]: Reached target default.target - Main User Target.
+2026-04-08T07:13:46.382404-04:00 kali systemd[1219]: Startup finished in 551ms.
+2026-04-08T07:13:46.404851-04:00 kali systemd[1219]: Started gnome-keyring-daemon.service - GNOME Keyring daemon.
+2026-04-08T07:13:46.629693-04:00 kali systemd[1219]: Starting dbus.service - D-Bus User Message Bus...
+2026-04-08T07:13:46.634477-04:00 kali gnome-keyring-daemon[1242]: GNOME_KEYRING_CONTROL=/run/user/1000/keyring
+2026-04-08T07:13:46.694437-04:00 kali systemd[1219]: Started dbus.service - D-Bus User Message Bus.
+2026-04-08T07:13:46.714217-04:00 kali rtkit-daemon[1123]: Supervising 7 threads of 4 processes of 1 users.
+2026-04-08T07:13:46.721572-04:00 kali rtkit-daemon[1123]: Supervising 7 threads of 4 processes of 1 users.
+2026-04-08T07:13:46.731158-04:00 kali rtkit-daemon[1123]: Supervising 7 threads of 4 processes of 1 users.
+2026-04-08T07:13:46.736702-04:00 kali rtkit-daemon[1123]: Supervising 7 threads of 4 processes of 1 users.
+2026-04-08T07:13:46.739522-04:00 kali rtkit-daemon[1123]: Supervising 7 threads of 4 processes of 1 users.
+2026-04-08T07:13:46.748284-04:00 kali rtkit-daemon[1123]: Supervising 7 threads of 4 processes of 1 users.
+2026-04-08T07:13:46.780273-04:00 kali rtkit-daemon[1123]: Successfully made thread 1237 of process 1237 owned by '1000' high priority at nice level -11.
+2026-04-08T07:13:46.783223-04:00 kali rtkit-daemon[1123]: Supervising 8 threads of 5 processes of 2 users.
+2026-04-08T07:13:46.786633-04:00 kali rtkit-daemon[1123]: Supervising 8 threads of 5 processes of 2 users.
+2026-04-08T07:13:46.792874-04:00 kali rtkit-daemon[1123]: Supervising 8 threads of 5 processes of 2 users.
+2026-04-08T07:13:46.792925-04:00 kali rtkit-daemon[1123]: Supervising 8 threads of 5 processes of 2 users.
+2026-04-08T07:13:46.792976-04:00 kali rtkit-daemon[1123]: Supervising 8 threads of 5 processes of 2 users.
+2026-04-08T07:13:46.805988-04:00 kali pipewire[1237]: mod.jackdbus-detect: Failed to receive jackdbus reply: org.freedesktop.DBus.Error.ServiceUnknown: The name org.jackaudio.service was not provided by any .service files
+2026-04-08T07:13:46.829457-04:00 kali rtkit-daemon[1123]: Successfully made thread 1253 of process 1238 owned by '1000' RT at priority 20.
+2026-04-08T07:13:46.832699-04:00 kali rtkit-daemon[1123]: Supervising 9 threads of 6 processes of 2 users.
+2026-04-08T07:13:46.834773-04:00 kali rtkit-daemon[1123]: Supervising 9 threads of 6 processes of 2 users.
+2026-04-08T07:13:46.834826-04:00 kali rtkit-daemon[1123]: Supervising 9 threads of 6 processes of 2 users.
+2026-04-08T07:13:46.870212-04:00 kali rtkit-daemon[1123]: Successfully made thread 1256 of process 1237 owned by '1000' RT at priority 20.
+2026-04-08T07:13:46.871592-04:00 kali rtkit-daemon[1123]: Supervising 10 threads of 6 processes of 2 users.
+2026-04-08T07:13:46.901669-04:00 kali rtkit-daemon[1123]: Successfully made thread 1241 of process 1241 owned by '1000' high priority at nice level -11.
+2026-04-08T07:13:46.901816-04:00 kali rtkit-daemon[1123]: Supervising 11 threads of 7 processes of 2 users.
+2026-04-08T07:13:46.940256-04:00 kali rtkit-daemon[1123]: Successfully made thread 1239 of process 1239 owned by '1000' high priority at nice level -11.
+2026-04-08T07:13:46.940428-04:00 kali rtkit-daemon[1123]: Supervising 12 threads of 8 processes of 2 users.
+2026-04-08T07:13:46.945227-04:00 kali lightdm[1199]: Failed to write utmpx: No such file or directory
+2026-04-08T07:13:46.955957-04:00 kali rtkit-daemon[1123]: Successfully made thread 1252 of process 1239 owned by '1000' RT at priority 20.
+2026-04-08T07:13:46.956132-04:00 kali rtkit-daemon[1123]: Supervising 13 threads of 8 processes of 2 users.
+2026-04-08T07:13:46.971213-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating via systemd: service name='org.gtk.vfs.Daemon' unit='gvfs-daemon.service' requested by ':1.9' (uid=1000 pid=1239 comm="/usr/bin/wireplumber")
+2026-04-08T07:13:46.985612-04:00 kali rtkit-daemon[1123]: Successfully made thread 1260 of process 1241 owned by '1000' RT at priority 20.
+2026-04-08T07:13:46.986027-04:00 kali rtkit-daemon[1123]: Supervising 14 threads of 8 processes of 2 users.
+2026-04-08T07:13:46.994795-04:00 kali systemd[1219]: Starting gvfs-daemon.service - Virtual filesystem service...
+2026-04-08T07:13:47.103869-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.gtk.vfs.Daemon'
+2026-04-08T07:13:47.105299-04:00 kali systemd[1219]: Started gvfs-daemon.service - Virtual filesystem service.
+2026-04-08T07:13:47.256373-04:00 kali wireplumber[1239]: SPA handle 'api.libcamera.enum.manager' could not be loaded; is it installed?
+2026-04-08T07:13:47.257640-04:00 kali wireplumber[1239]: PipeWire's libcamera SPA missing or broken. libcamera not supported.
+2026-04-08T07:13:47.332293-04:00 kali wireplumber[1239]: Failed to get percentage from UPower: org.freedesktop.DBus.Error.NameHasNoOwner
+2026-04-08T07:13:47.372414-04:00 kali wireplumber[1239]: GetManagedObjects() failed: org.freedesktop.DBus.Error.NameHasNoOwner
+2026-04-08T07:13:47.468278-04:00 kali pipewire-pulse[1241]: default: snap_get_audio_permissions: kernel lacks 'fine grained unix mediation'; snap audio permissions won't be honored.
+2026-04-08T07:13:47.470447-04:00 kali pipewire-pulse[1241]: default: snap_get_audio_permissions: kernel lacks 'fine grained unix mediation'; snap audio permissions won't be honored.
+2026-04-08T07:13:47.659886-04:00 kali wireplumber[1239]: <WpNode:0x560be2e328b0> ignoring set_param on already destroyed objects
+2026-04-08T07:13:47.662076-04:00 kali wireplumber[1239]: <WpNode:0x560be2e2ff20> ignoring set_param on already destroyed objects
+2026-04-08T07:13:47.668977-04:00 kali pipewire-pulse[1241]: default: snap_get_audio_permissions: kernel lacks 'fine grained unix mediation'; snap audio permissions won't be honored.
+2026-04-08T07:13:47.677308-04:00 kali pipewire-pulse[1241]: default: snap_get_audio_permissions: kernel lacks 'fine grained unix mediation'; snap audio permissions won't be honored.
+2026-04-08T07:13:51.724606-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating via systemd: service name='org.a11y.Bus' unit='at-spi-dbus-bus.service' requested by ':1.19' (uid=1000 pid=1262 comm="xfce4-session")
+2026-04-08T07:13:51.743687-04:00 kali systemd[1219]: Starting at-spi-dbus-bus.service - Accessibility services bus...
+2026-04-08T07:13:51.882903-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.a11y.Bus'
+2026-04-08T07:13:51.883885-04:00 kali systemd[1219]: Started at-spi-dbus-bus.service - Accessibility services bus.
+2026-04-08T07:13:51.940179-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating service name='org.xfce.Xfconf' requested by ':1.22' (uid=1000 pid=1262 comm="xfce4-session")
+2026-04-08T07:13:52.134579-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.xfce.Xfconf'
+2026-04-08T07:13:52.140485-04:00 kali at-spi-bus-launcher[1348]: dbus-daemon[1348]: Activating service name='org.a11y.atspi.Registry' requested by ':1.0' (uid=1000 pid=1262 comm="xfce4-session")
+2026-04-08T07:13:52.166456-04:00 kali at-spi-bus-launcher[1348]: dbus-daemon[1348]: Successfully activated service 'org.a11y.atspi.Registry'
+2026-04-08T07:13:52.170734-04:00 kali at-spi-bus-launcher[1360]: SpiRegistry daemon is running with well-known name - org.a11y.atspi.Registry
+2026-04-08T07:13:52.693519-04:00 kali systemd[1219]: Started gpg-agent.service - GnuPG cryptographic agent and passphrase cache.
+2026-04-08T07:13:52.731495-04:00 kali gpg-agent[1368]: gpg-agent (GnuPG) 2.2.40 starting in supervised mode.
+2026-04-08T07:13:52.732075-04:00 kali gpg-agent[1368]: using fd 3 for ssh socket (/run/user/1000/gnupg/S.gpg-agent.ssh)
+2026-04-08T07:13:52.745690-04:00 kali gpg-agent[1368]: using fd 4 for browser socket (/run/user/1000/gnupg/S.gpg-agent.browser)
+2026-04-08T07:13:52.746191-04:00 kali gpg-agent[1368]: using fd 5 for extra socket (/run/user/1000/gnupg/S.gpg-agent.extra)
+2026-04-08T07:13:52.746384-04:00 kali gpg-agent[1368]: using fd 6 for std socket (/run/user/1000/gnupg/S.gpg-agent)
+2026-04-08T07:13:52.746461-04:00 kali gpg-agent[1368]: listening on: std=6 extra=5 browser=4 ssh=3
+2026-04-08T07:13:52.805168-04:00 kali systemd[1219]: Started gpg-agent.service - GnuPG cryptographic agent and passphrase cache.
+2026-04-08T07:13:52.920044-04:00 kali gpg-agent[1372]: gpg-agent (GnuPG) 2.2.40 starting in supervised mode.
+2026-04-08T07:13:52.920423-04:00 kali gpg-agent[1372]: using fd 3 for ssh socket (/run/user/1000/gnupg/S.gpg-agent.ssh)
+2026-04-08T07:13:52.920546-04:00 kali gpg-agent[1372]: using fd 4 for browser socket (/run/user/1000/gnupg/S.gpg-agent.browser)
+2026-04-08T07:13:52.920658-04:00 kali gpg-agent[1372]: using fd 5 for extra socket (/run/user/1000/gnupg/S.gpg-agent.extra)
+2026-04-08T07:13:52.920767-04:00 kali gpg-agent[1372]: using fd 6 for std socket (/run/user/1000/gnupg/S.gpg-agent)
+2026-04-08T07:13:52.921220-04:00 kali gpg-agent[1372]: listening on: std=6 extra=5 browser=4 ssh=3
+2026-04-08T07:13:55.573748-04:00 kali systemd[1]: Stopping user@110.service - User Manager for UID 110...
+2026-04-08T07:13:55.698765-04:00 kali systemd[1095]: Activating special unit exit.target...
+2026-04-08T07:13:55.699103-04:00 kali systemd[1095]: Stopped target default.target - Main User Target.
+2026-04-08T07:13:55.699229-04:00 kali systemd[1095]: Stopped target sound.target - Sound Card.
+2026-04-08T07:13:55.720213-04:00 kali systemd[1095]: Stopping at-spi-dbus-bus.service - Accessibility services bus...
+2026-04-08T07:13:55.731947-04:00 kali systemd[1095]: Stopping dbus.service - D-Bus User Message Bus...
+2026-04-08T07:13:55.733211-04:00 kali systemd[1095]: Stopping filter-chain.service - PipeWire filter chain daemon...
+2026-04-08T07:13:55.737396-04:00 kali systemd[1095]: Stopping gvfs-daemon.service - Virtual filesystem service...
+2026-04-08T07:13:55.738016-04:00 kali systemd[1095]: Stopping pipewire-pulse.service - PipeWire PulseAudio...
+2026-04-08T07:13:55.745944-04:00 kali systemd[1095]: Stopped at-spi-dbus-bus.service - Accessibility services bus.
+2026-04-08T07:13:55.892130-04:00 kali systemd[1095]: Stopped pipewire-pulse.service - PipeWire PulseAudio.
+2026-04-08T07:13:55.894025-04:00 kali systemd[1095]: Stopping wireplumber.service - Multimedia Service Session Manager...
+2026-04-08T07:13:55.904494-04:00 kali wireplumber[1115]: stopped by signal: Terminated
+2026-04-08T07:13:55.910931-04:00 kali wireplumber[1115]: disconnected from pipewire
+2026-04-08T07:13:55.943107-04:00 kali systemd[1]: run-user-110-gvfs.mount: Deactivated successfully.
+2026-04-08T07:13:55.948121-04:00 kali systemd[1095]: Stopped dbus.service - D-Bus User Message Bus.
+2026-04-08T07:13:55.976650-04:00 kali systemd[1095]: Stopped filter-chain.service - PipeWire filter chain daemon.
+2026-04-08T07:13:56.006705-04:00 kali systemd[1095]: Stopped gvfs-daemon.service - Virtual filesystem service.
+2026-04-08T07:13:56.023690-04:00 kali systemd[1095]: Stopped wireplumber.service - Multimedia Service Session Manager.
+2026-04-08T07:13:56.027005-04:00 kali systemd[1095]: Stopping pipewire.service - PipeWire Multimedia Service...
+2026-04-08T07:13:56.043834-04:00 kali systemd[1095]: Stopped pipewire.service - PipeWire Multimedia Service.
+2026-04-08T07:13:56.049876-04:00 kali systemd[1095]: Removed slice session.slice - User Core Session Slice.
+2026-04-08T07:13:56.050437-04:00 kali systemd[1095]: session.slice: Consumed 1.806s CPU time over 36.430s wall clock time, 74.1M memory peak.
+2026-04-08T07:13:56.051490-04:00 kali systemd[1095]: Stopped target basic.target - Basic System.
+2026-04-08T07:13:56.052779-04:00 kali systemd[1095]: Stopped target paths.target - Paths.
+2026-04-08T07:13:56.054648-04:00 kali systemd[1095]: Stopped target sockets.target - Sockets.
+2026-04-08T07:13:56.054778-04:00 kali systemd[1095]: Stopped target timers.target - Timers.
+2026-04-08T07:13:56.056372-04:00 kali systemd[1095]: Closed dbus.socket - D-Bus User Message Bus Socket.
+2026-04-08T07:13:56.057772-04:00 kali systemd[1095]: Closed dirmngr.socket - GnuPG network certificate management daemon.
+2026-04-08T07:13:56.059914-04:00 kali systemd[1095]: Closed gcr-ssh-agent.socket - GCR ssh-agent wrapper.
+2026-04-08T07:13:56.064656-04:00 kali systemd[1095]: Closed gnome-keyring-daemon.socket - GNOME Keyring daemon.
+2026-04-08T07:13:56.070036-04:00 kali systemd[1095]: Closed gpg-agent-browser.socket - GnuPG cryptographic agent and passphrase cache (access for web browsers).
+2026-04-08T07:13:56.070467-04:00 kali systemd[1095]: Closed gpg-agent-extra.socket - GnuPG cryptographic agent and passphrase cache (restricted).
+2026-04-08T07:13:56.070689-04:00 kali systemd[1095]: Closed gpg-agent-ssh.socket - GnuPG cryptographic agent (ssh-agent emulation).
+2026-04-08T07:13:56.070864-04:00 kali systemd[1095]: Closed gpg-agent.socket - GnuPG cryptographic agent and passphrase cache.
+2026-04-08T07:13:56.071003-04:00 kali systemd[1095]: Closed pipewire-pulse.socket - PipeWire PulseAudio.
+2026-04-08T07:13:56.071134-04:00 kali systemd[1095]: Closed pipewire.socket - PipeWire Multimedia System Sockets.
+2026-04-08T07:13:56.071264-04:00 kali systemd[1095]: Closed systemd-ask-password.socket - Query the User Interactively for a Password.
+2026-04-08T07:13:56.071615-04:00 kali systemd[1095]: Removed slice app.slice - User Application Slice.
+2026-04-08T07:13:56.071945-04:00 kali systemd[1095]: Reached target shutdown.target - Shutdown.
+2026-04-08T07:13:56.073103-04:00 kali systemd[1095]: Finished systemd-exit.service - Exit the Session.
+2026-04-08T07:13:56.074515-04:00 kali systemd[1095]: Reached target exit.target - Exit the Session.
+2026-04-08T07:13:56.132524-04:00 kali systemd[1]: user@110.service: Deactivated successfully.
+2026-04-08T07:13:56.138812-04:00 kali systemd[1]: Stopped user@110.service - User Manager for UID 110.
+2026-04-08T07:13:56.142850-04:00 kali systemd[1]: user@110.service: Consumed 2.383s CPU time over 37.663s wall clock time, 81.4M memory peak.
+2026-04-08T07:13:56.155946-04:00 kali systemd[1]: Stopping user-runtime-dir@110.service - User Runtime Directory /run/user/110...
+2026-04-08T07:13:56.252729-04:00 kali systemd[1]: run-user-110.mount: Deactivated successfully.
+2026-04-08T07:13:56.261271-04:00 kali systemd[1]: user-runtime-dir@110.service: Deactivated successfully.
+2026-04-08T07:13:56.273457-04:00 kali systemd[1]: Stopped user-runtime-dir@110.service - User Runtime Directory /run/user/110.
+2026-04-08T07:13:56.294010-04:00 kali systemd[1]: Removed slice user-110.slice - User Slice of UID 110.
+2026-04-08T07:13:56.296525-04:00 kali systemd[1]: user-110.slice: Consumed 5.536s CPU time over 38.245s wall clock time, 206.1M memory peak.
+2026-04-08T07:14:01.962294-04:00 kali dbus-daemon[536]: [system] Activating via systemd: service name='org.freedesktop.UPower' unit='upower.service' requested by ':1.30' (uid=1000 pid=1397 comm="xfsettingsd")
+2026-04-08T07:14:02.006985-04:00 kali systemd[1]: Starting upower.service - Daemon for power management...
+2026-04-08T07:14:03.477428-04:00 kali dbus-daemon[536]: [system] Successfully activated service 'org.freedesktop.UPower'
+2026-04-08T07:14:03.479109-04:00 kali systemd[1]: Started upower.service - Daemon for power management.
+2026-04-08T07:14:10.815402-04:00 kali pipewire-pulse[1241]: default: snap_get_audio_permissions: kernel lacks 'fine grained unix mediation'; snap audio permissions won't be honored.
+2026-04-08T07:14:10.834710-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating via systemd: service name='org.freedesktop.Notifications' unit='xfce4-notifyd.service' requested by ':1.35' (uid=1000 pid=1430 comm="/usr/lib/x86_64-linux-gnu/xfce4/panel/wrapper-2.0")
+2026-04-08T07:14:10.967718-04:00 kali systemd[1219]: Starting xfce4-notifyd.service - XFCE notifications service...
+2026-04-08T07:14:12.023256-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.freedesktop.Notifications'
+2026-04-08T07:14:12.025038-04:00 kali systemd[1219]: Started xfce4-notifyd.service - XFCE notifications service.
+2026-04-08T07:14:13.373347-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating via systemd: service name='org.freedesktop.thumbnails.Thumbnailer1' unit='tumblerd.service' requested by ':1.31' (uid=1000 pid=1420 comm="xfdesktop")
+2026-04-08T07:14:13.434717-04:00 kali systemd[1219]: Starting tumblerd.service - Thumbnailing service...
+2026-04-08T07:14:14.247689-04:00 kali pipewire-pulse[1241]: default: snap_get_audio_permissions: kernel lacks 'fine grained unix mediation'; snap audio permissions won't be honored.
+2026-04-08T07:14:14.509642-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating via systemd: service name='ca.desrt.dconf' unit='dconf.service' requested by ':1.45' (uid=1000 pid=1513 comm="light-locker")
+2026-04-08T07:14:14.575947-04:00 kali systemd[1219]: Starting dconf.service - User preferences database...
+2026-04-08T07:14:14.770452-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'ca.desrt.dconf'
+2026-04-08T07:14:14.771961-04:00 kali systemd[1219]: Started dconf.service - User preferences database.
+2026-04-08T07:14:16.396565-04:00 kali dbus-daemon[536]: [system] Activating via systemd: service name='org.freedesktop.ColorManager' unit='colord.service' requested by ':1.42' (uid=1000 pid=1623 comm="xiccd")
+2026-04-08T07:14:16.572364-04:00 kali systemd[1]: Starting colord.service - Manage, Install and Generate Color Profiles...
+2026-04-08T07:14:17.134029-04:00 kali colord[1644]: failed to get edid data: EDID length is too small
+2026-04-08T07:14:17.238876-04:00 kali dbus-daemon[536]: [system] Successfully activated service 'org.freedesktop.ColorManager'
+2026-04-08T07:14:17.247114-04:00 kali systemd[1]: Started colord.service - Manage, Install and Generate Color Profiles.
+2026-04-08T07:14:17.730782-04:00 kali systemd[1]: Started pcscd.service - PC/SC Smart Card Daemon.
+2026-04-08T07:14:17.906567-04:00 kali (pcscd)[1670]: pcscd.service: Referenced but unset environment variable evaluates to an empty string: PCSCD_ARGS
+2026-04-08T07:14:19.014898-04:00 kali NetworkManager[695]: <info>  [1775646859.0142] agent-manager: agent[1de6cbc72cddad43,:1.46/org.freedesktop.nm-applet/1000]: agent registered
+2026-04-08T07:14:21.550402-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating via systemd: service name='org.gtk.vfs.UDisks2VolumeMonitor' unit='gvfs-udisks2-volume-monitor.service' requested by ':1.42' (uid=1000 pid=1511 comm="/usr/lib/x86_64-linux-gnu/tumbler-1/tumblerd")
+2026-04-08T07:14:21.618962-04:00 kali systemd[1219]: Starting gvfs-udisks2-volume-monitor.service - Virtual filesystem service - disk device monitor...
+2026-04-08T07:14:22.638229-04:00 kali dbus-daemon[536]: [system] Activating via systemd: service name='org.freedesktop.UDisks2' unit='udisks2.service' requested by ':1.49' (uid=1000 pid=1750 comm="/usr/libexec/gvfs-udisks2-volume-monitor")
+2026-04-08T07:14:22.770626-04:00 kali systemd[1]: Starting udisks2.service - Disk Manager...
+2026-04-08T07:14:23.474448-04:00 kali udisksd[1762]: udisks daemon version 2.10.1 starting
+2026-04-08T07:14:26.076908-04:00 kali dbus-daemon[536]: [system] Successfully activated service 'org.freedesktop.UDisks2'
+2026-04-08T07:14:26.088564-04:00 kali systemd[1]: Started udisks2.service - Disk Manager.
+2026-04-08T07:14:26.091432-04:00 kali udisksd[1762]: Acquired the name org.freedesktop.UDisks2 on the system message bus
+2026-04-08T07:14:26.442971-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.gtk.vfs.UDisks2VolumeMonitor'
+2026-04-08T07:14:26.443751-04:00 kali systemd[1219]: Started gvfs-udisks2-volume-monitor.service - Virtual filesystem service - disk device monitor.
+2026-04-08T07:14:26.525142-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating via systemd: service name='org.gtk.vfs.AfcVolumeMonitor' unit='gvfs-afc-volume-monitor.service' requested by ':1.42' (uid=1000 pid=1511 comm="/usr/lib/x86_64-linux-gnu/tumbler-1/tumblerd")
+2026-04-08T07:14:26.586531-04:00 kali systemd[1219]: Starting gvfs-afc-volume-monitor.service - Virtual filesystem service - Apple File Conduit monitor...
+2026-04-08T07:14:27.256796-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.gtk.vfs.AfcVolumeMonitor'
+2026-04-08T07:14:27.257648-04:00 kali systemd[1219]: Started gvfs-afc-volume-monitor.service - Virtual filesystem service - Apple File Conduit monitor.
+2026-04-08T07:14:27.315635-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating via systemd: service name='org.gtk.vfs.MTPVolumeMonitor' unit='gvfs-mtp-volume-monitor.service' requested by ':1.42' (uid=1000 pid=1511 comm="/usr/lib/x86_64-linux-gnu/tumbler-1/tumblerd")
+2026-04-08T07:14:27.411014-04:00 kali systemd[1219]: Starting gvfs-mtp-volume-monitor.service - Virtual filesystem service - Media Transfer Protocol monitor...
+2026-04-08T07:14:27.934446-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.gtk.vfs.MTPVolumeMonitor'
+2026-04-08T07:14:27.934897-04:00 kali systemd[1219]: Started gvfs-mtp-volume-monitor.service - Virtual filesystem service - Media Transfer Protocol monitor.
+2026-04-08T07:14:28.033434-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating via systemd: service name='org.gtk.vfs.GPhoto2VolumeMonitor' unit='gvfs-gphoto2-volume-monitor.service' requested by ':1.42' (uid=1000 pid=1511 comm="/usr/lib/x86_64-linux-gnu/tumbler-1/tumblerd")
+2026-04-08T07:14:28.116552-04:00 kali systemd[1219]: Starting gvfs-gphoto2-volume-monitor.service - Virtual filesystem service - digital camera monitor...
+2026-04-08T07:14:28.949728-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.gtk.vfs.GPhoto2VolumeMonitor'
+2026-04-08T07:14:29.148000-04:00 kali systemd[1219]: Started gvfs-gphoto2-volume-monitor.service - Virtual filesystem service - digital camera monitor.
+2026-04-08T07:14:29.227796-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating via systemd: service name='org.gtk.vfs.GoaVolumeMonitor' unit='gvfs-goa-volume-monitor.service' requested by ':1.42' (uid=1000 pid=1511 comm="/usr/lib/x86_64-linux-gnu/tumbler-1/tumblerd")
+2026-04-08T07:14:29.266470-04:00 kali systemd[1219]: Starting gvfs-goa-volume-monitor.service - Virtual filesystem service - GNOME Online Accounts monitor...
+2026-04-08T07:14:29.658540-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.gtk.vfs.GoaVolumeMonitor'
+2026-04-08T07:14:29.659231-04:00 kali systemd[1219]: Started gvfs-goa-volume-monitor.service - Virtual filesystem service - GNOME Online Accounts monitor.
+2026-04-08T07:14:29.682351-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.freedesktop.thumbnails.Thumbnailer1'
+2026-04-08T07:14:29.683963-04:00 kali systemd[1219]: Started tumblerd.service - Thumbnailing service.
+2026-04-08T07:14:31.996465-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating via systemd: service name='org.gtk.vfs.Metadata' unit='gvfs-metadata.service' requested by ':1.31' (uid=1000 pid=1420 comm="xfdesktop")
+2026-04-08T07:14:32.567538-04:00 kali systemd[1219]: Starting gvfs-metadata.service - Virtual filesystem metadata service...
+2026-04-08T07:14:33.191073-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.gtk.vfs.Metadata'
+2026-04-08T07:14:33.198990-04:00 kali systemd[1219]: Started gvfs-metadata.service - Virtual filesystem metadata service.
+2026-04-08T07:14:33.768737-04:00 kali dbus-daemon[536]: [system] Activating via systemd: service name='org.freedesktop.Avahi' unit='dbus-org.freedesktop.Avahi.service' requested by ':1.51' (uid=113 pid=1735 comm="/usr/libexec/colord-sane")
+2026-04-08T07:14:33.769966-04:00 kali dbus-daemon[536]: [system] Activation via systemd failed for unit 'dbus-org.freedesktop.Avahi.service': Unit dbus-org.freedesktop.Avahi.service not found.
+2026-04-08T07:14:33.887749-04:00 kali dbus-daemon[536]: [system] Activating via systemd: service name='org.freedesktop.Avahi' unit='dbus-org.freedesktop.Avahi.service' requested by ':1.52' (uid=113 pid=1735 comm="/usr/libexec/colord-sane")
+2026-04-08T07:14:33.888628-04:00 kali dbus-daemon[536]: [system] Activation via systemd failed for unit 'dbus-org.freedesktop.Avahi.service': Unit dbus-org.freedesktop.Avahi.service not found.
+2026-04-08T07:14:43.801332-04:00 kali dbus-daemon[536]: [system] Activating via systemd: service name='org.blueman.Mechanism' unit='blueman-mechanism.service' requested by ':1.54' (uid=1000 pid=1576 comm="/usr/bin/python3 /usr/bin/blueman-applet")
+2026-04-08T07:14:43.892830-04:00 kali systemd[1]: Starting blueman-mechanism.service - Bluetooth management mechanism...
+2026-04-08T07:14:46.804050-04:00 kali dbus-daemon[536]: [system] Successfully activated service 'org.blueman.Mechanism'
+2026-04-08T07:14:46.806900-04:00 kali systemd[1]: Started blueman-mechanism.service - Bluetooth management mechanism.
+2026-04-08T07:14:46.851827-04:00 kali dbus-daemon[536]: [system] Activating via systemd: service name='org.bluez' unit='dbus-org.bluez.service' requested by ':1.54' (uid=1000 pid=1576 comm="/usr/bin/python3 /usr/bin/blueman-applet")
+2026-04-08T07:14:46.853735-04:00 kali dbus-daemon[536]: [system] Activation via systemd failed for unit 'dbus-org.bluez.service': Unit dbus-org.bluez.service not found.
+2026-04-08T07:14:46.855183-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating via systemd: service name='org.bluez.obex' unit='obex.service' requested by ':1.63' (uid=1000 pid=1576 comm="/usr/bin/python3 /usr/bin/blueman-applet")
+2026-04-08T07:14:46.907222-04:00 kali systemd[1219]: Starting obex.service - Bluetooth OBEX service...
+2026-04-08T07:14:49.146363-04:00 kali obexd[2009]: OBEX daemon 5.71
+2026-04-08T07:14:49.175141-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.bluez.obex'
+2026-04-08T07:14:49.182508-04:00 kali systemd[1219]: Started obex.service - Bluetooth OBEX service.
+2026-04-08T07:15:01.467130-04:00 kali CRON[2135]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-08T07:15:15.977752-04:00 kali systemd[1]: blueman-mechanism.service: Deactivated successfully.
+2026-04-08T07:15:15.990918-04:00 kali systemd[1]: blueman-mechanism.service: Consumed 1.327s CPU time over 32.090s wall clock time, 15.2M memory peak.
+2026-04-08T07:15:20.042657-04:00 kali systemd[1]: pcscd.service: Deactivated successfully.
+2026-04-08T07:17:01.030452-04:00 kali CRON[3102]: (root) CMD (cd / && run-parts --report /etc/cron.hourly)
+2026-04-08T07:24:05.097868-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Activating service name='org.xfce.Xfconf' requested by ':1.28' (uid=1000 pid=1408 comm="xfce4-panel")
+2026-04-08T07:24:05.119134-04:00 kali dbus-daemon[1243]: [session uid=1000 pid=1243] Successfully activated service 'org.xfce.Xfconf'
+2026-04-08T07:25:01.102171-04:00 kali CRON[7110]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-08T07:26:45.028464-04:00 kali systemd[1]: Reload requested from client PID 8001 ('systemctl') (unit session-2.scope)...
+2026-04-08T07:26:45.033975-04:00 kali systemd[1]: Reloading...
+2026-04-08T07:26:45.839217-04:00 kali systemd[1]: Reloading finished in 808 ms.
+2026-04-08T07:26:46.044721-04:00 kali systemd[1]: Reload requested from client PID 8078 ('systemctl') (unit session-2.scope)...
+2026-04-08T07:26:46.045627-04:00 kali systemd[1]: Reloading...
+2026-04-08T07:26:46.763035-04:00 kali systemd[1]: Reloading finished in 716 ms.
+2026-04-08T07:26:46.873336-04:00 kali systemd[1]: Reload requested from client PID 7997 ('systemctl') (unit session-2.scope)...
+2026-04-08T07:26:46.873503-04:00 kali systemd[1]: Reloading...
+2026-04-08T07:26:47.669668-04:00 kali systemd[1]: Reloading finished in 796 ms.
+2026-04-08T07:26:47.889206-04:00 kali systemd[1]: Starting apt-daily-upgrade.service - Daily apt upgrade and clean activities...
+2026-04-08T07:26:47.889398-04:00 kali systemd[1]: Starting fstrim.service - Discard unused blocks on filesystems from /etc/fstab...
+2026-04-08T07:26:48.288268-04:00 kali systemd[1]: fstrim.service: Deactivated successfully.
+2026-04-08T07:26:48.303565-04:00 kali systemd[1]: Finished fstrim.service - Discard unused blocks on filesystems from /etc/fstab.
+2026-04-08T07:26:50.370793-04:00 kali systemd[1]: apt-daily-upgrade.service: Deactivated successfully.
+2026-04-08T07:26:50.383977-04:00 kali systemd[1]: Finished apt-daily-upgrade.service - Daily apt upgrade and clean activities.
+2026-04-08T07:26:50.384287-04:00 kali systemd[1]: apt-daily-upgrade.service: Consumed 1.675s CPU time over 2.501s wall clock time, 13.1M memory peak.
+2026-04-08T07:27:59.804462-04:00 kali systemd[1]: Starting systemd-tmpfiles-clean.service - Cleanup of Temporary Directories...
+2026-04-08T07:27:59.858324-04:00 kali systemd-tmpfiles[8927]: /usr/lib/tmpfiles.d/legacy.conf:14: Duplicate line for path "/run/lock", ignoring.
+2026-04-08T07:28:00.374840-04:00 kali systemd[1]: systemd-tmpfiles-clean.service: Deactivated successfully.
+2026-04-08T07:28:00.384407-04:00 kali systemd[1]: Finished systemd-tmpfiles-clean.service - Cleanup of Temporary Directories.
+2026-04-08T07:28:04.362419-04:00 kali NetworkManager[695]: <info>  [1775647684.3576] dhcp4 (eth0): state changed new lease, address=192.168.116.129
+2026-04-08T07:28:04.367112-04:00 kali dbus-daemon[536]: [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.4' (uid=0 pid=695 comm="/usr/sbin/NetworkManager --no-daemon")
+2026-04-08T07:28:04.383121-04:00 kali systemd[1]: Starting NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service...
+2026-04-08T07:28:04.426601-04:00 kali dbus-daemon[536]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+2026-04-08T07:28:04.428538-04:00 kali systemd[1]: Started NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service.
+2026-04-08T07:28:14.455612-04:00 kali systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+2026-04-08T07:29:41.693335-04:00 kali systemd[1]: Started session-7.scope - Session 7 of User kali.
+2026-04-08T07:29:43.244416-04:00 kali systemd[1]: session-7.scope: Deactivated successfully.
+2026-04-08T07:31:56.239248-04:00 kali systemd[1]: Started session-8.scope - Session 8 of User kali.
+2026-04-08T07:31:56.463120-04:00 kali systemd[1]: session-8.scope: Deactivated successfully.
+2026-04-08T07:32:39.065970-04:00 kali systemd[1]: Started session-9.scope - Session 9 of User kali.

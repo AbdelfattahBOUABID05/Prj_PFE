@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-4 fade-in-up">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="alert alert-info border-0 shadow-sm mb-4">
@@ -14,33 +14,33 @@
                 </ol>
             </div>
 
-            <div class="card shadow-sm border-0">
+            <div class="card glass-card border-0">
                 <div class="card-body p-4">
                     <h3 class="mb-4 text-primary"><i class="fas fa-envelope-open-text me-2"></i>Rapport par Email</h3>
                     <form id="emailForm">
                         <div class="mb-3">
                             <label class="form-label">Votre Email Gmail (Source)</label>
-                            <input type="email" id="sender_email" class="form-control" placeholder="votre-email@gmail.com" required>
+                            <input type="email" id="sender_email" class="form-control input-saas" placeholder="votre-email@gmail.com" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Votre Mot de passe d'application (16 caractères)</label>
-                            <input type="password" id="app_password" class="form-control" placeholder="xxxx xxxx xxxx xxxx" required>
+                            <input type="password" id="app_password" class="form-control input-saas" placeholder="xxxx xxxx xxxx xxxx" required>
                         </div>
                         <hr>
                         <div class="mb-3">
                             <label class="form-label">Email du Destinataire</label>
-                            <input type="email" id="dest_email" class="form-control" placeholder="destinataire@gmail.com" required>
+                            <input type="email" id="dest_email" class="form-control input-saas" placeholder="destinataire@gmail.com" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label font-weight-bold">Objet du message</label>
-                            <input type="text" id="subject" class="form-control" value="Rapport d'analyse de Logs - Système Fedora" required>
+                            <input type="text" id="subject" class="form-control input-saas" value="Rapport d'analyse de Logs - Système Fedora" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label font-weight-bold">Notes additionnelles</label>
-                            <textarea id="message" class="form-control" rows="3" placeholder="Ajoutez un commentaire ici..."></textarea>
+                            <textarea id="message" class="form-control input-saas" rows="3" placeholder="Ajoutez un commentaire ici..."></textarea>
                         </div>
                         <hr>
-                        <button type="submit" id="sendBtn" class="btn btn-primary w-100 py-2 shadow-sm">
+                        <button type="submit" id="sendBtn" class="btn btn-saas w-100 py-2">
                             <i class="fas fa-paper-plane me-2"></i>Envoyer le Rapport
                         </button>
                     </form>

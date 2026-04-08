@@ -2,37 +2,114 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}LogAnalyzer AI{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}LogAnalyzer{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <div class="sidebar">
-        <h4 class="fw-bold text-primary mb-5"><i class="fas fa-brain"></i> LogAnalyzer</h4>
-        <nav>
-            <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">
-                <i class="fas fa-chart-pie me-2"></i> Dashboard
-                
-            </a> <a href="/ssh" class="nav-link {% if request.path == '/ssh' %}active{% endif %}">
-                <i class="fas fa-server me-2"></i> Consulter avec SSH
-            </a>
+    <div class="sidebar d-none d-md-block">
+        <h4 class="fw-bold text-primary mb-4"><i class="fas fa-brain"></i> LogAnalyzer</h4>
+        <div class="sidebar-body">
+            <div class="sidebar-nav">
+                <nav>
+                    <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">
+                        <i class="fas fa-chart-pie"></i> Dashboard
+                    </a>
+                    <a href="/ssh" class="nav-link {% if request.path == '/ssh' %}active{% endif %}">
+                        <i class="fas fa-server"></i> Consulter avec SSH
+                    </a>
+                    <a href="/report" class="nav-link {% if request.path == '/report' %}active{% endif %}">
+                        <i class="fas fa-file-invoice"></i> Rapport d'Analyse
+                    </a>
+                    <a href="/details" class="nav-link {% if request.path == '/details' %}active{% endif %}">
+                        <i class="fas fa-list-ul"></i> Lignes de Logs
+                    </a>
+                </nav>
+            </div>
 
-            <a href="/report" class="nav-link {% if request.path == '/report' %}active{% endif %}">
-                <i class="fas fa-file-invoice me-2"></i> Rapport d'Analyse
-            </a>
-            
-            <a href="/details" class="nav-link {% if request.path == '/details' %}active{% endif %}">
-                <i class="fas fa-list-ul me-2"></i> Lignes de Logs
-            </a>
-        </nav>
+            <div class="sidebar-footer">
+                <div class="glass-card p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="fw-bold" style="color: rgba(26, 26, 26, 0.9);">
+                                {{ current_user.username if current_user.is_authenticated else "Guest" }}
+                            </div>
+                            {% if current_user.is_authenticated %}
+                                <span class="badge rounded-pill" style="background: rgba(0, 123, 255, 0.12); color: #0a66d6;">
+                                    {{ current_user.role }}
+                                </span>
+                            {% else %}
+                                <span class="badge rounded-pill" style="background: rgba(17, 24, 39, 0.08); color: rgba(26, 26, 26, 0.75);">
+                                    Public
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="dropdown dropup">
+                            <button class="btn btn-outline-saas btn-sm dropdown-toggle" data-bs-toggle="dropdown" data-bs-display="static">
+                                <i class="fas fa-user"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                {% if current_user.is_authenticated %}
+                                    <li><span class="dropdown-item-text small text-muted">Signed in</span></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    {% if current_user.role == 'Admin' %}
+                                        <li><a class="dropdown-item" href="/register"><i class="fas fa-user-plus me-2"></i>Create user</a></li>
+                                    {% endif %}
+                                    <li><a class="dropdown-item text-danger" href="/logout"><i class="fas fa-right-from-bracket me-2"></i>Logout</a></li>
+                                {% else %}
+                                    <li><a class="dropdown-item" href="/login"><i class="fas fa-right-to-bracket me-2"></i>Login</a></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="main-content">
+        <div class="no-print">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="mb-3">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} border-0 glass-card p-3 mb-2" role="alert">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+        </div>
         {% block content %}{% endblock %}
-        <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     </div>
+    <nav class="bottom-nav d-md-none" aria-label="Navigation mobile">
+        <div class="bottom-nav-inner">
+            <a href="/" class="{% if request.path == '/' %}active{% endif %}" aria-label="Dashboard">
+                <span class="icon"><i class="fas fa-chart-pie"></i></span>
+                <span>Dashboard</span>
+            </a>
+            <a href="/ssh" class="{% if request.path == '/ssh' %}active{% endif %}" aria-label="SSH">
+                <span class="icon"><i class="fas fa-server"></i></span>
+                <span>SSH</span>
+            </a>
+            <a href="/report" class="{% if request.path == '/report' %}active{% endif %}" aria-label="Rapport">
+                <span class="icon"><i class="fas fa-file-invoice"></i></span>
+                <span>Report</span>
+            </a>
+            <a href="/details" class="{% if request.path == '/details' %}active{% endif %}" aria-label="Logs">
+                <span class="icon"><i class="fas fa-list-ul"></i></span>
+                <span>Logs</span>
+            </a>
+        </div>
+    </nav>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> {% block extra_js %}{% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

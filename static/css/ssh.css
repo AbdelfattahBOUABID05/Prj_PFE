@@ -1,1 +1,17 @@
-const logPathInput = document.getElementById('logPath').value
+.ssh-container {
+    max-width: 980px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.ssh-container .card {
+    border: 0;
+}
+
+.ssh-container .form-label {
+    color: rgba(26, 26, 26, 0.8);
+}
+
+.ssh-container #statusMessage {
+    min-height: 24px;
+}

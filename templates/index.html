@@ -5,21 +5,21 @@
 {% endblock %}
 
 {% block content %}
-<div class="row g-4 mb-4">
+<div class="row g-4 mb-4 fade-in-up">
     <div class="col-12">
-        <div class="stat-card d-flex justify-content-between align-items-center bg-white shadow-sm border-0">
+        <div class="stat-card glass-card d-flex justify-content-between align-items-center">
             <div>
                 <h4 class="fw-bold mb-1">Tableau de Bord <span class="text-primary">Live SSH</span></h4>
                 <p class="text-muted mb-0">Visualisation des logs extraits de votre serveur Fedora.</p>
             </div>
-            <a href="/ssh" class="btn btn-primary-custom text-white">
+            <a href="/ssh" class="btn btn-saas">
                 <i class="fas fa-sync me-2"></i>Nouvelle Connexion SSH
             </a>
         </div>
     </div>
 
     <div class="col-md-3">
-        <div class="stat-card shadow-sm border-0">
+        <div class="stat-card glass-card">
             <div class="d-flex align-items-center">
                 <div class="stat-icon bg-danger text-white"><i class="fas fa-times-circle"></i></div>
                 <div class="ms-3">
@@ -31,25 +31,48 @@
     </div>
 </div>
 
-<div class="row g-4">
+<div class="row g-4 fade-in-up" style="animation-delay: 80ms;">
     <div class="col-md-5">
-        <div class="stat-card h-100 text-center shadow-sm border-0">
+        <div class="stat-card glass-card h-100 text-center">
             <h5 class="fw-bold mb-4 text-start">Répartition des Logs</h5>
             <div class="chart-container" style="position: relative; height:250px;">
+                <div class="skeleton" id="severitySkeleton" style="position:absolute; inset:0; border-radius: 18px;"></div>
                 <canvas id="logChart"></canvas>
             </div>
         </div>
     </div>
 
     <div class="col-md-7">
-        <div class="stat-card h-100 shadow-sm border-0">
+        <div class="stat-card glass-card h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold mb-0">Activité des Logs</h5>
+                <span class="badge rounded-pill" style="background: rgba(0, 123, 255, 0.12); color: #0a66d6;">Dernière analyse</span>
+            </div>
+            <div class="chart-container" style="position: relative; height:250px;">
+                <div class="skeleton" id="activitySkeleton" style="position:absolute; inset:0; border-radius: 18px;"></div>
+                <canvas id="activityChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 fade-in-up" style="animation-delay: 140ms;">
+    <div class="col-12">
+        <div class="stat-card glass-card">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h5 class="fw-bold">AI Insights</h5>
-                <span class="badge bg-success rounded-pill">Analyse SSH</span>
+                <span class="badge rounded-pill" style="background: rgba(0, 123, 255, 0.12); color: #0a66d6;">Analyse SSH</span>
             </div>
             <div id="aiResult" class="text-muted text-center py-5">
-                <i class="fas fa-robot fa-3x mb-3 opacity-25"></i>
-                <p>Aucune donnée SSH trouvée. Veuillez lancer une analyse.</p>
+                <div class="d-flex justify-content-center mb-3">
+                    <div class="skeleton" style="width: 64px; height: 64px; border-radius: 18px;"></div>
+                </div>
+                <div class="mx-auto" style="max-width: 420px;">
+                    <div class="skeleton mb-2" style="height: 14px; width: 72%;"></div>
+                    <div class="skeleton mb-2" style="height: 14px; width: 88%;"></div>
+                    <div class="skeleton" style="height: 14px; width: 62%;"></div>
+                </div>
+                <p class="mt-4 mb-0 small" style="color: rgba(26, 26, 26, 0.55);">En attente de données SSH…</p>
             </div>
         </div>
     </div>

@@ -38,6 +38,7 @@ document.getElementById('sshForm')?.addEventListener('submit', async function(e)
         if (result.status === "success") {
             // Ajout du chemin du fichier aux résultats pour l'affichage ultérieur
             result.path = logPathInput; 
+            result.generated_at = new Date().toISOString();
             
             // Stockage persistant des résultats dans le navigateur (LocalStorage)
             localStorage.setItem('lastAnalysis', JSON.stringify(result));

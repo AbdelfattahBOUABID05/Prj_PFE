@@ -7,76 +7,151 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container fade-in-up">
     <div class="d-flex justify-content-between align-items-center mb-4 no-print">
-        <h3 class="fw-bold">Rapport Final</h3>
-        <button onclick="downloadPDF()" class="btn btn-success shadow-sm">
+        <h3 class="fw-bold">Security Audit Report</h3>
+        <button onclick="downloadPDF()" class="btn btn-saas">
             <i class="fas fa-file-pdf me-2"></i> Exporter en PDF
         </button>
 
-        <a href="/send-report-page" class="btn btn-outline-secondary shadow-sm ms-2">
+        <a href="/send-report-page" class="btn btn-outline-saas ms-2">
             <i class="fas fa-paper-plane me-2"></i>Envoyer par Email
         </a>
     </div>
 
-    <div id="reportContent" class="report-paper">
-        <div class="report-header d-flex justify-content-between align-items-center">
-            <div>
-                <h2 class="fw-bold text-primary mb-0">LogAnalyzer AI</h2>
-                <p class="text-muted small">Analyse de Logs Système - Rapport Technique</p>
-            </div>
-            <div class="text-end">
-                <p class="mb-0 fw-bold">Date du rapport:</p>
-                <p id="reportDate" class="text-muted small"></p>
+    <div id="reportContent" class="audit-shell">
+        <div class="audit-watermark">Verified by LogAnalyzer AI</div>
+        <div class="audit-badge">
+            <i class="fas fa-shield-halved me-2"></i>Verified by LogAnalyzer AI
+        </div>
+
+        <div class="audit-header glass-card p-4">
+            <div class="d-flex flex-column flex-lg-row gap-4 justify-content-between">
+                <div class="flex-grow-1">
+                    <div class="audit-kicker">Executive Security Audit</div>
+                    <h2 class="audit-title mb-2">Rapport d’Analyse — Security Audit</h2>
+                    <div class="audit-meta">
+                        <div class="audit-meta-item">
+                            <div class="label">Timestamp</div>
+                            <div class="value" id="auditTimestamp">--</div>
+                        </div>
+                        <div class="audit-meta-item">
+                            <div class="label">Target</div>
+                            <div class="value"><span id="auditTargetIp">--</span></div>
+                        </div>
+                        <div class="audit-meta-item">
+                            <div class="label">Source Path</div>
+                            <div class="value"><span id="auditTargetPath">--</span></div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap mt-3 no-print">
+                        <a href="/details" class="btn btn-outline-saas btn-sm">
+                            <i class="fas fa-list-ul me-2"></i>Trace (Lignes de Logs)
+                        </a>
+                        <button class="btn btn-saas btn-sm" id="generateInsightsBtn" type="button">
+                            <i class="fas fa-wand-magic-sparkles me-2"></i>Generate Audit Insights
+                        </button>
+                    </div>
+                </div>
+
+                <div class="audit-gauge-wrap">
+                    <div class="audit-gauge" id="healthGauge" style="--p: 72;">
+                        <div class="audit-gauge-inner">
+                            <div class="audit-gauge-label">Global Health Score</div>
+                            <div class="audit-gauge-value"><span id="healthScoreValue">--</span><span class="unit">%</span></div>
+                            <div class="audit-gauge-sub" id="healthScoreSub">--</div>
+                        </div>
+                    </div>
+                    <div class="audit-gauge-footnote text-muted small mt-2">
+                        Basé sur le ratio Errors vs Info (+ volume total).
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
-            <span class="text-muted">Fichier analysé :</span>
-            <span id="repFilePath" class="fw-bold text-primary" style="word-break: break-all; max-width: 70%;">--</span>
-        </div>
-        <div class="row mb-5">
-            <div class="col-md-7">
-                <h5 class="fw-bold mb-3"><i class="fas fa-info-circle me-2"></i>Résumé Exécutif</h5>
-                <div class="stat-box mb-3">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Total des lignes analysées:</span>
-                        <span id="repTotal" class="fw-bold text-primary">0</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2 text-danger">
-                        <span>Erreurs critiques (Critical):</span>
-                        <span id="repErrors" class="fw-bold">0</span>
-                    </div>
-                    <div class="d-flex justify-content-between text-warning">
-                        <span>Avertissements (Warnings):</span>
-                        <span id="repWarnings" class="fw-bold">0</span>
-                    </div>
+        <div class="row g-4 mt-1">
+            <div class="col-md-4">
+                <div class="audit-stat glass-card p-4">
+                    <div class="audit-stat-title">Critical Issues</div>
+                    <div class="audit-stat-value" id="statCritical">0</div>
+                    <div class="audit-stat-sub">Errors détectées</div>
                 </div>
-                <p class="text-muted small">Ce rapport contient une analyse détaillée des événements système extraits via SSH depuis le serveur distant Fedora.</p>
             </div>
-            <div class="col-md-5">
-                <div style="height: 220px;">
-                    <canvas id="reportChart"></canvas>
+            <div class="col-md-4">
+                <div class="audit-stat glass-card p-4">
+                    <div class="audit-stat-title">System Stability</div>
+                    <div class="audit-stat-value" id="statStability">--</div>
+                    <div class="audit-stat-sub">Signal de stabilité (heuristique)</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="audit-stat glass-card p-4">
+                    <div class="audit-stat-title">AI Confidence Level</div>
+                    <div class="audit-stat-value"><span id="statConfidence">--</span><span class="unit">%</span></div>
+                    <div class="audit-stat-sub">Confiance IA sur les recommandations</div>
                 </div>
             </div>
         </div>
 
-        <h5 class="fw-bold mb-3"><i class="fas fa-list me-2"></i>Détails des événements majeurs</h5>
-        <div class="table-responsive">
-            <table class="table table-bordered table-report">
-                <thead>
-                    <tr>
-                        <th width="15%">Priorité</th>
-                        <th>Message du Log</th>
-                    </tr>
-                </thead>
-                <tbody id="reportTableBody">
-                    </tbody>
-            </table>
+        <div class="glass-card p-4 mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0"><i class="fas fa-table me-2"></i>Summary Table</h5>
+                <span class="badge rounded-pill" style="background: rgba(11, 18, 32, 0.08); color: rgba(26, 26, 26, 0.75);">Quick read</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table audit-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Value</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="auditSummaryBody"></tbody>
+                </table>
+            </div>
         </div>
-        
-        <div class="mt-5 pt-4 border-top text-center text-muted small">
-            <p>Généré automatiquement par LogAnalyzer Pro - PFE 2026</p>
+
+        <div class="row g-4 mt-1">
+            <div class="col-lg-4">
+                <div class="glass-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0"><i class="fas fa-bolt me-2"></i>Immediate Actions Required</h5>
+                        <span class="badge badge-sev badge-error">High</span>
+                    </div>
+                    <div id="findingsImmediate" class="audit-findings"></div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="glass-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0"><i class="fas fa-road me-2"></i>Long-term Recommendations</h5>
+                        <span class="badge badge-sev badge-warning">Medium</span>
+                    </div>
+                    <div id="findingsLongterm" class="audit-findings"></div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="glass-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0"><i class="fas fa-eye me-2"></i>Security Observations</h5>
+                        <span class="badge badge-sev badge-info">Info</span>
+                    </div>
+                    <div id="findingsObservations" class="audit-findings"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card p-4 mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0"><i class="fas fa-magnifying-glass me-2"></i>Log Traceability (Samples)</h5>
+                <span class="badge rounded-pill" style="background: rgba(0, 123, 255, 0.12); color: #0a66d6;">100% traceable</span>
+            </div>
+            <div id="traceSamples" class="audit-traces"></div>
+        </div>
+
+        <div class="audit-footer mt-4">
+            <div class="text-muted small">Generated by LogAnalyzer — PFE 2026</div>
         </div>
     </div>
 </div>
@@ -101,4 +176,5 @@
 {% block extra_js %}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/report-handler.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% endblock %}
