@@ -63,13 +63,13 @@ def parse_log_file(filepath):
             if not line:  # Ignorer les lignes vides
                 continue
                 
-            # Guard: ignore malformed lines without obvious timestamp header.
-            # Accept both ISO ("2026-04-08T14:56:03...") and classic syslog style.
+            # Garde-fou : ignorer les lignes malformées sans en-tête temporel évident.
+            # Accepte à la fois le format ISO ("2026-04-08T14:56:03...") et le syslog classique.
             has_ts = bool(ISO_TS_RE.search(line) or re.match(r'^[A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2}', line))
             if not has_ts:
                 continue
 
-            # First, map explicit syslog tokens like "<info>", "<warn>", "<err>".
+            # D'abord, mapper les tokens syslog explicites comme "<info>", "<warn>", "<err>".
             fields = _extract_fields(line)
             raw = fields.get("token_severity")
             if raw:

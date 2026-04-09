@@ -9,38 +9,38 @@
 {% block content %}
 <div class="container fade-in-up">
     <div class="d-flex justify-content-between align-items-center mb-4 no-print">
-        <h3 class="fw-bold">Security Audit Report</h3>
+        <h3 class="fw-bold">Rapport d'Audit de Sécurité</h3>
         <button onclick="downloadPDF()" class="btn btn-saas">
             <i class="fas fa-file-pdf me-2"></i> Exporter en PDF
         </button>
 
         <a href="/send-report-page" class="btn btn-outline-saas ms-2">
-            <i class="fas fa-paper-plane me-2"></i>Envoyer par Email
+            <i class="fas fa-paper-plane me-2"></i>Envoyer par e-mail
         </a>
     </div>
 
     <div id="reportContent" class="audit-shell">
-        <div class="audit-watermark">Verified by LogAnalyzer AI</div>
+        <div class="audit-watermark">Vérifié par LogAnalyzer IA</div>
         <div class="audit-badge">
-            <i class="fas fa-shield-halved me-2"></i>Verified by LogAnalyzer AI
+            <i class="fas fa-shield-halved me-2"></i>Vérifié par LogAnalyzer IA
         </div>
 
         <div class="audit-header glass-card p-4">
             <div class="d-flex flex-column flex-lg-row gap-4 justify-content-between">
                 <div class="flex-grow-1">
-                    <div class="audit-kicker">Executive Security Audit</div>
-                    <h2 class="audit-title mb-2">Rapport d’Analyse — Security Audit</h2>
+                    <div class="audit-kicker">Audit de Sécurité Exécutif</div>
+                    <h2 class="audit-title mb-2">Rapport d’Analyse — Audit de Sécurité</h2>
                     <div class="audit-meta">
                         <div class="audit-meta-item">
-                            <div class="label">Timestamp</div>
+                            <div class="label">Horodatage</div>
                             <div class="value" id="auditTimestamp">--</div>
                         </div>
                         <div class="audit-meta-item">
-                            <div class="label">Target</div>
+                            <div class="label">Cible</div>
                             <div class="value"><span id="auditTargetIp">--</span></div>
                         </div>
                         <div class="audit-meta-item">
-                            <div class="label">Source Path</div>
+                            <div class="label">Chemin source</div>
                             <div class="value"><span id="auditTargetPath">--</span></div>
                         </div>
                     </div>
@@ -49,7 +49,7 @@
                             <i class="fas fa-list-ul me-2"></i>Trace (Lignes de Logs)
                         </a>
                         <button class="btn btn-saas btn-sm" id="generateInsightsBtn" type="button">
-                            <i class="fas fa-wand-magic-sparkles me-2"></i>Generate Audit Insights
+                            <i class="fas fa-wand-magic-sparkles me-2"></i>Générer les aperçus d'audit
                         </button>
                     </div>
                 </div>
@@ -57,13 +57,13 @@
                 <div class="audit-gauge-wrap">
                     <div class="audit-gauge" id="healthGauge" style="--p: 72;">
                         <div class="audit-gauge-inner">
-                            <div class="audit-gauge-label">Global Health Score</div>
+                            <div class="audit-gauge-label">Score de Santé Global</div>
                             <div class="audit-gauge-value"><span id="healthScoreValue">--</span><span class="unit">%</span></div>
                             <div class="audit-gauge-sub" id="healthScoreSub">--</div>
                         </div>
                     </div>
                     <div class="audit-gauge-footnote text-muted small mt-2">
-                        Basé sur le ratio Errors vs Info (+ volume total).
+                        Basé sur le ratio Erreurs vs Info (+ volume total).
                     </div>
                 </div>
             </div>
@@ -72,21 +72,21 @@
         <div class="row g-4 mt-1">
             <div class="col-md-4">
                 <div class="audit-stat glass-card p-4">
-                    <div class="audit-stat-title">Critical Issues</div>
+                    <div class="audit-stat-title">Problèmes Critiques</div>
                     <div class="audit-stat-value" id="statCritical">0</div>
-                    <div class="audit-stat-sub">Errors détectées</div>
+                    <div class="audit-stat-sub">Erreurs détectées</div>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="audit-stat glass-card p-4">
-                    <div class="audit-stat-title">System Stability</div>
+                    <div class="audit-stat-title">Stabilité du Système</div>
                     <div class="audit-stat-value" id="statStability">--</div>
                     <div class="audit-stat-sub">Signal de stabilité (heuristique)</div>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="audit-stat glass-card p-4">
-                    <div class="audit-stat-title">AI Confidence Level</div>
+                    <div class="audit-stat-title">Niveau de Confiance IA</div>
                     <div class="audit-stat-value"><span id="statConfidence">--</span><span class="unit">%</span></div>
                     <div class="audit-stat-sub">Confiance IA sur les recommandations</div>
                 </div>
@@ -95,15 +95,15 @@
 
         <div class="glass-card p-4 mt-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold mb-0"><i class="fas fa-table me-2"></i>Summary Table</h5>
-                <span class="badge rounded-pill" style="background: rgba(11, 18, 32, 0.08); color: rgba(26, 26, 26, 0.75);">Quick read</span>
+                <h5 class="fw-bold mb-0"><i class="fas fa-table me-2"></i>Tableau récapitulatif</h5>
+                <span class="badge rounded-pill" style="background: rgba(11, 18, 32, 0.08); color: rgba(26, 26, 26, 0.75);">Lecture rapide</span>
             </div>
             <div class="table-responsive">
                 <table class="table audit-table mb-0">
                     <thead>
                         <tr>
-                            <th>Metric</th>
-                            <th>Value</th>
+                            <th>Métrique</th>
+                            <th>Valeur</th>
                             <th>Notes</th>
                         </tr>
                     </thead>
@@ -116,8 +116,8 @@
             <div class="col-lg-4">
                 <div class="glass-card p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold mb-0"><i class="fas fa-bolt me-2"></i>Immediate Actions Required</h5>
-                        <span class="badge badge-sev badge-error">High</span>
+                        <h5 class="fw-bold mb-0"><i class="fas fa-bolt me-2"></i>Actions Immédiates Requises</h5>
+                        <span class="badge badge-sev badge-error">Élevé</span>
                     </div>
                     <div id="findingsImmediate" class="audit-findings"></div>
                 </div>
@@ -125,8 +125,8 @@
             <div class="col-lg-4">
                 <div class="glass-card p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold mb-0"><i class="fas fa-road me-2"></i>Long-term Recommendations</h5>
-                        <span class="badge badge-sev badge-warning">Medium</span>
+                        <h5 class="fw-bold mb-0"><i class="fas fa-road me-2"></i>Recommandations à Long Terme</h5>
+                        <span class="badge badge-sev badge-warning">Moyen</span>
                     </div>
                     <div id="findingsLongterm" class="audit-findings"></div>
                 </div>
@@ -134,7 +134,7 @@
             <div class="col-lg-4">
                 <div class="glass-card p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold mb-0"><i class="fas fa-eye me-2"></i>Security Observations</h5>
+                        <h5 class="fw-bold mb-0"><i class="fas fa-eye me-2"></i>Observations de Sécurité</h5>
                         <span class="badge badge-sev badge-info">Info</span>
                     </div>
                     <div id="findingsObservations" class="audit-findings"></div>
@@ -144,14 +144,14 @@
 
         <div class="glass-card p-4 mt-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold mb-0"><i class="fas fa-magnifying-glass me-2"></i>Log Traceability (Samples)</h5>
-                <span class="badge rounded-pill" style="background: rgba(0, 123, 255, 0.12); color: #0a66d6;">100% traceable</span>
+                <h5 class="fw-bold mb-0"><i class="fas fa-magnifying-glass me-2"></i>Traçabilité des Logs (Exemples)</h5>
+                <span class="badge rounded-pill" style="background: rgba(0, 123, 255, 0.12); color: #0a66d6;">100% traçable</span>
             </div>
             <div id="traceSamples" class="audit-traces"></div>
         </div>
 
         <div class="audit-footer mt-4">
-            <div class="text-muted small">Generated by LogAnalyzer — PFE 2026</div>
+            <div class="text-muted small">Généré par LogAnalyzer — PFE 2026</div>
         </div>
     </div>
 </div>

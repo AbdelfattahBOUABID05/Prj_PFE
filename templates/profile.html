@@ -1,39 +1,39 @@
 {% extends "base.html" %}
 
-{% block title %}Profile / Settings{% endblock %}
+{% block title %}Profil / Paramètres{% endblock %}
 
 {% block content %}
 <div class="container fade-in-up">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
-            <div class="text-muted small">Profile</div>
-            <h3 class="fw-bold mb-0">Change Password</h3>
+            <div class="text-muted small">Profil</div>
+            <h3 class="fw-bold mb-0">Changer le mot de passe</h3>
         </div>
-        <div class="badge badge-source">Signed in as {{ current_user.username }}</div>
+        <div class="badge badge-source">Connecté en tant que {{ current_user.username }}</div>
     </div>
 
     <div class="glass-card p-4" style="max-width: 720px;">
         <form method="POST" class="needs-validation" novalidate id="changePasswordForm">
             <div class="mb-3">
-                <label class="form-label fw-bold small">Current password</label>
+                <label class="form-label fw-bold small">Mot de passe actuel</label>
                 <input type="password" class="form-control input-saas" name="current_password" required minlength="6">
-                <div class="invalid-feedback">Please enter your current password.</div>
+                <div class="invalid-feedback">Veuillez saisir votre mot de passe actuel.</div>
             </div>
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label fw-bold small">New password</label>
+                    <label class="form-label fw-bold small">Nouveau mot de passe</label>
                     <input type="password" class="form-control input-saas" name="new_password" id="newPassword" required minlength="8">
-                    <div class="invalid-feedback">Password must be at least 8 characters.</div>
+                    <div class="invalid-feedback">Le mot de passe doit comporter au moins 8 caractères.</div>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-bold small">Confirm new password</label>
+                    <label class="form-label fw-bold small">Confirmer le nouveau mot de passe</label>
                     <input type="password" class="form-control input-saas" name="confirm_password" id="confirmNewPassword" required minlength="8">
-                    <div class="invalid-feedback">Passwords must match.</div>
+                    <div class="invalid-feedback">Les mots de passe doivent correspondre.</div>
                 </div>
             </div>
 
             <button class="btn btn-saas mt-4" type="submit">
-                <i class="fas fa-lock me-2"></i>Update password
+                <i class="fas fa-lock me-2"></i>Mettre à jour le mot de passe
             </button>
         </form>
     </div>

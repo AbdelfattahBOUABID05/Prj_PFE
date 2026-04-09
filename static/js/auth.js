@@ -20,11 +20,11 @@ function attachPasswordMatch(form) {
         const ok = pw.value && cpw.value && pw.value === cpw.value;
         if (!cpw.value) {
             cpw.setCustomValidity('');
-            if (confirmFeedback) confirmFeedback.textContent = 'Passwords must match.';
+            if (confirmFeedback) confirmFeedback.textContent = 'Les mots de passe doivent correspondre.';
             return;
         }
         cpw.setCustomValidity(ok ? '' : 'mismatch');
-        if (confirmFeedback) confirmFeedback.textContent = ok ? '' : 'Passwords must match.';
+        if (confirmFeedback) confirmFeedback.textContent = ok ? '' : 'Les mots de passe doivent correspondre.';
     }
 
     pw.addEventListener('input', validateMatch);

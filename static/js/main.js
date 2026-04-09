@@ -1,4 +1,4 @@
-// Keep chart instances so we can re-render safely
+// Conserve les instances des graphiques pour un re-rendu propre.
 let severityChart = null;
 let activityChart = null;
 
@@ -25,8 +25,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 /**
- * Fonction pour actualiser les éléments du tableau de bord (Dashboard)
- * @param {Object} data - Les données de l'analyse des logs
+ * Met à jour les éléments du tableau de bord.
+ * @param {Object} data - Données issues de l'analyse des logs.
  */
 function updateDashboard(data) {
     // Mise à jour du compteur d'erreurs dans l'interface
@@ -38,7 +38,7 @@ function updateDashboard(data) {
     hideSkeleton('severitySkeleton');
     hideSkeleton('activitySkeleton');
 
-    // Mise à jour de la section de notification et ajout du bouton de rapport
+    // Met à jour la zone d'information et injecte le bouton de génération du rapport.
     const aiResult = document.getElementById('aiResult');
     if (aiResult) {
         aiResult.innerHTML = `
@@ -51,11 +51,40 @@ function updateDashboard(data) {
                     </div>
                 </div>
             </div>
-            <button class="btn btn-outline-saas btn-sm mt-3">
+            <button id="generateReportBtn" class="btn btn-outline-saas btn-sm mt-3" type="button">
                 <i class="fas fa-magic me-2"></i>Générer un rapport IA
             </button>
         `;
+        attachGenerateReportHandler();
     }
+}
+
+function attachGenerateReportHandler() {
+    const btn = document.getElementById('generateReportBtn');
+    if (!btn || btn.dataset.bound === '1') return;
+    btn.dataset.bound = '1';
+
+    btn.addEventListener('click', async () => {
+        const original = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Analyse en cours...';
+        try {
+            const res = await fetch('/generate-report', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ scope: 'day' })
+            });
+            const payload = await res.json();
+            if (!res.ok || payload?.status !== 'success') {
+                throw new Error(payload?.message || 'Erreur inconnue');
+            }
+            window.location.href = '/report';
+        } catch (e) {
+            window.alert('Erreur lors de la génération du rapport. Veuillez réessayer');
+            btn.disabled = false;
+            btn.innerHTML = original;
+        }
+    });
 }
 
 function hideSkeleton(id) {
@@ -99,7 +128,7 @@ function renderSeverityChart(data) {
     severityChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['Errors', 'Warnings', 'Info'],
+            labels: ['Erreurs', 'Avertissements', 'Info'],
             datasets: [{
                 data: [data.stats.errors, data.stats.warnings, data.stats.info],
                 backgroundColor: [
@@ -140,7 +169,7 @@ function renderActivityChart(data) {
         data: {
             labels,
             datasets: [{
-                label: 'Logs',
+                label: 'Journaux',
                 data: values,
                 borderColor: COLORS.softBlue,
                 backgroundColor: gradient,
@@ -175,8 +204,8 @@ function renderActivityChart(data) {
 }
 
 function buildActivitySeries(data) {
-    // Build a simple time series by parsing timestamps from log lines.
-    // Fallback: if no timestamps, show a 10-bucket distribution across the loaded lines.
+    // Construit une série temporelle simple depuis les horodatages des lignes.
+    // Repli : s'il n'y a pas d'horodatage, affiche une distribution en 10 segments.
     const allLines = [];
     const segments = data?.segments || {};
     for (const key of Object.keys(segments)) {
@@ -201,7 +230,7 @@ function buildActivitySeries(data) {
         return result;
     }
 
-    // Bucket per minute
+    // Agrégation par minute
     const map = new Map();
     for (const item of parsed) {
         const d = item.date;
@@ -210,19 +239,19 @@ function buildActivitySeries(data) {
     }
 
     const keys = Array.from(map.keys()).sort();
-    const condensed = keys.slice(Math.max(0, keys.length - 20)); // keep last N buckets for readability
+    const condensed = keys.slice(Math.max(0, keys.length - 20)); // Conserve les derniers segments pour la lisibilité.
     return condensed.map(k => ({ label: k.split(' ')[1], count: map.get(k) }));
 }
 
 function parseSyslogDate(line) {
-    // ISO-8601: "2026-04-08T14:56:03" (optionally with ms/timezone)
+    // ISO-8601: "2026-04-08T14:56:03" (éventuellement avec ms/fuseau)
     const iso = String(line || '').match(/(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+\-]\d{2}:\d{2})?)/);
     if (iso) {
         const d = new Date(iso[1]);
         if (!Number.isNaN(d.getTime())) return d;
     }
 
-    // Common syslog: "Mar 10 12:34:56 host ..."
+    // Syslog classique : "Mar 10 12:34:56 host ..."
     const m = line.match(/^([A-Z][a-z]{2})\s+(\d{1,2})\s+(\d{2}):(\d{2}):(\d{2})/);
     if (!m) return null;
 
@@ -237,17 +266,17 @@ function parseSyslogDate(line) {
     const mm = Number(m[4]);
     const ss = Number(m[5]);
 
-    // Assume local timezone; good enough for visualization
+    // Suppose le fuseau local : suffisant pour la visualisation.
     return new Date(year, month, day, hh, mm, ss);
 }
 
 // ----------------------------
-// Monitoring view (Details page)
+// Vue monitoring (page Détails)
 // ----------------------------
 
 function initDetailsMonitoringView(data) {
     const grid = document.getElementById('logGrid');
-    if (!grid) return; // not on details page
+    if (!grid) return; // Pas sur la page Détails.
 
     const normalized = normalizeAnalysis(data);
     renderMetadata(normalized);
@@ -296,7 +325,7 @@ function normalizeAnalysis(data) {
     (segments.WARNING || []).forEach(l => push('WARNING', l));
     (segments.INFO || []).forEach(l => push('INFO', l));
 
-    // Stable sort by timestamp if present, else keep severity order
+    // Tri stable par horodatage si présent, sinon conserve l'ordre par sévérité.
     const withDates = rows.filter(r => r.timestampDate);
     if (withDates.length >= 3) {
         rows.sort((a, b) => {
@@ -322,9 +351,9 @@ function renderMetadata(model) {
     const metaModified = document.getElementById('metaModified');
     const metaLines = document.getElementById('metaLines');
 
-    if (sourceBadge) sourceBadge.textContent = `Source: ${model.file}`;
+    if (sourceBadge) sourceBadge.textContent = `Source : ${model.file}`;
     if (metaFile) metaFile.textContent = model.file;
-    if (metaSize) metaSize.textContent = model.payloadBytes ? `${formatBytes(model.payloadBytes)} (payload)` : '--';
+    if (metaSize) metaSize.textContent = model.payloadBytes ? `${formatBytes(model.payloadBytes)} (charge utile)` : '--';
     if (metaModified) metaModified.textContent = model.capturedAt ? new Date(model.capturedAt).toLocaleString() : '--';
     if (metaLines) metaLines.textContent = String(model.rows.length || 0);
 
@@ -390,7 +419,7 @@ function renderGrid(model, state) {
         const ts = r.timestamp ? `<span class="log-ts">${escapeHtml(r.timestamp)}</span>` : `<span class="log-ts">--</span>`;
         return `
             <div class="log-row ${sevClass}" data-id="${r.id}" style="animation-delay:${delay}ms;">
-                <button class="exp-btn" type="button" aria-label="Expand" data-action="expand">
+                <button class="exp-btn" type="button" aria-label="Développer" data-action="expand">
                     <i class="fas fa-plus"></i>
                 </button>
                 <div class="log-sev">${r.severity}</div>
@@ -399,10 +428,10 @@ function renderGrid(model, state) {
                 <div class="log-expanded d-none">
                     <div class="expanded-actions">
                         <button class="btn btn-outline-saas btn-sm" data-action="copy">
-                            <i class="fas fa-copy me-2"></i>Copy line
+                            <i class="fas fa-copy me-2"></i>Copier la ligne
                         </button>
                         <button class="btn btn-saas btn-sm" data-action="ai">
-                            <i class="fas fa-robot me-2"></i>AI Analyze
+                            <i class="fas fa-robot me-2"></i>Analyser avec IA
                         </button>
                     </div>
                     <pre class="expanded-pre">${escapeHtml(r.line)}</pre>
@@ -411,7 +440,7 @@ function renderGrid(model, state) {
         `;
     }).join('');
 
-    // Event delegation
+    // Délégation d'événements
     grid.onclick = async (e) => {
         const btn = e.target.closest('button[data-action]');
         if (!btn) return;
@@ -471,7 +500,7 @@ async function runAiInsight(line) {
         if (actions && commands.length) {
             actions.innerHTML = commands.map((cmd, idx) => `
                 <button class="btn btn-outline-saas btn-sm" data-cmd-idx="${idx}">
-                    <i class="fas fa-terminal me-2"></i>Copy command
+                    <i class="fas fa-terminal me-2"></i>Copier la commande
                 </button>
             `).join('');
             actions.onclick = async (e) => {
@@ -507,7 +536,7 @@ function trimMessage(line) {
 
 function renderHighlightedMessage(line) {
     const safe = escapeHtml(String(line || ''));
-    // Highlight timestamp token (syslog) subtly
+    // Met en évidence le token d'horodatage (syslog) de façon discrète.
     return safe
         .replace(/^([A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})/, '<span class="log-ts">$1</span>')
         .replace(/(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+\-]\d{2}:\d{2})?)/, '<span class="log-ts">$1</span>');
@@ -517,7 +546,7 @@ function extractCommands(text) {
     const lines = String(text || '').split('\n').map(l => l.trim()).filter(Boolean);
     const candidates = [];
 
-    // Prefer fenced code blocks if any
+    // Priorise les blocs de code si présents.
     const fenced = String(text || '').match(/```([\s\S]*?)```/g);
     if (fenced) {
         fenced.forEach(block => {
@@ -526,7 +555,7 @@ function extractCommands(text) {
         });
     }
 
-    // Heuristic single-line commands
+    // Heuristique pour extraire des commandes sur une ligne.
     const keywords = ['systemctl', 'journalctl', 'dnf', 'yum', 'apt', 'grep', 'tail', 'sshd', 'firewall-cmd'];
     lines.forEach(l => {
         const raw = l.replace(/^\$\s*/, '');
@@ -534,7 +563,7 @@ function extractCommands(text) {
         if (keywords.some(k => raw.includes(k))) candidates.push(raw);
     });
 
-    // unique, keep max 3
+    // Uniques, maximum 3.
     const uniq = Array.from(new Set(candidates)).slice(0, 3);
     return uniq;
 }
@@ -543,7 +572,7 @@ async function copyToClipboard(text) {
     try {
         await navigator.clipboard.writeText(String(text || ''));
     } catch (e) {
-        // Fallback
+        // Repli
         const ta = document.createElement('textarea');
         ta.value = String(text || '');
         document.body.appendChild(ta);

@@ -9,7 +9,7 @@ class Config:
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
     
     UPLOAD_FOLDER = 'uploads'
-    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # Taille maximale 16 Mo
 
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///log_analyzer.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False

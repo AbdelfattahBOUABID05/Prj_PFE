@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}Admin — Users{% endblock %}
+{% block title %}Admin — Utilisateurs{% endblock %}
 
 {% block content %}
 <div class="container fade-in-up">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
-            <div class="text-muted small">Admin / Users</div>
-            <h3 class="fw-bold mb-0">User Management</h3>
+            <div class="text-muted small">Admin / Utilisateurs</div>
+            <h3 class="fw-bold mb-0">Gestion des utilisateurs</h3>
         </div>
         <a class="btn btn-saas" href="/register">
-            <i class="fas fa-user-plus me-2"></i>Create user
+            <i class="fas fa-user-plus me-2"></i>Créer un utilisateur
         </a>
     </div>
 
@@ -19,10 +19,10 @@
             <table class="table align-middle mb-0">
                 <thead>
                     <tr class="text-muted small">
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th class="d-none d-md-table-cell">Created At</th>
+                        <th>Nom d'utilisateur</th>
+                        <th>E-mail</th>
+                        <th>Rôle</th>
+                        <th class="d-none d-md-table-cell">Créé le</th>
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>
@@ -62,7 +62,7 @@
 
 {% block extra_css %}
 <style>
-  /* Keep modals crisp with glassmorphism */
+  /* Garde les modales nettes avec un style glassmorphism */
   .modal .glass-card { box-shadow: var(--shadow-soft); }
 </style>
 {% endblock %}
@@ -73,80 +73,80 @@
 
 {% block modals %}
 {% for u in users %}
-    <!-- Edit modal -->
+    <!-- Modale d'édition -->
     <div class="modal fade" data-bs-backdrop="static" id="editUserModal{{ u.id }}" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content glass-card" style="border: 0;">
                 <div class="modal-header" style="border-bottom: 1px solid rgba(15, 23, 42, 0.08);">
-                    <h5 class="modal-title fw-bold">Edit user</h5>
+                    <h5 class="modal-title fw-bold">Modifier l'utilisateur</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form method="POST" action="/admin/users/{{ u.id }}/edit">
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label class="form-label fw-bold small">Username</label>
+                            <label class="form-label fw-bold small">Nom d'utilisateur</label>
                             <input class="form-control input-saas" name="username" value="{{ u.username }}" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold small">Email</label>
+                            <label class="form-label fw-bold small">E-mail</label>
                             <input class="form-control input-saas" type="email" name="email" value="{{ u.email }}" required>
                         </div>
                         <div class="mb-0">
-                            <label class="form-label fw-bold small">Role</label>
+                            <label class="form-label fw-bold small">Rôle</label>
                             <select class="form-select input-saas" name="role" required>
-                                <option value="Analyst" {% if u.role == 'Analyst' %}selected{% endif %}>IT Analyst</option>
-                                <option value="Admin" {% if u.role == 'Admin' %}selected{% endif %}>Super Admin</option>
+                                <option value="Analyst" {% if u.role == 'Analyst' %}selected{% endif %}>Analyste IT</option>
+                                <option value="Admin" {% if u.role == 'Admin' %}selected{% endif %}>Super administrateur</option>
                             </select>
                         </div>
                     </div>
                     <div class="modal-footer" style="border-top: 1px solid rgba(15, 23, 42, 0.08);">
-                        <button type="button" class="btn btn-outline-saas" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-saas">Save changes</button>
+                        <button type="button" class="btn btn-outline-saas" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-saas">Enregistrer</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Reset password modal -->
+    <!-- Modale de réinitialisation du mot de passe -->
     <div class="modal fade" data-bs-backdrop="static" id="resetUserModal{{ u.id }}" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content glass-card" style="border: 0;">
                 <div class="modal-header" style="border-bottom: 1px solid rgba(15, 23, 42, 0.08);">
-                    <h5 class="modal-title fw-bold">Reset password</h5>
+                    <h5 class="modal-title fw-bold">Réinitialiser le mot de passe</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form method="POST" action="/admin/users/{{ u.id }}/reset-password">
                     <div class="modal-body">
-                        <div class="text-muted small mb-3">Set a temporary password for <b>{{ u.username }}</b>.</div>
-                        <label class="form-label fw-bold small">Temporary password</label>
+                        <div class="text-muted small mb-3">Définissez un mot de passe temporaire pour <b>{{ u.username }}</b>.</div>
+                        <label class="form-label fw-bold small">Mot de passe temporaire</label>
                         <input class="form-control input-saas" name="temp_password" value="Temp@12345" required minlength="8">
                     </div>
                     <div class="modal-footer" style="border-top: 1px solid rgba(15, 23, 42, 0.08);">
-                        <button type="button" class="btn btn-outline-saas" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-saas">Reset</button>
+                        <button type="button" class="btn btn-outline-saas" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-saas">Réinitialiser</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Delete modal -->
+    <!-- Modale de suppression -->
     <div class="modal fade" data-bs-backdrop="static" id="deleteUserModal{{ u.id }}" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content glass-card" style="border: 0;">
                 <div class="modal-header" style="border-bottom: 1px solid rgba(15, 23, 42, 0.08);">
-                    <h5 class="modal-title fw-bold text-danger">Delete user</h5>
+                    <h5 class="modal-title fw-bold text-danger">Supprimer l'utilisateur</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form method="POST" action="/admin/users/{{ u.id }}/delete">
                     <div class="modal-body">
-                        <div>Delete <b>{{ u.username }}</b> permanently?</div>
-                        <div class="text-muted small mt-2">This will remove the user account and their analyses.</div>
+                        <div>Supprimer définitivement <b>{{ u.username }}</b> ?</div>
+                        <div class="text-muted small mt-2">Cela supprimera le compte utilisateur et ses analyses.</div>
                     </div>
                     <div class="modal-footer" style="border-top: 1px solid rgba(15, 23, 42, 0.08);">
-                        <button type="button" class="btn btn-outline-saas" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-saas" style="background: linear-gradient(135deg, #B42318 0%, #7A271A 100%); box-shadow: 0 10px 24px rgba(180, 35, 24, 0.18);">Delete</button>
+                        <button type="button" class="btn btn-outline-saas" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-saas" style="background: linear-gradient(135deg, #B42318 0%, #7A271A 100%); box-shadow: 0 10px 24px rgba(180, 35, 24, 0.18);">Supprimer</button>
                     </div>
                 </form>
             </div>

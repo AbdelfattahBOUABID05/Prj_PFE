@@ -20,7 +20,7 @@
             <div class="sidebar-nav">
                 <nav>
                     <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">
-                        <i class="fas fa-chart-pie"></i> Dashboard
+                        <i class="fas fa-chart-pie"></i> Tableau de bord
                     </a>
                     <a href="/ssh" class="nav-link {% if request.path == '/ssh' %}active{% endif %}">
                         <i class="fas fa-server"></i> Consulter avec SSH
@@ -39,7 +39,7 @@
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <div class="fw-bold" style="color: rgba(26, 26, 26, 0.9);">
-                                {{ current_user.username if current_user.is_authenticated else "Guest" }}
+                                {{ current_user.username if current_user.is_authenticated else "Invité" }}
                             </div>
                             {% if current_user.is_authenticated %}
                                 <span class="badge rounded-pill" style="background: rgba(0, 123, 255, 0.12); color: #0a66d6;">
@@ -57,16 +57,16 @@
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 {% if current_user.is_authenticated %}
-                                    <li><span class="dropdown-item-text small text-muted">Signed in</span></li>
+                                    <li><span class="dropdown-item-text small text-muted">Connecté</span></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="/profile"><i class="fas fa-gear me-2"></i>Profile / Settings</a></li>
+                                    <li><a class="dropdown-item" href="/profile"><i class="fas fa-gear me-2"></i>Profil / Paramètres</a></li>
                                     {% if current_user.role == 'Admin' %}
-                                        <li><a class="dropdown-item" href="/register"><i class="fas fa-user-plus me-2"></i>Create user</a></li>
-                                        <li><a class="dropdown-item" href="/admin/users"><i class="fas fa-users-gear me-2"></i>Manage users</a></li>
+                                        <li><a class="dropdown-item" href="/register"><i class="fas fa-user-plus me-2"></i>Créer un utilisateur</a></li>
+                                        <li><a class="dropdown-item" href="/admin/users"><i class="fas fa-users-gear me-2"></i>Gérer les utilisateurs</a></li>
                                     {% endif %}
-                                    <li><a class="dropdown-item text-danger" href="/logout"><i class="fas fa-right-from-bracket me-2"></i>Logout</a></li>
+                                    <li><a class="dropdown-item text-danger" href="/logout"><i class="fas fa-right-from-bracket me-2"></i>Déconnexion</a></li>
                                 {% else %}
-                                    <li><a class="dropdown-item" href="/login"><i class="fas fa-right-to-bracket me-2"></i>Login</a></li>
+                                    <li><a class="dropdown-item" href="/login"><i class="fas fa-right-to-bracket me-2"></i>Connexion</a></li>
                                 {% endif %}
                             </ul>
                         </div>
@@ -93,9 +93,9 @@
     </div>
     <nav class="bottom-nav d-md-none" aria-label="Navigation mobile">
         <div class="bottom-nav-inner">
-            <a href="/" class="{% if request.path == '/' %}active{% endif %}" aria-label="Dashboard">
+            <a href="/" class="{% if request.path == '/' %}active{% endif %}" aria-label="Tableau de bord">
                 <span class="icon"><i class="fas fa-chart-pie"></i></span>
-                <span>Dashboard</span>
+                <span>Tableau de bord</span>
             </a>
             <a href="/ssh" class="{% if request.path == '/ssh' %}active{% endif %}" aria-label="SSH">
                 <span class="icon"><i class="fas fa-server"></i></span>
@@ -103,7 +103,7 @@
             </a>
             <a href="/report" class="{% if request.path == '/report' %}active{% endif %}" aria-label="Rapport">
                 <span class="icon"><i class="fas fa-file-invoice"></i></span>
-                <span>Report</span>
+                <span>Rapport</span>
             </a>
             <a href="/details" class="{% if request.path == '/details' %}active{% endif %}" aria-label="Logs">
                 <span class="icon"><i class="fas fa-list-ul"></i></span>

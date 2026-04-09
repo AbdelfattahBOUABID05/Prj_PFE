@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Détails des Logs - Analysis{% endblock %}
+{% block title %}Détails des logs - Analyse{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-0 fade-in-up">
@@ -14,7 +14,7 @@
             <h3 class="fw-bold mb-0">Analyse détaillée des logs</h3>
         </div>
         <div class="d-flex align-items-center gap-2 flex-wrap">
-            <span class="badge badge-source" id="sourceBadge">Source: --</span>
+            <span class="badge badge-source" id="sourceBadge">Source : --</span>
             <a href="/report" class="btn btn-outline-saas btn-sm">
                 <i class="fas fa-file-invoice me-2"></i>Ouvrir le rapport
             </a>
@@ -25,7 +25,7 @@
         <div class="col-lg-4">
             <div class="glass-card p-4">
                 <div class="d-flex align-items-center justify-content-between mb-3">
-                    <h5 class="fw-bold mb-0"><i class="fas fa-circle-info me-2"></i>Log Metadata</h5>
+                    <h5 class="fw-bold mb-0"><i class="fas fa-circle-info me-2"></i>Métadonnées des logs</h5>
                     <span class="badge rounded-pill" style="background: rgba(0, 123, 255, 0.12); color: #0a66d6;">Contexte</span>
                 </div>
                 <div class="monitor-meta-grid">
@@ -48,19 +48,19 @@
                 </div>
                 <hr class="my-4">
                 <div class="d-flex gap-2 flex-wrap">
-                    <span class="badge badge-sev badge-error">Errors <span id="count-ERROR">0</span></span>
-                    <span class="badge badge-sev badge-warning">Warnings <span id="count-WARNING">0</span></span>
+                    <span class="badge badge-sev badge-error">Erreurs <span id="count-ERROR">0</span></span>
+                    <span class="badge badge-sev badge-warning">Avertissements <span id="count-WARNING">0</span></span>
                     <span class="badge badge-sev badge-info">Info <span id="count-INFO">0</span></span>
                 </div>
             </div>
 
             <div class="glass-card p-4 mt-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0"><i class="fas fa-wand-magic-sparkles me-2"></i>Smart Insight</h5>
+                    <h5 class="fw-bold mb-0"><i class="fas fa-wand-magic-sparkles me-2"></i>Aperçu Intelligent</h5>
                     <span class="badge rounded-pill" style="background: rgba(17, 24, 39, 0.08); color: rgba(26, 26, 26, 0.75);">IA</span>
                 </div>
                 <div id="insightEmpty" class="text-muted small">
-                    Sélectionnez une ligne (Expand) pour lancer une analyse IA et obtenir une solution actionable.
+                    Sélectionnez une ligne (Développer) pour lancer une analyse IA et obtenir une action recommandée.
                 </div>
                 <div id="insightCard" class="d-none">
                     <div class="insight-body" id="insightText"></div>
@@ -70,7 +70,7 @@
 
             <div class="glass-card p-4 mt-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0"><i class="fas fa-timeline me-2"></i>Timeline</h5>
+                    <h5 class="fw-bold mb-0"><i class="fas fa-timeline me-2"></i>Chronologie</h5>
                     <span class="badge rounded-pill" style="background: rgba(0, 123, 255, 0.12); color: #0a66d6;">Événements</span>
                 </div>
                 <div id="timeline" class="stepper"></div>
@@ -82,13 +82,13 @@
                 <div class="d-flex flex-column flex-md-row gap-3 justify-content-between align-items-md-center mb-3">
                     <div class="d-flex gap-2 flex-wrap">
                         <button class="btn btn-outline-saas btn-sm severity-chip active" data-sev="ALL">
-                            <i class="fas fa-layer-group me-2"></i>All
+                            <i class="fas fa-layer-group me-2"></i>Tous
                         </button>
                         <button class="btn btn-outline-saas btn-sm severity-chip" data-sev="ERROR">
-                            <i class="fas fa-circle-xmark me-2"></i>Error
+                            <i class="fas fa-circle-xmark me-2"></i>Erreur
             </button>
                         <button class="btn btn-outline-saas btn-sm severity-chip" data-sev="WARNING">
-                            <i class="fas fa-triangle-exclamation me-2"></i>Warning
+                            <i class="fas fa-triangle-exclamation me-2"></i>Avertissement
             </button>
                         <button class="btn btn-outline-saas btn-sm severity-chip" data-sev="INFO">
                             <i class="fas fa-circle-info me-2"></i>Info
@@ -104,8 +104,8 @@
                 <div class="log-terminal">
                     <div class="log-grid-header">
                         <div class="col-exp"></div>
-                        <div class="col-sev">Severity</div>
-                        <div class="col-time d-none d-md-block">Timestamp</div>
+                        <div class="col-sev">Sévérité</div>
+                        <div class="col-time d-none d-md-block">Horodatage</div>
                         <div class="col-msg">Message</div>
                     </div>
 
@@ -119,7 +119,7 @@
 
                 <div class="d-flex justify-content-between align-items-center mt-3">
                     <div class="text-muted small" id="gridCount">0 lignes</div>
-                    <div class="text-muted small">Astuce: cliquez sur <b>Expand</b> pour voir la ligne complète</div>
+                    <div class="text-muted small">Astuce : cliquez sur <b>Développer</b> pour voir la ligne complète</div>
         </div>
         </div>
         </div>

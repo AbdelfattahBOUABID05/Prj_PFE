@@ -2,19 +2,47 @@
  * Gestion de l'affichage du rapport d'analyse et intégration de l'IA.
  */
 document.addEventListener('DOMContentLoaded', function() {
-    // Récupération des données brutes stockées après l'analyse SSH ou Upload
+    if (!document.getElementById('auditSummaryBody')) return; // Pas sur la page rapport
+    initReportPage();
+});
+
+async function initReportPage() {
     const rawData = localStorage.getItem('lastAnalysis');
-    
-    if (!rawData) {
-        console.error("Aucune donnée trouvée");
-        return;
+    const localData = rawData ? JSON.parse(rawData) : null;
+
+    if (localData) {
+        renderFromLocalAnalysis(localData);
+    } else {
+        setHtml('findingsImmediate', emptyFinding('Aucune donnée locale disponible.'));
+        setHtml('findingsLongterm', emptyFinding('Les recommandations long-terme seront affichées ici.'));
+        setHtml('findingsObservations', emptyFinding('Les observations non critiques seront listées ici.'));
     }
 
-    // Conversion des données JSON en objet JavaScript
-    const data = JSON.parse(rawData);
+    const serverReport = await fetchLatestReport();
+    if (serverReport) {
+        renderPersistedReport(serverReport);
+    }
 
-    if (!document.getElementById('auditSummaryBody')) return; // not on report page anymore
+    const btn = document.getElementById('generateInsightsBtn');
+    if (btn) {
+        btn.addEventListener('click', async () => {
+            if (!localData) {
+                window.alert('Aucune analyse locale disponible pour générer les aperçus.');
+                return;
+            }
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Génération…';
+            try {
+                await generateCategorizedInsights(localData);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-wand-magic-sparkles me-2"></i>Générer les aperçus d\'audit';
+            }
+        });
+    }
+}
 
+function renderFromLocalAnalysis(data) {
     const stats = data.stats || { errors: 0, warnings: 0, info: 0, total: 0 };
     const meta = data.meta || {};
 
@@ -35,26 +63,58 @@ document.addEventListener('DOMContentLoaded', function() {
 
     renderSummary(stats, meta, health);
     renderTraceSamples(data);
+}
 
-    const btn = document.getElementById('generateInsightsBtn');
-    if (btn) {
-        btn.addEventListener('click', async () => {
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating…';
-            try {
-                await generateCategorizedInsights(data);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-wand-magic-sparkles me-2"></i>Generate Audit Insights';
-            }
-        });
+async function fetchLatestReport() {
+    try {
+        const res = await fetch('/api/reports/latest');
+        const payload = await res.json();
+        if (!res.ok || payload?.status !== 'success' || !payload?.report) return null;
+        return payload.report;
+    } catch (e) {
+        return null;
+    }
+}
+
+function renderPersistedReport(report) {
+    const stats = report?.stats || {};
+    const health = Number(report?.global_health_score ?? computeHealthScore(stats));
+    const summary = Array.isArray(report?.summary_table) ? report.summary_table : [];
+    const immediate = Array.isArray(report?.immediate_actions) ? report.immediate_actions : [];
+
+    if (report?.generated_at) {
+        setText('auditTimestamp', new Date(report.generated_at).toLocaleString('fr-FR'));
+    }
+    setGauge(health);
+    setText('healthScoreValue', String(health));
+    setText('statCritical', String(stats.errors ?? 0));
+    setText('statStability', computeStabilityLabel(stats));
+    setText('statConfidence', String(computeConfidence(stats)));
+
+    if (summary.length) {
+        const body = document.getElementById('auditSummaryBody');
+        if (body) {
+            body.innerHTML = summary.map((row) => `
+                <tr>
+                    <td style="font-weight:900;">${escapeHtml(row.metric || '--')}</td>
+                    <td>${escapeHtml(row.value || '--')}</td>
+                    <td class="text-muted">${escapeHtml(row.notes || '--')}</td>
+                </tr>
+            `).join('');
+        }
     }
 
-    // Render placeholders
-    setHtml('findingsImmediate', emptyFinding('Cliquez “Generate Audit Insights” pour générer des actions immédiates basées sur les logs critiques.'));
-    setHtml('findingsLongterm', emptyFinding('Les recommandations long-terme seront classées ici (hardening, observability, patching).'));
-    setHtml('findingsObservations', emptyFinding('Observations non-critiques (signals, patterns, anomalies) seront listées ici.'));
-});
+    if (immediate.length) {
+        setHtml(
+            'findingsImmediate',
+            immediate
+                .map((item) => `<div class="audit-finding"><div class="text-muted small">${escapeHtml(item)}</div></div>`)
+                .join('')
+        );
+    } else {
+        setHtml('findingsImmediate', emptyFinding('Aucune action immédiate détectée.'));
+    }
+}
 
 function setText(id, value) {
     const el = document.getElementById(id);
@@ -71,7 +131,7 @@ function computeHealthScore(stats) {
     const info = Number(stats.info || 0);
     const warnings = Number(stats.warnings || 0);
     const denom = Math.max(1, info + errors + warnings);
-    const ratio = info / denom; // "healthy" proportion
+    const ratio = info / denom; // Proportion "saine"
     const score = Math.round(ratio * 100);
     return Math.max(0, Math.min(100, score));
 }
@@ -79,10 +139,10 @@ function computeHealthScore(stats) {
 function computeStabilityLabel(stats) {
     const errors = Number(stats.errors || 0);
     const total = Number(stats.total || 0);
-    if (total <= 0) return 'N/A';
+    if (total <= 0) return 'N/D';
     const errRate = errors / Math.max(1, total);
-    if (errRate >= 0.20) return 'Unstable';
-    if (errRate >= 0.08) return 'Degraded';
+    if (errRate >= 0.20) return 'Instable';
+    if (errRate >= 0.08) return 'Dégradé';
     return 'Stable';
 }
 
@@ -100,7 +160,7 @@ function setGauge(score) {
     const sub = document.getElementById('healthScoreSub');
     if (gauge) gauge.style.setProperty('--p', String(score));
     if (val) val.textContent = String(score);
-    if (sub) sub.textContent = score >= 85 ? 'Healthy' : score >= 65 ? 'Watch' : 'Critical';
+    if (sub) sub.textContent = score >= 85 ? 'Sain' : score >= 65 ? 'Surveillance' : 'Critique';
 }
 
 function renderSummary(stats, meta, health) {
@@ -112,14 +172,14 @@ function renderSummary(stats, meta, health) {
     const sourceType = meta.source_type || '--';
 
     const rows = [
-        ['Global Health Score', `${health}%`, 'Ratio Info vs (Errors+Warnings+Info)'],
-        ['Critical Issues (Errors)', String(stats.errors ?? 0), 'Priorité haute: investigation immédiate'],
-        ['Warnings', String(stats.warnings ?? 0), 'Risque moyen: hardening & tuning'],
+        ['Score de Santé Global', `${health}%`, 'Ratio Info vs (Erreurs+Avertissements+Info)'],
+        ['Problèmes Critiques (Erreurs)', String(stats.errors ?? 0), 'Priorité haute : investigation immédiate'],
+        ['Avertissements', String(stats.warnings ?? 0), 'Risque moyen : durcissement et ajustements'],
         ['Info', String(stats.info ?? 0), 'Volume normal / bruit'],
-        ['Total Lines (Analyzed)', String(stats.total ?? 0), 'Total des lignes analysées'],
-        ['Source Type', sourceType, 'ssh ou upload'],
-        ['File Size', fileSize, 'Taille du fichier côté serveur (si disponible)'],
-        ['Last Modified', lm, 'Timestamp serveur (UTC)']
+        ['Lignes Totales (Analysées)', String(stats.total ?? 0), 'Total des lignes analysées'],
+        ['Type de Source', sourceType, 'ssh ou upload'],
+        ['Taille du Fichier', fileSize, 'Taille du fichier côté serveur (si disponible)'],
+        ['Dernière Modification', lm, 'Horodatage serveur (UTC)']
     ];
 
     body.innerHTML = rows.map(r => `
@@ -194,15 +254,15 @@ async function generateCategorizedInsights(data) {
     setHtml('findingsLongterm', longterm.join('') || emptyFinding('Aucune recommandation long-terme détectée.'));
     setHtml('findingsObservations', obs.join('') || emptyFinding('Aucune observation additionnelle.'));
 
-    // Attach copy handlers for terminal blocks
+    // Attache les gestionnaires de copie pour les blocs de terminal.
     document.querySelectorAll('[data-copy-terminal]').forEach(btn => {
         btn.addEventListener('click', async () => {
             const target = btn.getAttribute('data-copy-terminal');
             const pre = document.getElementById(target);
             if (!pre) return;
             await copyToClipboard(pre.textContent || '');
-            btn.textContent = 'Copied';
-            setTimeout(() => btn.textContent = 'Copy', 900);
+            btn.textContent = 'Copié';
+            setTimeout(() => btn.textContent = 'Copier', 900);
         });
     });
 }
@@ -214,7 +274,7 @@ async function aiAnalyze(line) {
         body: JSON.stringify({ line })
     });
     const payload = await res.json();
-    return payload.analysis || payload.message || payload.error || 'No analysis.';
+    return payload.analysis || payload.message || payload.error || 'Aucune analyse.';
 }
 
 function categorize(text, sev) {
@@ -226,9 +286,9 @@ function categorize(text, sev) {
 }
 
 function buildTitle(sev, analysis) {
-    if (sev === 'ERROR') return 'Critical finding';
-    if (sev === 'WARNING') return 'Risk observation';
-    if (String(analysis || '').toLowerCase().includes('security')) return 'Security observation';
+    if (sev === 'ERROR') return 'Constat critique';
+    if (sev === 'WARNING') return 'Observation de risque';
+    if (String(analysis || '').toLowerCase().includes('security')) return 'Observation de sécurité';
     return 'Observation';
 }
 
@@ -238,8 +298,8 @@ function renderFinding({ title, analysis, commands, trace }) {
         return `
             <div class="audit-terminal">
                 <div class="audit-terminal-header">
-                    <span>Suggested Fix</span>
-                    <button class="btn btn-outline-saas btn-sm no-print" type="button" data-copy-terminal="${id}">Copy</button>
+                    <span>Correction suggérée</span>
+                    <button class="btn btn-outline-saas btn-sm no-print" type="button" data-copy-terminal="${id}">Copier</button>
                 </div>
                 <pre id="${id}">${escapeHtml(cmd)}</pre>
             </div>
@@ -252,7 +312,7 @@ function renderFinding({ title, analysis, commands, trace }) {
             <div class="text-muted small" style="white-space: pre-wrap; line-height: 1.45;">${escapeHtml(analysis)}</div>
             ${cmdBlocks}
             <div class="audit-finding-trace mt-3">
-                <div style="font-weight:900; margin-bottom:6px;">Traceability</div>
+                <div style="font-weight:900; margin-bottom:6px;">Traçabilité</div>
                 ${escapeHtml(trimLine(trace))}
             </div>
         </div>
@@ -379,7 +439,7 @@ function downloadPDF() {
                 console.error('PDF upload failed', e);
             }
         }
-        // Still download locally
+        // Téléchargement local conservé
         await worker.save();
     });
 }

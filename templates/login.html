@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Login{% endblock %}
+{% block title %}Connexion{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
@@ -11,30 +11,30 @@
     <div class="glass-card auth-card p-4 p-md-5 fade-in-up">
         <div class="mb-4 text-center">
             <div class="fw-bold text-primary auth-brand">LogAnalyzer</div>
-            <h3 class="fw-bold mb-1">Sign in</h3>
-            <div class="text-muted">Access your dashboards securely.</div>
+            <h3 class="fw-bold mb-1">Connexion</h3>
+            <div class="text-muted">Accédez à vos tableaux de bord en toute sécurité.</div>
         </div>
 
         <form method="POST" novalidate class="needs-validation" id="loginForm">
             <div class="mb-3">
-                <label class="form-label fw-bold small">Username or Email</label>
+                <label class="form-label fw-bold small">Nom d'utilisateur ou e-mail</label>
                 <input name="identifier" id="identifier" class="form-control input-saas" required>
-                <div class="invalid-feedback">Please enter your username or email.</div>
+                <div class="invalid-feedback">Veuillez saisir votre nom d'utilisateur ou votre e-mail.</div>
             </div>
 
             <div class="mb-3">
-                <label class="form-label fw-bold small">Password</label>
+                <label class="form-label fw-bold small">Mot de passe</label>
                 <input type="password" name="password" id="password" class="form-control input-saas" required minlength="6">
-                <div class="invalid-feedback">Please enter your password.</div>
+                <div class="invalid-feedback">Veuillez saisir votre mot de passe.</div>
             </div>
 
             <button class="btn btn-saas w-100 py-2" type="submit">
-                <i class="fas fa-right-to-bracket me-2"></i>Login
+                <i class="fas fa-right-to-bracket me-2"></i>Se connecter
             </button>
         </form>
 
         <div class="text-center mt-3 small text-muted">
-            Admins can create users from the sidebar menu.
+            Les administrateurs peuvent créer des utilisateurs depuis le menu latéral.
         </div>
     </div>
 </div>

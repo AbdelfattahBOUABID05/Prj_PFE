@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Register User{% endblock %}
+{% block title %}Inscrire un utilisateur{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
@@ -10,46 +10,46 @@
 <div class="auth-wrap">
     <div class="glass-card auth-card auth-card--wide p-4 p-md-5 fade-in-up">
         <div class="mb-4">
-            <div class="fw-bold text-primary auth-brand">Admin Console</div>
-            <h3 class="fw-bold mb-1">Create a new user</h3>
-            <div class="text-muted">Assign role and credentials for secure access.</div>
+            <div class="fw-bold text-primary auth-brand">Console Admin</div>
+            <h3 class="fw-bold mb-1">Créer un nouvel utilisateur</h3>
+            <div class="text-muted">Attribuez un rôle et des identifiants pour un accès sécurisé.</div>
         </div>
 
         <form method="POST" novalidate class="needs-validation" id="registerForm">
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label fw-bold small">Username</label>
+                    <label class="form-label fw-bold small">Nom d'utilisateur</label>
                     <input name="username" id="username" class="form-control input-saas" required minlength="3">
-                    <div class="invalid-feedback">Username must be at least 3 characters.</div>
+                    <div class="invalid-feedback">Le nom d'utilisateur doit comporter au moins 3 caractères.</div>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-bold small">Email</label>
+                    <label class="form-label fw-bold small">E-mail</label>
                     <input type="email" name="email" id="email" class="form-control input-saas" required>
-                    <div class="invalid-feedback">Please enter a valid email.</div>
+                    <div class="invalid-feedback">Veuillez saisir un e-mail valide.</div>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-bold small">Role</label>
+                    <label class="form-label fw-bold small">Rôle</label>
                     <select name="role" id="role" class="form-select input-saas" required>
-                        <option value="Analyst" selected>IT Analyst</option>
-                        <option value="Admin">Super Admin</option>
+                        <option value="Analyst" selected>Analyste IT</option>
+                        <option value="Admin">Super administrateur</option>
                     </select>
-                    <div class="invalid-feedback">Please select a role.</div>
+                    <div class="invalid-feedback">Veuillez sélectionner un rôle.</div>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-bold small">Password</label>
+                    <label class="form-label fw-bold small">Mot de passe</label>
                     <input type="password" name="password" id="regPassword" class="form-control input-saas" required minlength="8">
-                    <div class="invalid-feedback">Password must be at least 8 characters.</div>
-                    <div class="form-text">Tip: use uppercase, lowercase, number, and symbol.</div>
+                    <div class="invalid-feedback">Le mot de passe doit comporter au moins 8 caractères.</div>
+                    <div class="form-text">Astuce : utilisez majuscule, minuscule, chiffre et symbole.</div>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-bold small">Confirm Password</label>
+                    <label class="form-label fw-bold small">Confirmer le mot de passe</label>
                     <input type="password" name="confirm_password" id="confirmPassword" class="form-control input-saas" required minlength="8">
-                    <div class="invalid-feedback" id="confirmFeedback">Passwords must match.</div>
+                    <div class="invalid-feedback" id="confirmFeedback">Les mots de passe doivent correspondre.</div>
                 </div>
             </div>
 
             <button class="btn btn-saas w-100 py-2 mt-4" type="submit">
-                <i class="fas fa-user-plus me-2"></i>Create user
+                <i class="fas fa-user-plus me-2"></i>Créer l'utilisateur
             </button>
         </form>
     </div>

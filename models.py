@@ -41,7 +41,7 @@ class Analysis(db.Model):
     source_path = db.Column(db.Text, nullable=False)
     server_ip = db.Column(db.String(64), nullable=True)
 
-    # Keep raw payloads for traceability
+    # Conserve les payloads bruts pour la traçabilité
     stats = db.Column(db.JSON, nullable=False)
     segments = db.Column(db.JSON, nullable=False)
     meta = db.Column(db.JSON, nullable=False)
