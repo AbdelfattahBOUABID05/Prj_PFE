@@ -1,15 +1,12 @@
 {% extends "base.html" %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
-{% endblock %}
-
 {% block content %}
+<div class="dashboard-page">
 <div class="row g-4 mb-4 fade-in-up">
     <div class="col-12">
         <div class="stat-card glass-card d-flex justify-content-between align-items-center">
             <div>
-                <h4 class="fw-bold mb-1">Tableau de Bord <span class="text-primary">Live SSH</span></h4>
+                <h4 class="fw-bold mb-1">Tableau de bord <span class="text-primary">Surveillance SSH en direct</span></h4>
                 <p class="text-muted mb-0">Visualisation des logs extraits de votre serveur Fedora.</p>
             </div>
             <a href="/ssh" class="btn btn-saas">
@@ -77,8 +74,5 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</div>
 {% endblock %}

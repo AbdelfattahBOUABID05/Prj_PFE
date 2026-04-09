@@ -2,10 +2,6 @@
 
 {% block title %}Générer le Rapport{% endblock %}
 
-{% block extra_css %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/report.css') }}">
-{% endblock %}
-
 {% block content %}
 <div class="container fade-in-up">
     <div class="d-flex justify-content-between align-items-center mb-4 no-print">
@@ -176,5 +172,4 @@
 {% block extra_js %}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/report-handler.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% endblock %}

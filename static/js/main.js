@@ -1,22 +1,45 @@
 // Conserve les instances des graphiques pour un re-rendu propre.
 let severityChart = null;
 let activityChart = null;
+let currentAnalysisData = null;
+const CRITICAL_ALERTS_STORAGE_KEY = 'criticalAlerts';
 
-const COLORS = {
-    deepRed: '#B42318',
-    amber: '#F79009',
-    softBlue: '#2E90FA',
-    grid: 'rgba(15, 23, 42, 0.08)',
-    text: 'rgba(26, 26, 26, 0.85)'
-};
+/**
+ * Lit une variable CSS du thème actif.
+ */
+function readCssVar(name, fallback = '') {
+    const value = getComputedStyle(document.documentElement).getPropertyValue(name);
+    return value ? value.trim() : fallback;
+}
+
+/**
+ * Palette dépendante du thème courant (clair/sombre).
+ */
+function getThemeColors() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    return {
+        deepRed: '#B42318',
+        amber: '#F79009',
+        softBlue: readCssVar('--accent-color', '#2E90FA'),
+        grid: isDark ? 'rgba(159, 179, 207, 0.16)' : 'rgba(15, 23, 42, 0.08)',
+        text: readCssVar('--text-color', 'rgba(26, 26, 26, 0.85)'),
+        tooltipBg: isDark ? 'rgba(7, 13, 22, 0.95)' : 'rgba(17, 24, 39, 0.92)',
+        pointBg: isDark ? '#0b1424' : '#ffffff'
+    };
+}
 
 // Attendre le chargement complet du DOM avant d'exécuter le script
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialise la préférence visuelle enregistrée et relie les boutons.
+    initThemeSwitch();
+    initNotificationsUI();
+
     // Récupération des dernières données d'analyse stockées dans le navigateur
     const savedData = localStorage.getItem('lastAnalysis');
     
     if (savedData) {
         const data = JSON.parse(savedData);
+        currentAnalysisData = data;
         console.log("Chargement des données SSH...", data);
         // Mise à jour de l'interface utilisateur avec les données récupérées
         updateDashboard(data);
@@ -29,6 +52,9 @@ document.addEventListener('DOMContentLoaded', function() {
  * @param {Object} data - Données issues de l'analyse des logs.
  */
 function updateDashboard(data) {
+    currentAnalysisData = data;
+    const colors = getThemeColors();
+
     // Mise à jour du compteur d'erreurs dans l'interface
     const errElem = document.getElementById('errCount');
     if (errElem) errElem.innerText = data.stats.errors;
@@ -44,9 +70,9 @@ function updateDashboard(data) {
         aiResult.innerHTML = `
             <div class="glass-card p-3 text-start">
                 <div class="d-flex align-items-start gap-2">
-                    <div class="mt-1" style="color:${COLORS.softBlue};"><i class="fas fa-check-circle"></i></div>
+                    <div class="mt-1" style="color:${colors.softBlue};"><i class="fas fa-check-circle"></i></div>
                     <div>
-                        <div style="font-weight:700; color:${COLORS.text};">Données SSH chargées</div>
+                        <div style="font-weight:700; color:${colors.text};">Données SSH chargées</div>
                         <div class="small text-muted">Dernière analyse: ${new Date().toLocaleTimeString()}</div>
                     </div>
                 </div>
@@ -57,6 +83,9 @@ function updateDashboard(data) {
         `;
         attachGenerateReportHandler();
     }
+
+    // Déclenche une alerte immédiate si des signaux critiques sont détectés.
+    notifyCriticalIfNeeded(data);
 }
 
 function attachGenerateReportHandler() {
@@ -93,6 +122,7 @@ function hideSkeleton(id) {
 }
 
 function baseChartOptions() {
+    const colors = getThemeColors();
     return {
         responsive: true,
         maintainAspectRatio: false,
@@ -103,12 +133,12 @@ function baseChartOptions() {
                 labels: {
                     usePointStyle: true,
                     padding: 18,
-                    color: COLORS.text,
+                    color: colors.text,
                     font: { size: 12, family: 'Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif', weight: '600' }
                 }
             },
             tooltip: {
-                backgroundColor: 'rgba(17, 24, 39, 0.92)',
+                backgroundColor: colors.tooltipBg,
                 titleColor: '#fff',
                 bodyColor: '#fff',
                 borderColor: 'rgba(255,255,255,0.12)',
@@ -125,6 +155,8 @@ function renderSeverityChart(data) {
     const ctx = canvas.getContext('2d');
     if (severityChart) severityChart.destroy();
 
+    const colors = getThemeColors();
+
     severityChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
@@ -132,9 +164,9 @@ function renderSeverityChart(data) {
             datasets: [{
                 data: [data.stats.errors, data.stats.warnings, data.stats.info],
                 backgroundColor: [
-                    COLORS.deepRed,
-                    COLORS.amber,
-                    COLORS.softBlue
+                    colors.deepRed,
+                    colors.amber,
+                    colors.softBlue
                 ],
                 hoverOffset: 10,
                 borderWidth: 0,
@@ -156,6 +188,7 @@ function renderActivityChart(data) {
     const ctx = canvas.getContext('2d');
     if (activityChart) activityChart.destroy();
 
+    const colors = getThemeColors();
     const points = buildActivitySeries(data);
     const labels = points.map(p => p.label);
     const values = points.map(p => p.count);
@@ -171,14 +204,14 @@ function renderActivityChart(data) {
             datasets: [{
                 label: 'Journaux',
                 data: values,
-                borderColor: COLORS.softBlue,
+                borderColor: colors.softBlue,
                 backgroundColor: gradient,
                 fill: true,
                 tension: 0.35,
                 pointRadius: 2,
                 pointHoverRadius: 5,
-                pointBackgroundColor: '#ffffff',
-                pointBorderColor: COLORS.softBlue,
+                pointBackgroundColor: colors.pointBg,
+                pointBorderColor: colors.softBlue,
                 borderWidth: 2
             }]
         },
@@ -187,11 +220,11 @@ function renderActivityChart(data) {
             scales: {
                 x: {
                     grid: { color: 'transparent' },
-                    ticks: { color: COLORS.text, maxRotation: 0, autoSkip: true, maxTicksLimit: 7 }
+                    ticks: { color: colors.text, maxRotation: 0, autoSkip: true, maxTicksLimit: 7 }
                 },
                 y: {
-                    grid: { color: COLORS.grid },
-                    ticks: { color: COLORS.text, precision: 0 },
+                    grid: { color: colors.grid },
+                    ticks: { color: colors.text, precision: 0 },
                     beginAtZero: true
                 }
             },
@@ -201,6 +234,209 @@ function renderActivityChart(data) {
             }
         }
     });
+}
+
+/**
+ * Initialise le thème (sombre/clair), synchronise l'UI et persiste le choix.
+ */
+function initThemeSwitch() {
+    const root = document.documentElement;
+    const savedTheme = localStorage.getItem('themePreference');
+    const preferredDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initialTheme = savedTheme || (preferredDark ? 'dark' : 'light');
+
+    applyTheme(initialTheme);
+
+    const toggles = Array.from(document.querySelectorAll('#themeToggle'));
+    toggles.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const nextTheme = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            applyTheme(nextTheme);
+            localStorage.setItem('themePreference', nextTheme);
+        });
+    });
+}
+
+function applyTheme(theme) {
+    const root = document.documentElement;
+    const resolvedTheme = theme === 'dark' ? 'dark' : 'light';
+    root.setAttribute('data-theme', resolvedTheme);
+    root.style.colorScheme = resolvedTheme;
+    updateThemeToggleLabel(resolvedTheme);
+
+    // Recalcule les graphiques selon la nouvelle palette.
+    if (currentAnalysisData) {
+        renderSeverityChart(currentAnalysisData);
+        renderActivityChart(currentAnalysisData);
+    }
+}
+
+function updateThemeToggleLabel(theme) {
+    const isDark = theme === 'dark';
+    const toggles = Array.from(document.querySelectorAll('#themeToggle'));
+    toggles.forEach((btn) => {
+        const icon = btn.querySelector('i');
+        if (icon) icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        btn.setAttribute('title', isDark ? 'Mode clair' : 'Mode sombre');
+        btn.setAttribute('aria-label', isDark ? 'Activer le mode clair' : 'Activer le mode sombre');
+    });
+}
+
+/**
+ * Détecte les signaux critiques et affiche une alerte toast unique par analyse.
+ */
+function notifyCriticalIfNeeded(data) {
+    if (!isDashboardPage() || !data) return;
+    if (!hasCriticalSignal(data)) return;
+
+    const alertKey = buildCriticalAlertKey(data);
+    if (alertKey && localStorage.getItem(alertKey) === '1') return;
+
+    showCriticalToast();
+    persistCriticalAlert(data);
+    renderNotificationsMenu();
+    if (alertKey) localStorage.setItem(alertKey, '1');
+}
+
+function isDashboardPage() {
+    return Boolean(document.querySelector('.dashboard-page'));
+}
+
+function hasCriticalSignal(data) {
+    const level = String(
+        data?.security_level ||
+        data?.ai?.security_level ||
+        data?.meta?.security_level ||
+        ''
+    ).toUpperCase();
+    if (level === 'CRITICAL') return true;
+
+    const statsCritical = Number(data?.stats?.critical || 0);
+    if (statsCritical > 0) return true;
+
+    const segments = data?.segments || {};
+    const criticalSegment = segments.CRITICAL || segments.critical || [];
+    if (Array.isArray(criticalSegment) && criticalSegment.length > 0) return true;
+
+    const lines = []
+        .concat(Array.isArray(segments.ERROR) ? segments.ERROR : [])
+        .concat(Array.isArray(criticalSegment) ? criticalSegment : []);
+
+    return lines.some((line) => /critical|critique/i.test(String(line || '')));
+}
+
+function buildCriticalAlertKey(data) {
+    if (data?.analysis_id) return `criticalAlertShown:${data.analysis_id}`;
+    if (data?.generated_at) return `criticalAlertShown:time:${data.generated_at}`;
+
+    const err = Number(data?.stats?.errors || 0);
+    const total = Number(data?.stats?.total || 0);
+    const fallback = `${err}-${total}`;
+    return `criticalAlertShown:fallback:${fallback}`;
+}
+
+function showCriticalToast() {
+    const title = 'Alerte critique détectée';
+    const text = "Des événements critiques ont été repérés dans l'analyse en cours.";
+
+    if (window.Swal && typeof window.Swal.fire === 'function') {
+        window.Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'error',
+            title,
+            text,
+            showConfirmButton: false,
+            timer: 6500,
+            timerProgressBar: true,
+            background: '#1b2433',
+            color: '#ffffff'
+        });
+        return;
+    }
+
+    window.alert(`${title}\n${text}`);
+}
+
+/**
+ * Persiste les alertes critiques pour affichage dans la cloche de notifications.
+ */
+function persistCriticalAlert(data) {
+    const list = getStoredCriticalAlerts();
+    const id = String(data?.analysis_id || data?.generated_at || Date.now());
+    if (list.some((item) => item.id === id)) return;
+
+    list.unshift({
+        id,
+        title: 'Alerte critique détectée',
+        message: "Des événements critiques ont été repérés dans l'analyse en cours.",
+        at: new Date().toISOString()
+    });
+
+    localStorage.setItem(CRITICAL_ALERTS_STORAGE_KEY, JSON.stringify(list.slice(0, 25)));
+}
+
+function getStoredCriticalAlerts() {
+    try {
+        const raw = localStorage.getItem(CRITICAL_ALERTS_STORAGE_KEY);
+        const parsed = JSON.parse(raw || '[]');
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+}
+
+function initNotificationsUI() {
+    renderNotificationsMenu();
+    bindNotificationActions();
+}
+
+function bindNotificationActions() {
+    const clearBtn = document.getElementById('clearNotificationsBtn');
+    if (!clearBtn || clearBtn.dataset.bound === '1') return;
+    clearBtn.dataset.bound = '1';
+    clearBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.setItem(CRITICAL_ALERTS_STORAGE_KEY, JSON.stringify([]));
+        renderNotificationsMenu();
+    });
+}
+
+function renderNotificationsMenu() {
+    const listEl = document.getElementById('notification-list');
+    const emptyEl = document.getElementById('notification-empty');
+    const countEl = document.getElementById('notification-count');
+    if (!listEl || !emptyEl || !countEl) return;
+
+    const alerts = getStoredCriticalAlerts();
+    countEl.textContent = String(alerts.length);
+    countEl.classList.toggle('d-none', alerts.length === 0);
+
+    if (alerts.length === 0) {
+        emptyEl.classList.remove('d-none');
+        listEl.innerHTML = '';
+        return;
+    }
+
+    emptyEl.classList.add('d-none');
+    listEl.innerHTML = alerts.map((item) => {
+        const when = formatNotificationTime(item.at);
+        return `
+            <div class="notification-list-item">
+                <div class="notification-list-title">${escapeHtml(item.title || 'Alerte critique')}</div>
+                <div class="notification-list-meta">${escapeHtml(item.message || '')}</div>
+                <div class="notification-list-meta">${escapeHtml(when)}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+function formatNotificationTime(iso) {
+    try {
+        return new Date(iso).toLocaleString();
+    } catch {
+        return '';
+    }
 }
 
 function buildActivitySeries(data) {
@@ -432,7 +668,7 @@ function renderGrid(model, state) {
                         </button>
                         <button class="btn btn-saas btn-sm" data-action="ai">
                             <i class="fas fa-robot me-2"></i>Analyser avec IA
-                        </button>
+            </button>
                     </div>
                     <pre class="expanded-pre">${escapeHtml(r.line)}</pre>
                 </div>

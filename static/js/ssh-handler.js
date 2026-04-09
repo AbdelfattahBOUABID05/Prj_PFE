@@ -46,8 +46,8 @@ document.getElementById('sshForm')?.addEventListener('submit', async function(e)
             // Affichage d'un message de succès à l'utilisateur
             status.innerHTML = '<div class="alert alert-success">Succès! Analyse terminée.</div>';
             
-            // Redirection automatique vers la page du rapport après 1 seconde
-            setTimeout(() => window.location.href = '/report', 1000);
+            // Redirection automatique vers la page des lignes de logs
+            setTimeout(() => window.location.href = '/details', 800);
         } else {
             // Lever une erreur si le serveur renvoie un statut d'échec (ex: mauvaise IP ou mot de passe)
             throw new Error(result.message);
