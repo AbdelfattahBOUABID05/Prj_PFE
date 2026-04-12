@@ -1,11 +1,14 @@
-paramiko
-flask-cors
 flask
+flask-cors
 flask-login
 flask-sqlalchemy
-openai
+paramiko
 python-dotenv
 google-generativeai
-
+openai
+fpdf2
+secure-smtplib
+Pillow
+requests
 
 #pip install -r requirements.txt
