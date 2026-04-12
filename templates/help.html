@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Aide & Documentation{% endblock %}
+
+{% block content %}
+<div class="container py-5 fade-in-up" style="max-width: 900px;">
+    <!-- Section 1: Introduction Institutionnelle -->
+    <div class="glass-card p-4 mb-5 shadow-sm border-0">
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+            <img src="{{ url_for('static', filename='img/logo_est.png') }}" alt="EST Sidi Bennour" style="height: 60px; width: auto; object-fit: contain;">
+            <img src="{{ url_for('static', filename='img/logo_awb.png') }}" alt="Attijariwafa Bank" style="height: 50px; width: auto; object-fit: contain;">
+        </div>
+        
+        <h2 class="fw-bold text-primary mb-3">À propos du Projet</h2>
+        <div class="text-muted" style="line-height: 1.7; font-size: 1.05rem;">
+            <p>
+                <strong>LogAnalyzer</strong> est une solution technique avancée dédiée à la supervision et à la sécurisation des infrastructures systèmes. En automatisant l'analyse des journaux (logs), cet outil permet une détection proactive des anomalies, garantissant ainsi une réactivité optimale face aux incidents de sécurité. Ce projet est le fruit d'une synergie entre l'excellence académique et les exigences du monde professionnel.
+            </p>
+            <p>
+                <strong>Attijariwafa Bank :</strong> Leader du secteur bancaire et partenaire stratégique, Attijariwafa Bank a constitué le cadre d’accueil de ce stage. L’expertise du groupe ainsi que ses standards de sécurité élevés ont permis de confronter ce projet aux réalités du terrain, notamment en matière de détection des incidents et de protection des données sensibles.
+            </p>
+            <p>
+                <strong>EST Sidi Bennour :</strong> En tant qu’institution de référence, l’École Supérieure de Technologie de Sidi Bennour a assuré l’encadrement académique et méthodologique. Cette formation a permis d’acquérir les compétences techniques nécessaires pour concevoir et développer une solution fiable, innovante et adaptée aux besoins réels du domaine de la cybersécurité.
+            </p>
+        </div>
+    </div>
+
+    <!-- Section 2: Guide d'Utilisation (FAQ) -->
+    <div class="mb-4">
+        <h3 class="fw-bold text-dark mb-4"><i class="fas fa-question-circle text-primary me-2"></i> Guide d'Utilisation & FAQ</h3>
+        
+        <div class="accordion accordion-flush shadow-sm rounded-3 overflow-hidden" id="faqAccordion">
+            <!-- Question 1 -->
+            <div class="accordion-item border-bottom">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed fw-bold py-3 text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                        <i class="fas fa-server me-3"></i> Comment connecter mon serveur ?
+                    </button>
+                </h2>
+                <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body text-muted">
+                        Allez dans la section <strong>'Connexion SSH'</strong> Allez dans 'Connexion SSH', entrez l'IP de votre serveur Fedora/Ubuntu, votre nom d'utilisateur et mot de passe. Assurez-vous que votre serveur est accessible et que les ports SSH sont ouverts. Cliquez ensuite sur 'Lancer l'Analyse' pour démarrer la collecte des logs. Vous pouvez aussi utiliser le bouton 'Analyser les logs d'aujourd'hui' pour une analyse rapide des événements récents.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 2 -->
+            <div class="accordion-item border-bottom">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed fw-bold py-3 text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                        <i class="fas fa-chart-line me-3"></i> Que signifie le "Top 10 Patterns" ?
+                    </button>
+                </h2>
+                <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body text-muted">
+                        Le <strong>"Top 10 Patterns"</strong> Ce sont les 10 messages qui reviennent le plus souvent dans vos logs. Cela aide à repérer les erreurs répétitives. Par exemple, si vous voyez "Failed password for root" plusieurs fois, cela peut indiquer des tentatives d'intrusion. C'est un moyen rapide de voir les problèmes les plus fréquents sans lire tous les logs.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 3 -->
+            <div class="accordion-item border-bottom">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed fw-bold py-3 text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                        <i class="fas fa-envelope me-3"></i> Comment envoyer le rapport par e-mail ?
+                    </button>
+                </h2>
+                <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body text-muted">
+                        UAprès l'analyse, cliquez sur le bouton bleu '<strong>'Envoyer par e-mail'</strong>'. Assurez-vous d'avoir configuré votre adresse dans les paramètres. Vous devrez entrer votre adresse Gmail et un mot de passe d'application (généré dans votre compte Google) pour que l'envoi fonctionne. Cela garantit que le rapport est envoyé de manière sécurisée à votre adresse e-mail. Si vous n'avez pas encore configuré votre mot de passe d'application, suivez les instructions dans la section 'Configuration de Google Mail' de notre documentation.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 4 -->
+            <div class="accordion-item border-0">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed fw-bold py-3 text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                        <i class="fas fa-shield-alt me-3"></i> Mon mot de passe SSH est-il enregistré ?
+                    </button>
+                </h2>
+                <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body text-muted">
+                        <strong>Non,</strong> pour votre sécurité, nous utilisons les informations uniquement pour la session en cours. Elles ne sont pas stockées sur le serveur ou dans une base de données. Une fois que vous fermez la session ou quittez l'application, toutes les données de connexion sont supprimées. Nous prenons la confidentialité très au sérieux et nous nous assurons que vos informations restent sécurisées à tout moment. Vous pouvez vérifier le code source de l'application pour voir que les données ne sont pas enregistrées ou envoyées à des tiers. Votre sécurité est notre priorité.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .accordion-button:not(.collapsed) {
+        background-color: rgba(37, 99, 235, 0.05);
+        box-shadow: none;
+    }
+    .accordion-button:focus {
+        box-shadow: none;
+        border-color: rgba(37, 99, 235, 0.1);
+    }
+    .accordion-item {
+        background: white;
+    }
+    .text-primary {
+        color: #2563eb !important;
+    }
+</style>
+{% endblock %}

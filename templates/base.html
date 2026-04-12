@@ -57,6 +57,9 @@
                     <a href="/details" class="nav-link {% if request.path == '/details' %}active{% endif %}">
                         <i class="fas fa-list-ul"></i> Lignes de Logs
                     </a>
+                    <a href="/help" class="nav-link {% if request.path == '/help' %}active{% endif %}">
+                        <i class="fas fa-question-circle"></i> Aide & Documentation
+                    </a>
                     <div class="sidebar-section-title">Gestion</div>
                     {% if current_user.is_authenticated %}
                         <a href="/profile" class="nav-link {% if request.path == '/profile' %}active{% endif %}">

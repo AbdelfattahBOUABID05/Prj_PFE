@@ -538,6 +538,11 @@ def report_page():
 
     return render_template('report.html', analysis_data=results)
 
+@app.route('/help')
+@login_required
+def help_page():
+    return render_template('help.html')
+
 @app.route('/send-report-page')
 @login_required
 def send_report_page():
