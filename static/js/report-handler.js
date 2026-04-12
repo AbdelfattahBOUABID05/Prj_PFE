@@ -2,24 +2,25 @@
  * Gestion de l'affichage du rapport d'analyse et intégration de l'IA.
  */
 document.addEventListener('DOMContentLoaded', function() {
-    if (!document.getElementById('auditSummaryBody')) return; // Pas sur la page rapport
+    if (!document.getElementById('reportContent')) return; // Pas sur la page rapport
     initReportPage();
 });
 
 async function initReportPage() {
-    const rawData = localStorage.getItem('lastAnalysis');
-    const localData = rawData ? JSON.parse(rawData) : null;
+    // Priorité à l'analyse injectée par le serveur (Session Flask)
+    // Sinon, repli sur le localStorage
+    const localData = window.SERVER_ANALYSIS_DATA || JSON.parse(localStorage.getItem('lastAnalysis') || 'null');
 
     if (localData) {
         renderFromLocalAnalysis(localData);
     } else {
-        setHtml('findingsImmediate', emptyFinding('Aucune donnée locale disponible.'));
-        setHtml('findingsLongterm', emptyFinding('Les recommandations long-terme seront affichées ici.'));
-        setHtml('findingsObservations', emptyFinding('Les observations non critiques seront listées ici.'));
+        setHtml('findingsImmediate', emptyFinding('Aucune donnée disponible.'));
+        setHtml('findingsLongterm', emptyFinding('Veuillez lancer une analyse.'));
     }
 
+    // Le chargement des rapports persistés peut être optionnel ou adapté
     const serverReport = await fetchLatestReport();
-    if (serverReport) {
+    if (serverReport && !localData) {
         renderPersistedReport(serverReport);
     }
 
@@ -27,7 +28,17 @@ async function initReportPage() {
     if (btn) {
         btn.addEventListener('click', async () => {
             if (!localData) {
-                window.alert('Aucune analyse locale disponible pour générer les aperçus.');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Données manquantes',
+                    text: 'Aucune analyse locale disponible pour générer les aperçus.',
+                    customClass: {
+                        popup: 'swal-custom-popup',
+                        title: 'swal-custom-title',
+                        confirmButton: 'swal-custom-confirm'
+                    },
+                    buttonsStyling: false
+                });
                 return;
             }
             btn.disabled = true;
@@ -54,15 +65,90 @@ function renderFromLocalAnalysis(data) {
     setText('auditTargetIp', targetIp);
     setText('auditTargetPath', targetPath);
 
-    const health = computeHealthScore(stats);
-    setGauge(health);
-
+    // Mise à jour des compteurs (Tableau récapitulatif simple)
+    setText('statTotalLines', String(stats.total ?? 0));
     setText('statCritical', String(stats.errors ?? 0));
-    setText('statStability', computeStabilityLabel(stats));
-    setText('statConfidence', String(computeConfidence(stats)));
+    setText('statWarnings', String(stats.warnings ?? 0));
+    setText('statInfo', String(stats.info ?? 0));
 
-    renderSummary(stats, meta, health);
+    // Analyse de récurrence et Top 20 erreurs
+    renderRecurrenceAnalysis(data);
+    renderTopErrors(data);
+    
+    // Rendu des traces et résumés IA si disponibles
     renderTraceSamples(data);
+}
+
+/**
+ * Calcule et affiche les patterns de logs les plus fréquents.
+ */
+function renderRecurrenceAnalysis(data) {
+    const body = document.getElementById('recurrenceTableBody');
+    if (!body) return;
+
+    body.innerHTML = ''; // Vider avant d'ajouter
+    
+    const segments = data.segments || {};
+    const allLines = [
+        ...(segments.ERROR || []),
+        ...(segments.WARNING || []),
+        ...(segments.INFO || [])
+    ];
+
+    if (!allLines.length) {
+        body.innerHTML = '<tr><td colspan="2" class="text-center text-muted">Aucune donnée disponible.</td></tr>';
+        return;
+    }
+
+    // Compter les occurrences de chaque message (en ignorant les timestamps au début)
+    const counts = {};
+    allLines.forEach(line => {
+        // Nettoyage basique du timestamp pour regrouper les messages identiques
+        const cleaned = line.replace(/^[A-Z][a-z]{2}\s+\d+\s+\d+:\d+:\d+\s+/, '').trim();
+        counts[cleaned] = (counts[cleaned] || 0) + 1;
+    });
+
+    // Trier par nombre d'occurrences décroissant
+    const sorted = Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10);
+
+    body.innerHTML = sorted.map(([msg, count]) => `
+        <tr>
+            <td style="word-break: break-all; font-family: monospace; font-size: 0.8rem;">${escapeHtml(msg)}</td>
+            <td style="text-align: center; font-weight: bold;">${count}</td>
+        </tr>
+    `).join('');
+}
+
+/**
+ * Affiche les 20 premières erreurs avec leur horodatage.
+ */
+function renderTopErrors(data) {
+    const body = document.getElementById('topErrorsTableBody');
+    if (!body) return;
+
+    body.innerHTML = ''; // Vider avant d'ajouter
+
+    const errors = (data.segments?.ERROR || []).slice(0, 20);
+
+    if (!errors.length) {
+        body.innerHTML = '<tr><td colspan="2" class="text-center text-muted">Aucune erreur détectée.</td></tr>';
+        return;
+    }
+
+    body.innerHTML = errors.map(err => {
+        const tsMatch = err.match(/^[A-Z][a-z]{2}\s+\d+\s+\d+:\d+:\d+/);
+        const timestamp = tsMatch ? tsMatch[0] : '--';
+        const message = tsMatch ? err.replace(tsMatch[0], '').trim() : err;
+
+        return `
+            <tr>
+                <td class="text-muted" style="font-family: monospace;">${escapeHtml(timestamp)}</td>
+                <td style="font-weight: 500;">${escapeHtml(message)}</td>
+            </tr>
+        `;
+    }).join('');
 }
 
 async function fetchLatestReport() {
@@ -77,42 +163,21 @@ async function fetchLatestReport() {
 }
 
 function renderPersistedReport(report) {
-    const stats = report?.stats || {};
-    const health = Number(report?.global_health_score ?? computeHealthScore(stats));
-    const summary = Array.isArray(report?.summary_table) ? report.summary_table : [];
-    const immediate = Array.isArray(report?.immediate_actions) ? report.immediate_actions : [];
-
+    const stats = report?.stats || { errors: 0, warnings: 0, info: 0, total: 0 };
+    
     if (report?.generated_at) {
         setText('auditTimestamp', new Date(report.generated_at).toLocaleString('fr-FR'));
     }
-    setGauge(health);
-    setText('healthScoreValue', String(health));
+
+    setText('statTotalLines', String(stats.total ?? 0));
     setText('statCritical', String(stats.errors ?? 0));
-    setText('statStability', computeStabilityLabel(stats));
-    setText('statConfidence', String(computeConfidence(stats)));
+    setText('statWarnings', String(stats.warnings ?? 0));
+    setText('statInfo', String(stats.info ?? 0));
 
-    if (summary.length) {
-        const body = document.getElementById('auditSummaryBody');
-        if (body) {
-            body.innerHTML = summary.map((row) => `
-                <tr>
-                    <td style="font-weight:900;">${escapeHtml(row.metric || '--')}</td>
-                    <td>${escapeHtml(row.value || '--')}</td>
-                    <td class="text-muted">${escapeHtml(row.notes || '--')}</td>
-                </tr>
-            `).join('');
-        }
-    }
-
-    if (immediate.length) {
-        setHtml(
-            'findingsImmediate',
-            immediate
-                .map((item) => `<div class="audit-finding"><div class="text-muted small">${escapeHtml(item)}</div></div>`)
-                .join('')
-        );
-    } else {
-        setHtml('findingsImmediate', emptyFinding('Aucune action immédiate détectée.'));
+    // Si on a des données de segments, on peut relancer l'analyse de récurrence
+    if (report.segments) {
+        renderRecurrenceAnalysis(report);
+        renderTopErrors(report);
     }
 }
 
@@ -124,71 +189,6 @@ function setText(id, value) {
 function setHtml(id, html) {
     const el = document.getElementById(id);
     if (el) el.innerHTML = html;
-}
-
-function computeHealthScore(stats) {
-    const errors = Number(stats.errors || 0);
-    const info = Number(stats.info || 0);
-    const warnings = Number(stats.warnings || 0);
-    const denom = Math.max(1, info + errors + warnings);
-    const ratio = info / denom; // Proportion "saine"
-    const score = Math.round(ratio * 100);
-    return Math.max(0, Math.min(100, score));
-}
-
-function computeStabilityLabel(stats) {
-    const errors = Number(stats.errors || 0);
-    const total = Number(stats.total || 0);
-    if (total <= 0) return 'N/D';
-    const errRate = errors / Math.max(1, total);
-    if (errRate >= 0.20) return 'Instable';
-    if (errRate >= 0.08) return 'Dégradé';
-    return 'Stable';
-}
-
-function computeConfidence(stats) {
-    const total = Number(stats.total || 0);
-    const errors = Number(stats.errors || 0);
-    const base = total >= 200 ? 92 : total >= 80 ? 88 : total >= 20 ? 82 : 72;
-    const penalty = Math.min(18, Math.round((errors / Math.max(1, total)) * 100));
-    return Math.max(60, Math.min(95, base - penalty));
-}
-
-function setGauge(score) {
-    const gauge = document.getElementById('healthGauge');
-    const val = document.getElementById('healthScoreValue');
-    const sub = document.getElementById('healthScoreSub');
-    if (gauge) gauge.style.setProperty('--p', String(score));
-    if (val) val.textContent = String(score);
-    if (sub) sub.textContent = score >= 85 ? 'Sain' : score >= 65 ? 'Surveillance' : 'Critique';
-}
-
-function renderSummary(stats, meta, health) {
-    const body = document.getElementById('auditSummaryBody');
-    if (!body) return;
-
-    const fileSize = meta.file_size_bytes != null ? formatBytes(meta.file_size_bytes) : '--';
-    const lm = meta.last_modified_utc ? new Date(meta.last_modified_utc).toLocaleString('fr-FR') : '--';
-    const sourceType = meta.source_type || '--';
-
-    const rows = [
-        ['Score de Santé Global', `${health}%`, 'Ratio Info vs (Erreurs+Avertissements+Info)'],
-        ['Problèmes Critiques (Erreurs)', String(stats.errors ?? 0), 'Priorité haute : investigation immédiate'],
-        ['Avertissements', String(stats.warnings ?? 0), 'Risque moyen : durcissement et ajustements'],
-        ['Info', String(stats.info ?? 0), 'Volume normal / bruit'],
-        ['Lignes Totales (Analysées)', String(stats.total ?? 0), 'Total des lignes analysées'],
-        ['Type de Source', sourceType, 'ssh ou upload'],
-        ['Taille du Fichier', fileSize, 'Taille du fichier côté serveur (si disponible)'],
-        ['Dernière Modification', lm, 'Horodatage serveur (UTC)']
-    ];
-
-    body.innerHTML = rows.map(r => `
-        <tr>
-            <td style="font-weight:900;">${escapeHtml(r[0])}</td>
-            <td>${escapeHtml(r[1])}</td>
-            <td class="text-muted">${escapeHtml(r[2])}</td>
-                </tr>
-    `).join('');
 }
 
 function renderTraceSamples(data) {
@@ -411,35 +411,134 @@ async function analyzeWithAI(line) {
 }
 
 /**
- * Génère un fichier PDF à partir du contenu HTML du rapport.
+ * Génère un fichier PDF à partir du serveur (FPDF).
  */
 function downloadPDF() {
-    const element = document.getElementById('reportContent');
-    const opt = {
-        margin: [10, 10],
-        filename: 'Rapport_Final_LogAnalyzer.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-    };
-    const rawData = localStorage.getItem('lastAnalysis');
-    const analysisId = rawData ? (JSON.parse(rawData).analysis_id || null) : null;
+    // Tente de récupérer l'ID depuis les données injectées par le serveur ou le localStorage
+    const analysisId = window.SERVER_ANALYSIS_DATA?.analysis_id || 
+                       JSON.parse(localStorage.getItem('lastAnalysis') || '{}').analysis_id;
 
-    // Utilisation de la bibliothèque html2pdf pour la conversion + upload server-side
-    const worker = html2pdf().set(opt).from(element);
+    if (!analysisId) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Aucune analyse active',
+            text: "Aucune analyse n'a été trouvée pour l'exportation.",
+            customClass: {
+                popup: 'swal-custom-popup',
+                title: 'swal-custom-title',
+                confirmButton: 'swal-custom-confirm'
+            },
+            buttonsStyling: false
+        });
+        return;
+    }
 
-    worker.outputPdf('blob').then(async (blob) => {
-        if (analysisId) {
-            try {
-                const fd = new FormData();
-                fd.append('pdf', blob, opt.filename);
-                await fetch(`/api/analyses/${analysisId}/report-pdf`, { method: 'POST', body: fd });
-            } catch (e) {
-                console.error('PDF upload failed', e);
+    // Rediriger vers la route de téléchargement serveur
+    window.location.href = `/download-pdf/${analysisId}`;
+}
+
+/**
+ * Envoie le rapport PDF par email via l'API avec SweetAlert2 (Thème Sombre SOC).
+ */
+async function sendReportByEmail() {
+    const analysisId = window.SERVER_ANALYSIS_DATA?.analysis_id || 
+                       JSON.parse(localStorage.getItem('lastAnalysis') || '{}').analysis_id;
+
+    if (!analysisId) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Analyse introuvable',
+            text: "Aucune analyse n'a été trouvée pour l'envoi.",
+            customClass: {
+                popup: 'swal-custom-popup',
+                title: 'swal-custom-title',
+                confirmButton: 'swal-custom-confirm'
             }
-        }
-        // Téléchargement local conservé
-        await worker.save();
+        });
+        return;
+    }
+
+    const { value: recipient, isConfirmed } = await Swal.fire({
+        title: 'Envoyer le Rapport Audit',
+        input: 'email',
+        inputLabel: 'Adresse email de destination',
+        inputPlaceholder: "Par défaut : votre adresse de profil",
+        showCancelButton: true,
+        confirmButtonText: '<i class="fas fa-paper-plane me-2"></i> Envoyer',
+        cancelButtonText: 'Annuler',
+        customClass: {
+            popup: 'swal-custom-popup',
+            title: 'swal-custom-title',
+            input: 'swal-custom-input',
+            confirmButton: 'swal-custom-confirm',
+            cancelButton: 'swal-custom-cancel'
+        },
+        buttonsStyling: false
     });
+
+    if (!isConfirmed) return;
+
+    // Feedback Progressif : Afficher le loader et le maintenir jusqu'à la réponse
+    Swal.fire({
+        title: 'Transmission en cours...',
+        html: '<div class="text-muted mb-3">Génération du PDF et envoi via SMTP sécurisé...</div>',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        customClass: {
+            popup: 'swal-custom-popup',
+            title: 'swal-custom-title'
+        },
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    try {
+        const response = await fetch('/api/send-report-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ analysis_id: analysisId, recipient: recipient || null })
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Rapport Envoyé',
+                text: result.message,
+                customClass: {
+                    popup: 'swal-custom-popup',
+                    title: 'swal-custom-title',
+                    confirmButton: 'swal-custom-confirm'
+                },
+                buttonsStyling: false
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Échec de l\'envoi',
+                text: result.message,
+                customClass: {
+                    popup: 'swal-custom-popup',
+                    title: 'swal-custom-title',
+                    confirmButton: 'swal-custom-confirm'
+                },
+                buttonsStyling: false
+            });
+        }
+    } catch (error) {
+        console.error("Email API Error:", error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Erreur SMTP/Réseau',
+            text: "Le serveur de messagerie est inaccessible ou vos identifiants sont invalides.",
+            customClass: {
+                popup: 'swal-custom-popup',
+                title: 'swal-custom-title',
+                confirmButton: 'swal-custom-confirm'
+            },
+            buttonsStyling: false
+        });
+    }
 }

@@ -2,8 +2,32 @@
 
 {% block title %}Détails des logs - Analyse{% endblock %}
 
+{% block extra_js %}
+    {% if analysis_data %}
+    <script>
+        window.SERVER_ANALYSIS_DATA = {{ analysis_data | tojson | safe }};
+    </script>
+    {% endif %}
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid px-0 fade-in-up">
+{% if not analysis_data %}
+<div class="row g-4 mb-4">
+    <div class="col-12 text-center py-5">
+        <div class="glass-card p-5">
+            <div class="mb-4">
+                <i class="fas fa-file-circle-exclamation fa-4x text-muted opacity-25"></i>
+            </div>
+            <h3 class="fw-bold">Aucune donnée à afficher</h3>
+            <p class="text-muted">Veuillez d'abord lancer une analyse SSH ou uploader un fichier.</p>
+            <a href="/ssh" class="btn btn-saas mt-3">
+                <i class="fas fa-plus me-2"></i>Lancer une analyse
+            </a>
+        </div>
+    </div>
+</div>
+{% else %}
     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
         <div>
             <div class="log-breadcrumb text-muted small">
@@ -14,7 +38,7 @@
             <h3 class="fw-bold mb-0">Analyse détaillée des logs</h3>
         </div>
         <div class="d-flex align-items-center gap-2 flex-wrap">
-            <span class="badge badge-source" id="sourceBadge">Source : --</span>
+            <span class="badge badge-source" id="sourceBadge">Source : {{ filename }}</span>
             <a href="/report" class="btn btn-outline-saas btn-sm">
                 <i class="fas fa-file-invoice me-2"></i>Ouvrir le rapport
             </a>
@@ -31,7 +55,7 @@
                 <div class="monitor-meta-grid">
                     <div class="meta-item">
                         <div class="meta-label">Fichier</div>
-                        <div class="meta-value" id="metaFile">--</div>
+                        <div class="meta-value" id="metaFile">{{ filename }}</div>
                     </div>
                     <div class="meta-item">
                         <div class="meta-label">Taille</div>
@@ -124,5 +148,6 @@
         </div>
         </div>
     </div>
+{% endif %}
 </div>
 {% endblock %}

@@ -2,6 +2,22 @@
 
 {% block content %}
 <div class="dashboard-page">
+{% if not analysis_data %}
+<div class="row g-4 mb-4 fade-in-up">
+    <div class="col-12 text-center py-5">
+        <div class="glass-card p-5">
+            <div class="mb-4">
+                <i class="fas fa-chart-bar fa-4x text-muted opacity-25"></i>
+            </div>
+            <h3 class="fw-bold">Aucune analyse récente</h3>
+            <p class="text-muted">Commencez par connecter votre serveur SSH pour analyser les logs.</p>
+            <a href="/ssh" class="btn btn-saas mt-3">
+                <i class="fas fa-plus me-2"></i>Nouvelle Analyse SSH
+            </a>
+        </div>
+    </div>
+</div>
+{% else %}
 <div class="row g-4 mb-4 fade-in-up">
     <div class="col-12">
         <div class="stat-card glass-card d-flex justify-content-between align-items-center">
@@ -74,5 +90,14 @@
         </div>
     </div>
 </div>
+{% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+    {% if analysis_data %}
+    <script>
+        window.SERVER_ANALYSIS_DATA = {{ analysis_data | tojson | safe }};
+    </script>
+    {% endif %}
 {% endblock %}

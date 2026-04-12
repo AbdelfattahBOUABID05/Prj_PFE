@@ -1,7 +1,10 @@
 import os
 os.environ['NO_PROXY'] = 'generativelanguage.googleapis.com,smtp.gmail.com'
 
-from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
+from fpdf import FPDF
+from fpdf.enums import XPos, YPos
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session, send_file
+import io
 from flask_cors import CORS
 from datetime import datetime, timezone, timedelta
 import paramiko
@@ -12,6 +15,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 import smtplib
 import ssl
 import json
+import dns.resolver # Pour la détection MX
 from openai import OpenAI
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -266,8 +270,7 @@ with app.app_context():
 
 
 def analyses_query_for_user():
-    if getattr(current_user, "is_admin", False):
-        return Analysis.query
+    # On filtre systématiquement par l'ID de l'utilisateur connecté pour isolation totale
     return Analysis.query.filter_by(user_id=current_user.id)
 
 
@@ -283,6 +286,12 @@ def save_analysis_for_current_user(*, source_type: str, source_path: str, server
     )
     db.session.add(a)
     db.session.commit()
+    
+    # Stockage de l'ID uniquement dans la session Flask pour éviter la limite de 4KB
+    session['last_analysis_id'] = a.id
+    # On retire les données volumineuses de la session si elles y étaient
+    session.pop('analysis_results', None)
+    
     # Conserve une trace légère de la "session courante" pour la génération de rapport.
     try:
         recent = list(session.get("recent_analysis_ids") or [])
@@ -290,7 +299,6 @@ def save_analysis_for_current_user(*, source_type: str, source_path: str, server
         session["recent_analysis_ids"] = recent[-50:]
         session.modified = True
     except Exception:
-        # Les erreurs de session ne doivent jamais bloquer la persistance des analyses.
         pass
     return a
 
@@ -444,12 +452,60 @@ def _generate_executive_security_audit(log_lines: list[str], stats: dict, health
 @app.route('/')
 @login_required
 def index():
-    return render_template('index.html')
+    # Récupération de l'ID d'analyse depuis la session ou la dernière en base
+    analysis_id = session.get('last_analysis_id')
+    last_analysis = None
+    
+    if analysis_id:
+        last_analysis = Analysis.query.filter_by(id=analysis_id, user_id=current_user.id).first()
+    
+    if not last_analysis:
+        last_analysis = Analysis.query.filter_by(user_id=current_user.id).order_by(Analysis.created_at.desc()).first()
+
+    results = None
+    if last_analysis:
+        results = {
+            "status": "success",
+            "analysis_id": last_analysis.id,
+            "meta": last_analysis.meta,
+            "segments": last_analysis.segments,
+            "stats": last_analysis.stats,
+            "generated_at": last_analysis.created_at.isoformat()
+        }
+        session['last_analysis_id'] = last_analysis.id
+            
+    return render_template('index.html', analysis_data=results)
 
 @app.route('/details')
 @login_required
 def details():
-    return render_template('details.html')
+    analysis_id = session.get('last_analysis_id')
+    last_analysis = None
+    
+    if analysis_id:
+        last_analysis = Analysis.query.filter_by(id=analysis_id, user_id=current_user.id).first()
+    
+    if not last_analysis:
+        last_analysis = Analysis.query.filter_by(user_id=current_user.id).order_by(Analysis.created_at.desc()).first()
+
+    results = None
+    if last_analysis:
+        results = {
+            "status": "success",
+            "analysis_id": last_analysis.id,
+            "meta": last_analysis.meta,
+            "segments": last_analysis.segments,
+            "stats": last_analysis.stats,
+            "generated_at": last_analysis.created_at.isoformat()
+        }
+        session['last_analysis_id'] = last_analysis.id
+
+    # Extraction du chemin du fichier pour l'affichage dans le template
+    filename = "--"
+    if results and 'meta' in results:
+        filename = results['meta'].get('source_path') or results['meta'].get('filename') or "--"
+
+    return render_template('details.html', analysis_data=results, filename=filename)
 
 @app.route('/ssh')
 @login_required
@@ -459,7 +515,28 @@ def ssh_page():
 @app.route('/report')
 @login_required
 def report_page():
-    return render_template('report.html')
+    analysis_id = session.get('last_analysis_id')
+    last_analysis = None
+    
+    if analysis_id:
+        last_analysis = Analysis.query.filter_by(id=analysis_id, user_id=current_user.id).first()
+    
+    if not last_analysis:
+        last_analysis = Analysis.query.filter_by(user_id=current_user.id).order_by(Analysis.created_at.desc()).first()
+
+    results = None
+    if last_analysis:
+        results = {
+            "status": "success",
+            "analysis_id": last_analysis.id,
+            "meta": last_analysis.meta,
+            "segments": last_analysis.segments,
+            "stats": last_analysis.stats,
+            "generated_at": last_analysis.created_at.isoformat()
+        }
+        session['last_analysis_id'] = last_analysis.id
+
+    return render_template('report.html', analysis_data=results)
 
 @app.route('/send-report-page')
 @login_required
@@ -532,27 +609,52 @@ def register():
 @login_required
 def profile():
     if request.method == 'POST':
-        current_password = request.form.get('current_password') or ""
-        new_password = request.form.get('new_password') or ""
-        confirm = request.form.get('confirm_password') or ""
+        action = request.form.get('action')
+        
+        if action == 'change_password':
+            # ... (logique existante conservée) ...
+            current_password = request.form.get('current_password') or ""
+            new_password = request.form.get('new_password') or ""
+            confirm = request.form.get('confirm_password') or ""
 
-        if not current_password or not new_password or not confirm:
-            flash("Veuillez remplir tous les champs.", "danger")
-            return redirect(url_for("profile"))
-        if not current_user.check_password(current_password):
-            flash("Mot de passe actuel incorrect.", "danger")
-            return redirect(url_for("profile"))
-        if new_password != confirm:
-            flash("Les mots de passe ne correspondent pas.", "danger")
-            return redirect(url_for("profile"))
-        if len(new_password) < 8:
-            flash("Le nouveau mot de passe doit contenir au moins 8 caractères.", "danger")
-            return redirect(url_for("profile"))
+            if not current_password or not new_password or not confirm:
+                flash("Veuillez remplir tous les champs du mot de passe.", "danger")
+                return redirect(url_for("profile"))
+            if not current_user.check_password(current_password):
+                flash("Mot de passe actuel incorrect.", "danger")
+                return redirect(url_for("profile"))
+            if new_password != confirm:
+                flash("Les mots de passe ne correspondent pas.", "danger")
+                return redirect(url_for("profile"))
+            if len(new_password) < 8:
+                flash("Le nouveau mot de passe doit contenir au moins 8 caractères.", "danger")
+                return redirect(url_for("profile"))
 
-        user = db.session.get(User, current_user.id)
-        user.set_password(new_password)
-        db.session.commit()
-        flash("Mot de passe mis à jour avec succès.", "success")
+            user = db.session.get(User, current_user.id)
+            user.set_password(new_password)
+            db.session.commit()
+            flash("Mot de passe mis à jour avec succès.", "success")
+            
+        elif action == 'update_email_config':
+            email_sender = (request.form.get('email_sender') or "").strip()
+            email_password = request.form.get('email_password') or ""
+            smtp_server = (request.form.get('smtp_server') or "").strip()
+            smtp_port = request.form.get('smtp_port')
+            
+            user = db.session.get(User, current_user.id)
+            user.email_sender = email_sender
+            if email_password:
+                user.email_password_enc = email_password
+            
+            user.smtp_server = smtp_server if smtp_server else None
+            try:
+                user.smtp_port = int(smtp_port) if smtp_port else None
+            except ValueError:
+                user.smtp_port = None
+                
+            db.session.commit()
+            flash("Configuration email mise à jour.", "success")
+            
         return redirect(url_for("profile"))
 
     return render_template('profile.html')
@@ -638,6 +740,7 @@ def admin_user_delete(user_id: int):
 @app.route('/logout')
 @login_required
 def logout():
+    session.clear() # Vide complètement la session pour isolation utilisateur
     logout_user()
     flash("Vous êtes déconnecté.", "success")
     return redirect(url_for("login"))
@@ -715,6 +818,8 @@ def upload_file():
             meta=payload["meta"],
         )
         payload["analysis_id"] = analysis.id
+        
+        # Le stockage en session est déjà géré par save_analysis_for_current_user
         return jsonify(payload)
     except Exception as e:
         return json_error(str(e), 500, code="UPLOAD_FAILED")
@@ -729,6 +834,7 @@ def ssh_analyze():
         user = (data.get('username') or "").strip()
         pwd = data.get('password') or ""
         path = (data.get('path') or "/var/log/messages").strip()
+        today_only = data.get('today_only', False)
 
         try:
             limit = int(data.get('limit', 100))
@@ -747,12 +853,38 @@ def ssh_analyze():
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(ip, username=user, password=pwd, timeout=10, banner_timeout=10, auth_timeout=10)
 
-        stdin, stdout, stderr = ssh.exec_command(f"tail -n {limit} {path}")
+        # Construction de la commande SSH selon le mode (Tout ou Aujourd'hui uniquement)
+        if today_only:
+            # Récupération de la date actuelle aux formats standards
+            now = datetime.now()
+            # Format Syslog : "Apr 11" (Abbréviation mois en anglais + Jour avec espace)
+            # Utilisation de mapping manuel pour garantir le format anglais attendu par syslog
+            months_map = {
+                1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun',
+                7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'
+            }
+            month_abbr = months_map[now.month]
+            day = str(now.day).rjust(2) # " 1" ou "11"
+            date_syslog = month_abbr + " " + day
+            
+            # Format ISO : "2026-04-11"
+            date_iso = now.strftime("%Y-%m-%d")
+            
+            # Utilisation de grep pour filtrer les lignes commençant par l'un des formats
+            # L'option -a (ou --text) force grep à traiter le fichier comme du texte
+            command = f"grep -aE '^{date_syslog}|{date_iso}' {path}"
+        else:
+            command = f"tail -n {limit} {path}"
+
+        stdin, stdout, stderr = ssh.exec_command(command)
         log_content = stdout.read().decode('utf-8', errors='replace')
         error_content = stderr.read().decode('utf-8', errors='replace')
 
         if error_content:
             return json_error(error_content.strip(), 400, code="SSH_COMMAND_ERROR")
+
+        if today_only and not log_content.strip():
+            return json_error("Aucun log trouvé pour aujourd'hui", status_code=200, code="NO_LOGS_TODAY")
 
         temp_path = os.path.join(app.config['UPLOAD_FOLDER'], "ssh_temp.log")
         with open(temp_path, "w", encoding="utf-8") as f:
@@ -813,7 +945,335 @@ def ai_analyze_line():
     except Exception as e:
         return json_error(str(e), 500, code="AI_ANALYZE_FAILED")
 
+def get_smtp_config(email_addr: str):
+    """
+    Détecte automatiquement le serveur SMTP et le port en fonction de l'adresse email.
+    Priorise les domaines connus, puis les préfixes standards, et enfin le MX Lookup.
+    """
+    domain = email_addr.split('@')[-1].lower()
+    
+    # 1. Mappage prioritaire pour les domaines spécifiques
+    microsoft_domains = ['outlook.com', 'hotmail.com', 'outlook.fr', 'hotmail.fr', 'live.com', 'live.fr']
+    if domain in microsoft_domains:
+        return ('smtp.office365.com', 587)
+        
+    if domain == 'gmail.com':
+        return ('smtp.gmail.com', 587)
+        
+    # 2. Test des préfixes standards (ex: smtp.domain.com)
+    standard_prefixes = ['smtp.', 'mail.']
+    for prefix in standard_prefixes:
+        try:
+            target = prefix + domain
+            # Résolution DNS pour vérifier l'existence du serveur
+            dns.resolver.resolve(target, 'A')
+            return (target, 587) 
+        except Exception:
+            continue
+            
+    # 3. Fallback final : DNS Lookup MX
+    try:
+        answers = dns.resolver.resolve(domain, 'MX')
+        # On récupère le serveur MX avec la priorité la plus haute (le premier)
+        mx_server = str(answers[0].exchange).rstrip('.')
+        return (mx_server, 587)
+    except Exception:
+        pass
+        
+    return None, None
 
+def clean_text_for_pdf(text: str) -> str:
+    """Nettoie le texte pour la compatibilité avec les polices PDF standards (latin-1)."""
+    if not text:
+        return ""
+    # Remplacement des caractères spéciaux courants non supportés par latin-1
+    replacements = {
+        '—': '-',   # Em dash
+        '–': '-',   # En dash
+        '’': "'",   # Smart quote
+        '‘': "'",   # Smart quote
+        '“': '"',   # Smart double quote
+        '”': '"',   # Smart double quote
+        '…': '...', # Ellipsis
+        '€': 'EUR'  # Euro symbol (optionnel selon besoin)
+    }
+    for old, new in replacements.items():
+        text = text.replace(old, new)
+    
+    # Encodage en latin-1 avec remplacement des caractères inconnus par '?'
+    try:
+        return text.encode('latin-1', 'replace').decode('latin-1')
+    except Exception:
+        return str(text)
+
+
+def generate_pdf_report_bytes(analysis):
+    """
+    Génère un rapport PDF professionnel à partir d'une analyse.
+    """
+    try:
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_auto_page_break(auto=True, margin=15)
+        
+        # --- Header ---
+        pdf.set_font("Helvetica", "B", 18)
+        pdf.set_text_color(17, 24, 39) # Dark blue
+        pdf.cell(190, 12, clean_text_for_pdf("RAPPORT D'AUDIT TECHNIQUE"), align="C", ln=True)
+        pdf.set_font("Helvetica", "B", 12)
+        pdf.set_text_color(75, 85, 99)
+        pdf.cell(190, 8, clean_text_for_pdf("Compte-rendu d'Analyse des Logs"), align="C", ln=True)
+        pdf.ln(8)
+        
+        # --- Summary Table ---
+        pdf.set_fill_color(249, 250, 251) # Light gray background
+        pdf.set_font("Helvetica", "B", 12)
+        pdf.set_text_color(17, 24, 39)
+        pdf.cell(190, 10, clean_text_for_pdf("1. Résumé de l'analyse"), fill=True, ln=True)
+        pdf.ln(2)
+        
+        pdf.set_font("Helvetica", "", 10)
+        pdf.set_text_color(55, 65, 81)
+        
+        # Grid layout for summary
+        stats = analysis.stats or {}
+        rows = [
+            ("Date du rapport", datetime.now().strftime('%d/%m/%Y %H:%M')),
+            ("Fichier Source", analysis.source_path or "/var/log/syslog"),
+            ("Serveur Cible (IP)", analysis.server_ip or "Localhost"),
+            ("Total lignes analysées", str(stats.get('total', 0)))
+        ]
+        
+        for label, value in rows:
+            pdf.set_font("Helvetica", "B", 10)
+            pdf.cell(60, 8, clean_text_for_pdf(label), border='B')
+            pdf.set_font("Helvetica", "", 10)
+            pdf.cell(130, 8, clean_text_for_pdf(value), border='B', ln=True)
+        pdf.ln(10)
+        
+        # --- Statistics Breakdown ---
+        pdf.set_font("Helvetica", "B", 12)
+        pdf.set_text_color(17, 24, 39)
+        pdf.cell(190, 10, clean_text_for_pdf("2. Statistiques Globales"), ln=True)
+        
+        # Stats table
+        pdf.set_font("Helvetica", "B", 10)
+        pdf.set_fill_color(243, 244, 246)
+        pdf.cell(47.5, 8, clean_text_for_pdf("Total"), 1, 0, 'C', True)
+        pdf.cell(47.5, 8, clean_text_for_pdf("Erreurs"), 1, 0, 'C', True)
+        pdf.cell(47.5, 8, clean_text_for_pdf("Warnings"), 1, 0, 'C', True)
+        pdf.cell(47.5, 8, clean_text_for_pdf("Infos"), 1, 1, 'C', True)
+        
+        pdf.set_font("Helvetica", "", 10)
+        pdf.cell(47.5, 8, str(stats.get('total', 0)), 1, 0, 'C')
+        pdf.set_text_color(220, 38, 38) # Red for errors
+        pdf.cell(47.5, 8, str(stats.get('errors', 0)), 1, 0, 'C')
+        pdf.set_text_color(217, 119, 6) # Amber for warnings
+        pdf.cell(47.5, 8, str(stats.get('warnings', 0)), 1, 0, 'C')
+        pdf.set_text_color(37, 99, 235) # Blue for info
+        pdf.cell(47.5, 8, str(stats.get('info', 0)), 1, 1, 'C')
+        pdf.set_text_color(17, 24, 39)
+        pdf.ln(10)
+        
+        # --- Top 10 Patterns ---
+        pdf.set_font("Helvetica", "B", 12)
+        pdf.cell(190, 10, clean_text_for_pdf("3. Analyse de Récurrence (Top 10 Patterns)"), ln=True)
+        
+        segments = analysis.segments or {}
+        all_lines = (segments.get('ERROR', []) + segments.get('WARNING', []) + segments.get('INFO', []))
+        
+        counts = {}
+        for line in all_lines:
+            # Nettoyage du message (ignorer timestamp au début)
+            # Format attendu: "Apr 11 12:34:56 host process[pid]: message"
+            cleaned = str(line).split(' ', 3)[-1].strip() if ' ' in str(line) else str(line)
+            counts[cleaned] = counts.get(cleaned, 0) + 1
+            
+        sorted_counts = sorted(counts.items(), key=lambda x: x[1], reverse=True)[:10]
+        
+        # Header table patterns
+        pdf.set_font("Helvetica", "B", 10)
+        pdf.set_fill_color(243, 244, 246)
+        pdf.cell(150, 8, clean_text_for_pdf("Message de Log (Pattern)"), 1, 0, 'L', True)
+        pdf.cell(40, 8, clean_text_for_pdf("Occurrences"), 1, 1, 'C', True)
+        
+        pdf.set_font("Courier", "", 8)
+        for msg, count in sorted_counts:
+            # Re-calculer x,y pour multi_cell
+            curr_x, curr_y = pdf.get_x(), pdf.get_y()
+            
+            # multi_cell pour le message (largeur 150)
+            cleaned_msg = clean_text_for_pdf(str(msg)[:300]) # Tronquer si trop long
+            pdf.multi_cell(150, 5, cleaned_msg, border=1)
+            new_y = pdf.get_y()
+            
+            # Revenir à droite pour les occurrences
+            pdf.set_xy(curr_x + 150, curr_y)
+            pdf.cell(40, new_y - curr_y, str(count), border=1, ln=True, align='C')
+        pdf.ln(10)
+        
+        # --- Details Errors (Optional but nice) ---
+        if stats.get('errors', 0) > 0:
+            pdf.set_font("Helvetica", "B", 12)
+            pdf.cell(190, 10, clean_text_for_pdf("4. Détails des premières erreurs"), ln=True)
+            pdf.set_font("Courier", "", 8)
+            
+            errors = segments.get('ERROR', [])[:15]
+            for err in errors:
+                cleaned_err = clean_text_for_pdf(str(err))
+                pdf.multi_cell(190, 5, cleaned_err, border=1, ln=True)
+        
+        # --- Footer ---
+        pdf.set_y(-15)
+        pdf.set_font("Helvetica", "I", 8)
+        pdf.set_text_color(156, 163, 175)
+        pdf.cell(190, 10, clean_text_for_pdf("Document d'Audit Technique - LogAnalyzer PFE 2026 - Confidentiel"), align="C")
+
+        return pdf.output()
+    except Exception as e:
+        print(f"PDF Generation Error: {str(e)}")
+        raise e
+
+@app.route('/download-pdf/<int:analysis_id>')
+@login_required
+def download_pdf_report(analysis_id):
+    analysis = Analysis.query.filter_by(id=analysis_id, user_id=current_user.id).first()
+    if not analysis:
+        return "Analyse introuvable", 404
+
+    try:
+        pdf_bytes = generate_pdf_report_bytes(analysis)
+        output = io.BytesIO(pdf_bytes)
+        output.seek(0)
+        
+        return send_file(
+            output,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f"Rapport_Audit_{analysis_id}.pdf"
+        )
+    except Exception as e:
+        return f"Erreur lors de la génération du PDF : {str(e)}", 500
+
+
+@app.route('/api/reports/latest')
+@login_required
+def get_latest_report():
+    """Renvoie les données de la dernière analyse de l'utilisateur."""
+    analysis_id = session.get('last_analysis_id')
+    analysis = None
+    if analysis_id:
+        analysis = Analysis.query.filter_by(id=analysis_id, user_id=current_user.id).first()
+    if not analysis:
+        analysis = Analysis.query.filter_by(user_id=current_user.id).order_by(Analysis.created_at.desc()).first()
+    
+    if not analysis:
+        return jsonify({"status": "error", "message": "Aucune analyse trouvée"}), 404
+        
+    return jsonify({
+        "status": "success",
+        "report": {
+            "analysis_id": analysis.id,
+            "stats": analysis.stats,
+            "segments": analysis.segments,
+            "meta": analysis.meta,
+            "generated_at": analysis.created_at.isoformat()
+        }
+    })
+
+@app.route('/api/send-report-email', methods=['POST'])
+@login_required
+def send_report_email():
+    """
+    Envoie le rapport PDF complet avec statistiques et Top 10 patterns.
+    """
+    try:
+        data = request.get_json() or {}
+        analysis_id = data.get('analysis_id')
+        recipient = data.get('recipient')
+        
+        if not analysis_id:
+            return jsonify({"success": False, "message": "ID d'analyse manquant"}), 400
+        
+        user = db.session.get(User, current_user.id)
+        analysis = Analysis.query.filter_by(id=analysis_id, user_id=current_user.id).first()
+        
+        if not analysis:
+            return jsonify({"success": False, "message": "Analyse introuvable"}), 404
+
+        target_email = (recipient or user.email).strip()
+        
+        # 1. Génération du PDF via le helper unifié
+        pdf_content = generate_pdf_report_bytes(analysis)
+        
+        # 2. Préparation du corps de l'email (HTML pour le tableau)
+        stats = analysis.stats or {}
+        date_str = analysis.created_at.strftime('%d/%m/%Y')
+        total_lines = stats.get('total', 0)
+        alerts_count = int(stats.get('errors', 0)) + int(stats.get('warnings', 0))
+        source_path = analysis.source_path or "/var/log/syslog"
+
+        msg = MIMEMultipart("alternative")
+        msg['From'] = user.email_sender
+        msg['To'] = target_email
+        msg['Subject'] = f"Rapport d'Audit Logs - {analysis.server_ip or 'Local'}"
+        
+        html_body = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; color: #333;">
+            <p>Bonjour,</p>
+            <p>Voici le résumé de l'analyse effectuée le <strong>{date_str}</strong>.</p>
+            
+            <table style="border-collapse: collapse; width: 100%; max-width: 500px; margin: 20px 0; border: 1px solid #ddd;">
+                <tr style="background-color: #f2f2f2;">
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Champ</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Détails</th>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Fichier</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">{source_path}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Lignes</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">{total_lines}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Alertes</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">{alerts_count}</td>
+                </tr>
+            </table>
+            
+            <p>Veuillez trouver en pièce jointe le rapport PDF complet contenant l'analyse détaillée et le Top 10 des récurrences.</p>
+            
+            <p>Cordialement,<br><strong>Système LogAnalyzer</strong></p>
+        </body>
+        </html>
+        """
+        msg.attach(MIMEText(html_body, 'html'))
+        
+        # 3. Pièce jointe PDF
+        attachment = MIMEApplication(pdf_content)
+        attachment.add_header('Content-Disposition', 'attachment', filename=f"Rapport_Audit_{analysis_id}.pdf")
+        msg.attach(attachment)
+
+        # 4. Envoi SMTP
+        smtp_server = user.smtp_server
+        smtp_port = user.smtp_port
+        if not smtp_server or not smtp_port:
+            smtp_server, smtp_port = get_smtp_config(user.email_sender)
+
+        context = ssl.create_default_context()
+        with smtplib.SMTP(smtp_server, int(smtp_port), timeout=20) as server:
+            server.ehlo()
+            server.starttls(context=context)
+            server.ehlo()
+            server.login(user.email_sender, user.email_password_enc)
+            server.send_message(msg)
+                
+        return jsonify({"success": True, "message": f"Email envoyé avec succès à {target_email} !"})
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Erreur : {str(e)}"}), 500
+        
 @app.route('/generate-report', methods=['POST'])
 @login_required
 def generate_report():
@@ -917,33 +1377,24 @@ def upload_report_pdf(analysis_id: int):
 
 def _smtp_send_with_fallback(sender_email: str, app_password: str, msg: MIMEMultipart):
     """
-    Tente Gmail SMTP avec repli automatique :
-    - 465: SMTP_SSL
-    - 587: SMTP + STARTTLS
+    Envoie un email via SMTP Gmail avec les paramètres de l'application.
     """
-    last_err = None
+    server_host = app.config.get('MAIL_SERVER', 'smtp.gmail.com')
+    server_port = app.config.get('MAIL_PORT', 587)
+    use_tls = app.config.get('MAIL_USE_TLS', True)
+    
     context = ssl.create_default_context()
-
-    # Tente d'abord SSL (465)
+    
     try:
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context, timeout=15) as server:
+        # Initialisation de la connexion SMTP uniquement lors de l'envoi
+        with smtplib.SMTP(server_host, server_port, timeout=20) as server:
+            if use_tls:
+                server.starttls(context=context)
             server.login(sender_email, app_password)
             server.send_message(msg)
-            return
     except Exception as e:
-        last_err = e
-
-    # Repli sur STARTTLS (587)
-    try:
-        with smtplib.SMTP('smtp.gmail.com', 587, timeout=15) as server:
-            server.ehlo()
-            server.starttls(context=context)
-            server.ehlo()
-            server.login(sender_email, app_password)
-            server.send_message(msg)
-            return
-    except Exception as e:
-        raise e from last_err
+        print(f"[SMTP Error] {str(e)}")
+        raise e
 
 @app.route('/send-email', methods=['POST'])
 @login_required
@@ -1052,13 +1503,6 @@ def send_email():
         return jsonify({"status": "success", "message": "Email envoyé avec succès !"})
     except Exception as e:
         return json_error(f"Erreur: {str(e)}", 500, code="SMTP_SEND_FAILED")
-
-
-# Alias rétrocompatible (si le frontend utilise un autre nom de route)
-@app.route('/send-report-email', methods=['POST'])
-@login_required
-def send_report_email():
-    return send_email()
 
 
 @app.route('/api/analyses', methods=['GET'])

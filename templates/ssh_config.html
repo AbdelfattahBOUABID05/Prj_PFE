@@ -41,9 +41,14 @@
                 <input type="number" id="limit" class="form-control input-saas shadow-none" value="100">
             </div>
             
-            <button type="submit" class="btn btn-saas w-100 py-2 fw-bold" id="submitBtn">
-                <i class="fas fa-rocket me-2"></i> Lancer l'Analyse
-            </button>
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-saas py-2 fw-bold" id="submitBtn">
+                    <i class="fas fa-rocket me-2"></i> Lancer l'Analyse
+                </button>
+                <button type="button" class="btn btn-today py-2 fw-bold" id="todayBtn">
+                    <i class="fas fa-calendar-day me-2"></i> Analyser les logs d'aujourd'hui
+                </button>
+            </div>
         </form>
         
         <div id="statusMessage" class="mt-3 text-center"></div>

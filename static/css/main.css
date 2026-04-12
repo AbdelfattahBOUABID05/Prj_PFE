@@ -1234,6 +1234,47 @@ body,
     border-radius: 12px;
 }
 
+/* Custom SweetAlert2 Styles for Professional Dark Theme */
+.swal-custom-popup {
+    background-color: #111827 !important;
+    color: #f3f4f6 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 16px !important;
+}
+
+.swal-custom-title {
+    color: #f3f4f6 !important;
+    font-weight: 700 !important;
+}
+
+.swal-custom-content {
+    color: #9fb3cf !important;
+}
+
+.swal-custom-input {
+    background-color: #0f172a !important;
+    color: #f3f4f6 !important;
+    border: 1px solid #334155 !important;
+    border-radius: 8px !important;
+}
+
+.swal-custom-input:focus {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
+}
+
+.swal-custom-confirm {
+    background-color: #2563eb !important;
+    font-weight: 600 !important;
+    padding: 10px 24px !important;
+}
+
+.swal-custom-cancel {
+    background-color: #4b5563 !important;
+    font-weight: 600 !important;
+    padding: 10px 24px !important;
+}
+
 .chart-container {
     position: relative;
     height: 280px;

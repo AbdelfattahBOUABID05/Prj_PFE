@@ -12,8 +12,10 @@
         <div class="badge badge-source">Connecté en tant que {{ current_user.username }}</div>
     </div>
 
-    <div class="glass-card p-4" style="max-width: 720px;">
+    <div class="glass-card p-4 mb-4" style="max-width: 720px;">
+        <h5 class="fw-bold mb-4"><i class="fas fa-lock me-2"></i>Changer le mot de passe</h5>
         <form method="POST" class="needs-validation" novalidate id="changePasswordForm">
+            <input type="hidden" name="action" value="change_password">
             <div class="mb-3">
                 <label class="form-label fw-bold small">Mot de passe actuel</label>
                 <input type="password" class="form-control input-saas" name="current_password" required minlength="6">
@@ -33,7 +35,43 @@
             </div>
 
             <button class="btn btn-saas mt-4" type="submit">
-                <i class="fas fa-lock me-2"></i>Mettre à jour le mot de passe
+                <i class="fas fa-save me-2"></i>Mettre à jour le mot de passe
+            </button>
+        </form>
+    </div>
+
+    <div class="glass-card p-4" style="max-width: 720px;">
+        <h5 class="fw-bold mb-4"><i class="fas fa-envelope me-2"></i>Configuration Email (SMTP Auto-Detect)</h5>
+        <p class="text-muted small mb-4">Ces identifiants seront utilisés pour envoyer les rapports PDF directement.</p>
+        <form method="POST" class="needs-validation" novalidate id="emailConfigForm">
+            <input type="hidden" name="action" value="update_email_config">
+            <div class="mb-3">
+                <label class="form-label fw-bold small">Email Expéditeur</label>
+                <input type="email" class="form-control input-saas" name="email_sender" value="{{ current_user.email_sender or '' }}" placeholder="ex: moncompte@gmail.com" required>
+                <div class="invalid-feedback">Veuillez saisir une adresse email valide.</div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold small">Mot de passe / Clé d'application</label>
+                <input type="password" class="form-control input-saas" name="email_password" placeholder="Laissez vide pour ne pas modifier">
+                <div class="text-muted small mt-1"><i class="fas fa-info-circle me-1"></i>Pour Gmail, utilisez un "Mot de passe d'application".</div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label fw-bold small">Serveur SMTP (Optionnel)</label>
+                    <input type="text" class="form-control input-saas" name="smtp_server" value="{{ current_user.smtp_server or '' }}" placeholder="ex: smtp.maboite.ma">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small">Port (Optionnel)</label>
+                    <input type="number" class="form-control input-saas" name="smtp_port" value="{{ current_user.smtp_port or '' }}" placeholder="587">
+                </div>
+            </div>
+            <div class="text-muted mt-2" style="font-size: 0.75rem;">
+                <i class="fas fa-magic me-1"></i> La détection automatique est activée par défaut si ces champs sont vides.
+            </div>
+
+            <button class="btn btn-saas mt-4" type="submit">
+                <i class="fas fa-save me-2"></i>Sauvegarder la configuration email
             </button>
         </form>
     </div>
@@ -41,7 +79,6 @@
 
 <script>
     (() => {
-        const form = document.getElementById('changePasswordForm');
         const pw = document.getElementById('newPassword');
         const cpw = document.getElementById('confirmNewPassword');
 
@@ -49,16 +86,17 @@
             const ok = pw.value && cpw.value && pw.value === cpw.value;
             cpw.setCustomValidity(ok || !cpw.value ? '' : 'mismatch');
         }
-        pw.addEventListener('input', validateMatch);
-        cpw.addEventListener('input', validateMatch);
+        pw?.addEventListener('input', validateMatch);
+        cpw?.addEventListener('input', validateMatch);
 
-        form.addEventListener('submit', (e) => {
-            validateMatch();
-            if (!form.checkValidity()) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            form.classList.add('was-validated');
+        document.querySelectorAll('.needs-validation').forEach(form => {
+            form.addEventListener('submit', (e) => {
+                if (!form.checkValidity()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            });
         });
     })();
 </script>

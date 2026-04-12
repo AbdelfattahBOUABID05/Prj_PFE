@@ -34,13 +34,13 @@ document.addEventListener('DOMContentLoaded', function() {
     initThemeSwitch();
     initNotificationsUI();
 
-    // Récupération des dernières données d'analyse stockées dans le navigateur
-    const savedData = localStorage.getItem('lastAnalysis');
+    // Priorité à l'analyse injectée par le serveur (Session Flask)
+    // Sinon, repli sur le localStorage (pour compatibilité immédiate après analyse)
+    const data = window.SERVER_ANALYSIS_DATA || JSON.parse(localStorage.getItem('lastAnalysis') || 'null');
     
-    if (savedData) {
-        const data = JSON.parse(savedData);
+    if (data) {
         currentAnalysisData = data;
-        console.log("Chargement des données SSH...", data);
+        console.log("Chargement des données d'analyse...", data);
         // Mise à jour de l'interface utilisateur avec les données récupérées
         updateDashboard(data);
         initDetailsMonitoringView(data);
@@ -109,7 +109,17 @@ function attachGenerateReportHandler() {
             }
             window.location.href = '/report';
         } catch (e) {
-            window.alert('Erreur lors de la génération du rapport. Veuillez réessayer');
+            Swal.fire({
+                icon: 'error',
+                title: 'Échec de la génération',
+                text: 'Erreur lors de la génération du rapport. Veuillez réessayer.',
+                customClass: {
+                    popup: 'swal-custom-popup',
+                    title: 'swal-custom-title',
+                    confirmButton: 'swal-custom-confirm'
+                },
+                buttonsStyling: false
+            });
             btn.disabled = false;
             btn.innerHTML = original;
         }
@@ -336,26 +346,25 @@ function buildCriticalAlertKey(data) {
 }
 
 function showCriticalToast() {
-    const title = 'Alerte critique détectée';
+    const title = "Alerte de Sécurité !";
     const text = "Des événements critiques ont été repérés dans l'analyse en cours.";
 
-    if (window.Swal && typeof window.Swal.fire === 'function') {
-        window.Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'error',
-            title,
-            text,
-            showConfirmButton: false,
-            timer: 6500,
-            timerProgressBar: true,
-            background: '#1b2433',
-            color: '#ffffff'
-        });
-        return;
-    }
-
-    window.alert(`${title}\n${text}`);
+    Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'error',
+        title,
+        text,
+        showConfirmButton: false,
+        timer: 6500,
+        timerProgressBar: true,
+        background: '#111827',
+        color: '#f3f4f6',
+        customClass: {
+            popup: 'swal-custom-popup',
+            title: 'swal-custom-title'
+        }
+    });
 }
 
 /**
@@ -542,7 +551,8 @@ function initDetailsMonitoringView(data) {
 
 function normalizeAnalysis(data) {
     const segments = data?.segments || {};
-    const file = data?.path || data?.filename || data?.file || '--';
+    // Recherche du chemin du fichier dans plusieurs endroits possibles (compatibilité session/meta)
+    const file = data?.path || data?.filename || data?.file || data?.meta?.source_path || data?.meta?.filename || '--';
     const capturedAt = data?.generated_at || null;
 
     const rows = [];
