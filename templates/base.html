@@ -99,20 +99,31 @@
         </div>
     </div>
     <div class="main-content">
-        <div class="no-print">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    <div class="mb-3">
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ category }} border-0 glass-card p-3 mb-2" role="alert">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            {% endwith %}
+        <header class="top-content-header d-none d-md-flex no-print">
+            <div class="header-logos-left">
+                <img src="{{ url_for('static', filename='img/logo_est.png') }}" alt="EST" class="header-logo">
+                <img src="{{ url_for('static', filename='img/logo_awb.png') }}" alt="AWB" class="header-logo">
+            </div>
+            <div class="header-info-right">
+                <span class="pfe-text">Projet de Fin d'Études - Stage Attijariwafa Bank</span>
+            </div>
+        </header>
+        <div class="main-content-body">
+            <div class="no-print">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="mb-3">
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} border-0 glass-card p-3 mb-2" role="alert">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+            </div>
+            {% block content %}{% endblock %}
         </div>
-        {% block content %}{% endblock %}
     </div>
     <nav class="bottom-nav d-md-none" aria-label="Navigation mobile">
         <div class="bottom-nav-inner">

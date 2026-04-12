@@ -1016,14 +1016,36 @@ def generate_pdf_report_bytes(analysis):
         pdf.add_page()
         pdf.set_auto_page_break(auto=True, margin=15)
         
-        # --- Header ---
-        pdf.set_font("Helvetica", "B", 18)
+        # --- Header with Logos ---
+        static_img_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "img")
+        logo_est_path = os.path.join(static_img_dir, "logo_est.png")
+        logo_awb_path = os.path.join(static_img_dir, "logo_awb.png")
+
+        # EST Logo (Top Left) - Increased size to match 65px height
+        if os.path.exists(logo_est_path):
+            pdf.image(logo_est_path, x=10, y=8, h=17)
+        
+        # AWB Logo (Top Right) - Increased size to match 55px height
+        if os.path.exists(logo_awb_path):
+            # A4 is 210mm wide. We align to the right margin
+            pdf.image(logo_awb_path, x=175, y=10, h=14)
+
+        # Separate the header from the content
+        pdf.set_draw_color(221, 221, 221) # #ddd
+        pdf.set_line_width(0.3)
+        pdf.line(10, 30, 200, 30)
+
+        # Centered titles below logos
+        pdf.set_y(35)
+        pdf.set_font("Helvetica", "B", 20)
         pdf.set_text_color(17, 24, 39) # Dark blue
         pdf.cell(190, 12, clean_text_for_pdf("RAPPORT D'AUDIT TECHNIQUE"), align="C", ln=True)
-        pdf.set_font("Helvetica", "B", 12)
+        
+        pdf.set_font("Helvetica", "B", 14)
         pdf.set_text_color(75, 85, 99)
-        pdf.cell(190, 8, clean_text_for_pdf("Compte-rendu d'Analyse des Logs"), align="C", ln=True)
-        pdf.ln(8)
+        pdf.cell(190, 10, clean_text_for_pdf("Compte-rendu d'Analyse des Logs"), align="C", ln=True)
+        
+        pdf.ln(10)
         
         # --- Summary Table ---
         pdf.set_fill_color(249, 250, 251) # Light gray background
