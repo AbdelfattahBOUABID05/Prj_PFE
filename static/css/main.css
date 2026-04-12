@@ -7,9 +7,9 @@
     --text-color-dark: #ffffff;
     --text-muted-color: #5d6e85;
     --border-color: rgba(24, 46, 78, 0.14);
-    --primary-color: #1d5fa8;
-    --primary-strong: #173f6d;
-    --accent-color: #2d87e2;
+    --primary-color: #2563eb;
+    --primary-strong: #1d4ed8;
+    --accent-color: #3b82f6;
     --shadow-color: rgba(16, 35, 61, 0.14);
 
     /* Layout */
@@ -1323,6 +1323,63 @@ body,
     position: relative;
     height: 280px;
     margin: auto;
+}
+
+.btn-email-modern {
+    background-color: #2563eb !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 10px 24px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    height: 46px !important;
+}
+
+.btn-email-modern:hover {
+    background-color: #1d4ed8 !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3) !important;
+}
+
+.btn-pdf-modern {
+    background-color: #2563eb !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 10px 24px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    height: 46px !important;
+}
+
+.btn-pdf-modern:hover {
+    background-color: #1d4ed8 !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3) !important;
+}
+
+.action-card {
+    background: white !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 12px !important;
+    padding: 24px !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+}
+
+.action-card h5 {
+    color: #111827;
+    font-family: 'Poppins', 'Inter', sans-serif;
 }
 
 /* Correctif contraste critique du Dashboard en mode sombre */

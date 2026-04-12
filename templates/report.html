@@ -10,14 +10,22 @@
         <h2 class="text-muted fw-medium" style="font-size: 1.4rem;">Compte-rendu d'Analyse des Logs</h2>
     </div>
 
-    <div class="d-flex justify-content-end align-items-center mb-4 no-print">
-        <div class="d-flex gap-2">
-            <button onclick="downloadPDF()" class="btn btn-saas">
-                <i class="fas fa-file-pdf me-2"></i> Exporter en PDF
-            </button>
-            <button onclick="sendReportByEmail()" class="btn btn-outline-saas" id="sendEmailBtn">
-                <i class="fas fa-paper-plane me-2"></i>Envoyer par e-mail
-            </button>
+    <div class="no-print mb-5">
+        <div class="action-card d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <h5 class="fw-bold mb-1">Actions du Rapport</h5>
+                <p class="text-muted small mb-0">Exportez les résultats en PDF ou envoyez le rapport par e-mail à votre équipe.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button onclick="downloadPDF()" class="btn btn-pdf-modern">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>Exporter en PDF</span>
+                </button>
+                <button onclick="sendReportByEmail()" class="btn btn-email-modern" id="sendEmailBtn">
+                    <i class="fas fa-paper-plane"></i>
+                    <span id="emailBtnText">Envoyer par e-mail</span>
+                </button>
+            </div>
         </div>
     </div>
 

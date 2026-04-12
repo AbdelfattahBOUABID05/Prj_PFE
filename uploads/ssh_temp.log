@@ -1,200 +1,118 @@
-2026-04-11T19:30:20.933929-04:00 kali systemd[2469]: Stopped pipewire-pulse.service - PipeWire PulseAudio.
-2026-04-11T19:30:20.934368-04:00 kali systemd[2469]: pipewire-pulse.service: Consumed 1.593s CPU time over 28.431s wall clock time, 2.4M memory peak.
-2026-04-11T19:30:23.333906-04:00 kali systemd[2469]: Stopped filter-chain.service - PipeWire filter chain daemon.
-2026-04-11T19:30:23.334892-04:00 kali systemd[2469]: Stopped gvfs-daemon.service - Virtual filesystem service.
-2026-04-11T19:30:23.852890-04:00 kali systemd[2469]: gvfs-daemon.service: Consumed 7.820s CPU time over 19.813s wall clock time, 4M memory peak.
-2026-04-11T19:30:23.886695-04:00 kali systemd[2469]: Stopping wireplumber.service - Multimedia Service Session Manager...
-2026-04-11T19:30:23.887404-04:00 kali systemd[2469]: Stopped dbus.service - D-Bus User Message Bus.
-2026-04-11T19:30:23.887553-04:00 kali systemd[2469]: dbus.service: Consumed 1.799s CPU time over 28.007s wall clock time, 1.9M memory peak.
-2026-04-11T19:30:24.219213-04:00 kali wireplumber[2487]: stopped by signal: Terminated
-2026-04-11T19:30:24.267542-04:00 kali wireplumber[2487]: disconnected from pipewire
-2026-04-11T19:30:26.618602-04:00 kali systemd[2469]: Stopped wireplumber.service - Multimedia Service Session Manager.
-2026-04-11T19:30:27.330421-04:00 kali systemd[2469]: wireplumber.service: Consumed 4.381s CPU time over 33.266s wall clock time, 7.7M memory peak.
-2026-04-11T19:30:27.434544-04:00 kali systemd[2469]: Stopping pipewire.service - PipeWire Multimedia Service...
-2026-04-11T19:30:27.435148-04:00 kali systemd[2469]: Stopped pipewire.service - PipeWire Multimedia Service.
-2026-04-11T19:30:27.435365-04:00 kali systemd[2469]: pipewire.service: Consumed 1.847s CPU time over 35.501s wall clock time, 2.4M memory peak.
-2026-04-11T19:30:27.849960-04:00 kali systemd[2469]: Removed slice session.slice - User Core Session Slice.
-2026-04-11T19:30:27.850535-04:00 kali systemd[2469]: session.slice: Consumed 17.779s CPU time over 36.876s wall clock time, 17.2M memory peak.
-2026-04-11T19:30:28.019109-04:00 kali systemd[2469]: Stopped target basic.target - Basic System.
-2026-04-11T19:30:28.039833-04:00 kali systemd[2469]: Stopped target paths.target - Paths.
-2026-04-11T19:30:28.046099-04:00 kali systemd[2469]: Stopped target sockets.target - Sockets.
-2026-04-11T19:30:28.059563-04:00 kali systemd[2469]: Stopped target timers.target - Timers.
-2026-04-11T19:30:28.061491-04:00 kali systemd[2469]: Closed dbus.socket - D-Bus User Message Bus Socket.
-2026-04-11T19:30:28.091578-04:00 kali systemd[2469]: Closed dirmngr.socket - GnuPG network certificate management daemon.
-2026-04-11T19:30:28.093896-04:00 kali systemd[2469]: Closed gcr-ssh-agent.socket - GCR ssh-agent wrapper.
-2026-04-11T19:30:28.094115-04:00 kali systemd[2469]: Closed gnome-keyring-daemon.socket - GNOME Keyring daemon.
-2026-04-11T19:30:28.103976-04:00 kali systemd[2469]: Closed gpg-agent-browser.socket - GnuPG cryptographic agent and passphrase cache (access for web browsers).
-2026-04-11T19:30:28.107641-04:00 kali systemd[2469]: Closed gpg-agent-extra.socket - GnuPG cryptographic agent and passphrase cache (restricted).
-2026-04-11T19:30:28.109914-04:00 kali systemd[2469]: Closed gpg-agent-ssh.socket - GnuPG cryptographic agent (ssh-agent emulation).
-2026-04-11T19:30:28.113092-04:00 kali systemd[2469]: Closed gpg-agent.socket - GnuPG cryptographic agent and passphrase cache.
-2026-04-11T19:30:28.125359-04:00 kali systemd[2469]: Closed pipewire-pulse.socket - PipeWire PulseAudio.
-2026-04-11T19:30:28.125503-04:00 kali systemd[2469]: Closed pipewire.socket - PipeWire Multimedia System Sockets.
-2026-04-11T19:30:28.125576-04:00 kali systemd[2469]: Closed systemd-ask-password.socket - Query the User Interactively for a Password.
-2026-04-11T19:30:28.125710-04:00 kali systemd[2469]: Removed slice app.slice - User Application Slice.
-2026-04-11T19:30:28.125814-04:00 kali systemd[2469]: Reached target shutdown.target - Shutdown.
-2026-04-11T19:30:28.126576-04:00 kali systemd[2469]: Finished systemd-exit.service - Exit the Session.
-2026-04-11T19:30:28.126749-04:00 kali systemd[2469]: Reached target exit.target - Exit the Session.
-2026-04-11T19:30:28.434415-04:00 kali systemd[1]: user@1000.service: Deactivated successfully.
-2026-04-11T19:30:28.459215-04:00 kali systemd[1]: Stopped user@1000.service - User Manager for UID 1000.
-2026-04-11T19:30:28.459373-04:00 kali systemd[1]: user@1000.service: Consumed 21.810s CPU time over 41.729s wall clock time, 22.2M memory peak.
-2026-04-11T19:30:28.578692-04:00 kali systemd[1]: Stopping user-runtime-dir@1000.service - User Runtime Directory /run/user/1000...
-2026-04-11T19:30:28.818305-04:00 kali systemd[1]: run-user-1000-gvfs.mount: Deactivated successfully.
-2026-04-11T19:30:28.985845-04:00 kali systemd[1]: run-user-1000.mount: Deactivated successfully.
-2026-04-11T19:30:28.986125-04:00 kali systemd[1]: user-runtime-dir@1000.service: Deactivated successfully.
-2026-04-11T19:30:29.318924-04:00 kali systemd[1]: Stopped user-runtime-dir@1000.service - User Runtime Directory /run/user/1000.
-2026-04-11T19:30:29.535118-04:00 kali systemd[1]: Removed slice user-1000.slice - User Slice of UID 1000.
-2026-04-11T19:30:29.777166-04:00 kali systemd[1]: user-1000.slice: Consumed 25.382s CPU time over 45.135s wall clock time, 22.4M memory peak.
-2026-04-11T19:35:01.886696-04:00 kali CRON[2537]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
-2026-04-11T19:39:01.942886-04:00 kali CRON[2541]: (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
-2026-04-11T19:39:09.245791-04:00 kali systemd[1]: Starting phpsessionclean.service - Clean php session files...
-2026-04-11T19:39:09.743924-04:00 kali systemd[1]: phpsessionclean.service: Deactivated successfully.
-2026-04-11T19:39:09.773716-04:00 kali systemd[1]: Finished phpsessionclean.service - Clean php session files.
-2026-04-11T19:40:11.445914-04:00 kali systemd[1]: Created slice user-1000.slice - User Slice of UID 1000.
-2026-04-11T19:40:11.478223-04:00 kali systemd[1]: Starting user-runtime-dir@1000.service - User Runtime Directory /run/user/1000...
-2026-04-11T19:40:11.689280-04:00 kali systemd[1]: Finished user-runtime-dir@1000.service - User Runtime Directory /run/user/1000.
-2026-04-11T19:40:11.795431-04:00 kali systemd[1]: Starting user@1000.service - User Manager for UID 1000...
-2026-04-11T19:40:12.991825-04:00 kali systemd[2591]: Queued start job for default target default.target.
-2026-04-11T19:40:13.168976-04:00 kali systemd[2591]: Created slice app.slice - User Application Slice.
-2026-04-11T19:40:13.217567-04:00 kali systemd[2591]: Created slice session.slice - User Core Session Slice.
-2026-04-11T19:40:13.219348-04:00 kali systemd[2591]: Reached target paths.target - Paths.
-2026-04-11T19:40:13.222178-04:00 kali systemd[2591]: Reached target timers.target - Timers.
-2026-04-11T19:40:13.338957-04:00 kali systemd[2591]: Starting dbus.socket - D-Bus User Message Bus Socket...
-2026-04-11T19:40:13.485232-04:00 kali systemd[2591]: Listening on dirmngr.socket - GnuPG network certificate management daemon.
-2026-04-11T19:40:13.512829-04:00 kali systemd[2591]: Listening on gcr-ssh-agent.socket - GCR ssh-agent wrapper.
-2026-04-11T19:40:13.540824-04:00 kali systemd[2591]: Listening on gnome-keyring-daemon.socket - GNOME Keyring daemon.
-2026-04-11T19:40:13.541325-04:00 kali systemd[2591]: Listening on gpg-agent-browser.socket - GnuPG cryptographic agent and passphrase cache (access for web browsers).
-2026-04-11T19:40:13.544345-04:00 kali systemd[2591]: Listening on gpg-agent-extra.socket - GnuPG cryptographic agent and passphrase cache (restricted).
-2026-04-11T19:40:13.554505-04:00 kali systemd[2591]: Listening on gpg-agent-ssh.socket - GnuPG cryptographic agent (ssh-agent emulation).
-2026-04-11T19:40:13.554973-04:00 kali systemd[2591]: Listening on gpg-agent.socket - GnuPG cryptographic agent and passphrase cache.
-2026-04-11T19:40:13.718956-04:00 kali systemd[2591]: Listening on pipewire-pulse.socket - PipeWire PulseAudio.
-2026-04-11T19:40:13.719908-04:00 kali systemd[2591]: Listening on pipewire.socket - PipeWire Multimedia System Sockets.
-2026-04-11T19:40:13.809075-04:00 kali systemd[2591]: Listening on systemd-ask-password.socket - Query the User Interactively for a Password.
-2026-04-11T19:40:13.809466-04:00 kali systemd[2591]: Listening on dbus.socket - D-Bus User Message Bus Socket.
-2026-04-11T19:40:13.809639-04:00 kali systemd[2591]: Reached target sockets.target - Sockets.
-2026-04-11T19:40:13.809859-04:00 kali systemd[2591]: Reached target basic.target - Basic System.
-2026-04-11T19:40:13.929963-04:00 kali systemd[1]: Started user@1000.service - User Manager for UID 1000.
-2026-04-11T19:40:13.934652-04:00 kali systemd[2591]: Started pipewire.service - PipeWire Multimedia Service.
-2026-04-11T19:40:13.935945-04:00 kali systemd[1]: Started session-72.scope - Session 72 of User kali.
-2026-04-11T19:40:14.333536-04:00 kali systemd[2591]: Started filter-chain.service - PipeWire filter chain daemon.
-2026-04-11T19:40:14.509298-04:00 kali systemd[2591]: Started wireplumber.service - Multimedia Service Session Manager.
-2026-04-11T19:40:15.071836-04:00 kali systemd[2591]: Started pipewire-pulse.service - PipeWire PulseAudio.
-2026-04-11T19:40:15.073104-04:00 kali systemd[2591]: Reached target default.target - Main User Target.
-2026-04-11T19:40:15.154555-04:00 kali systemd[2591]: Startup finished in 2.820s.
-2026-04-11T19:40:15.173918-04:00 kali systemd[1]: session-72.scope: Deactivated successfully.
-2026-04-11T19:40:15.804715-04:00 kali systemd[2591]: Starting dbus.service - D-Bus User Message Bus...
-2026-04-11T19:40:15.994078-04:00 kali systemd[2591]: Started dbus.service - D-Bus User Message Bus.
-2026-04-11T19:40:16.057068-04:00 kali rtkit-daemon[999]: Supervising 0 threads of 0 processes of 0 users.
-2026-04-11T19:40:16.059575-04:00 kali rtkit-daemon[999]: Supervising 0 threads of 0 processes of 0 users.
-2026-04-11T19:40:16.111227-04:00 kali rtkit-daemon[999]: Supervising 0 threads of 0 processes of 0 users.
-2026-04-11T19:40:16.112029-04:00 kali rtkit-daemon[999]: Supervising 0 threads of 0 processes of 0 users.
-2026-04-11T19:40:16.120941-04:00 kali rtkit-daemon[999]: Supervising 0 threads of 0 processes of 0 users.
-2026-04-11T19:40:16.159178-04:00 kali rtkit-daemon[999]: Supervising 0 threads of 0 processes of 0 users.
-2026-04-11T19:40:16.570009-04:00 kali rtkit-daemon[999]: Supervising 0 threads of 0 processes of 0 users.
-2026-04-11T19:40:16.570729-04:00 kali pipewire[2608]: mod.jackdbus-detect: Failed to receive jackdbus reply: org.freedesktop.DBus.Error.ServiceUnknown: The name org.jackaudio.service was not provided by any .service files
-2026-04-11T19:40:16.589090-04:00 kali dbus-daemon[2619]: [session uid=1000 pid=2619] Activating via systemd: service name='org.gtk.vfs.Daemon' unit='gvfs-daemon.service' requested by ':1.6' (uid=1000 pid=2616 comm="/usr/bin/wireplumber")
-2026-04-11T19:40:16.672694-04:00 kali systemd[2591]: Starting gvfs-daemon.service - Virtual filesystem service...
-2026-04-11T19:40:17.524555-04:00 kali dbus-daemon[2619]: [session uid=1000 pid=2619] Successfully activated service 'org.gtk.vfs.Daemon'
-2026-04-11T19:40:17.526103-04:00 kali systemd[2591]: Started gvfs-daemon.service - Virtual filesystem service.
-2026-04-11T19:40:18.317475-04:00 kali wireplumber[2616]: SPA handle 'api.libcamera.enum.manager' could not be loaded; is it installed?
-2026-04-11T19:40:18.341314-04:00 kali rtkit-daemon[999]: Supervising 0 threads of 0 processes of 1 users.
-2026-04-11T19:40:18.658728-04:00 kali wireplumber[2616]: PipeWire's libcamera SPA missing or broken. libcamera not supported.
-2026-04-11T19:40:20.123285-04:00 kali rtkit-daemon[999]: Supervising 0 threads of 0 processes of 1 users.
-2026-04-11T19:40:20.124953-04:00 kali rtkit-daemon[999]: Supervising 0 threads of 0 processes of 1 users.
-2026-04-11T19:40:20.476897-04:00 kali rtkit-daemon[999]: Supervising 0 threads of 0 processes of 1 users.
-2026-04-11T19:40:20.642490-04:00 kali rtkit-daemon[999]: Supervising 0 threads of 0 processes of 1 users.
-2026-04-11T19:40:25.954230-04:00 kali systemd[1]: Stopping user@1000.service - User Manager for UID 1000...
-2026-04-11T19:40:26.092641-04:00 kali systemd[2591]: Activating special unit exit.target...
-2026-04-11T19:40:26.093237-04:00 kali systemd[2591]: Stopped target default.target - Main User Target.
-2026-04-11T19:40:26.119414-04:00 kali systemd[2591]: Stopping dbus.service - D-Bus User Message Bus...
-2026-04-11T19:40:26.121868-04:00 kali systemd[2591]: Stopping filter-chain.service - PipeWire filter chain daemon...
-2026-04-11T19:40:26.123531-04:00 kali systemd[2591]: Stopping gvfs-daemon.service - Virtual filesystem service...
-2026-04-11T19:40:26.293218-04:00 kali systemd[2591]: Stopping pipewire-pulse.service - PipeWire PulseAudio...
-2026-04-11T19:40:26.337991-04:00 kali systemd[2591]: Stopped dbus.service - D-Bus User Message Bus.
-2026-04-11T19:40:26.450319-04:00 kali systemd[2591]: Stopped pipewire-pulse.service - PipeWire PulseAudio.
-2026-04-11T19:40:26.453189-04:00 kali systemd[2591]: Stopped filter-chain.service - PipeWire filter chain daemon.
-2026-04-11T19:40:26.535495-04:00 kali systemd[2591]: Stopping wireplumber.service - Multimedia Service Session Manager...
-2026-04-11T19:40:26.998913-04:00 kali systemd[1]: run-user-1000-gvfs.mount: Deactivated successfully.
-2026-04-11T19:40:28.590673-04:00 kali systemd[2591]: Stopped gvfs-daemon.service - Virtual filesystem service.
-2026-04-11T19:40:28.638785-04:00 kali systemd[2591]: gvfs-daemon.service: Consumed 1.764s CPU time over 11.685s wall clock time, 8.6M memory peak.
-2026-04-11T19:40:38.949555-04:00 kali wireplumber[2616]: stopped by signal: Terminated
-2026-04-11T19:40:38.951947-04:00 kali wireplumber[2616]: <WpImplMetadata:0x56152c0afe70> Object activation aborted: PipeWire proxy destroyed
-2026-04-11T19:40:39.047251-04:00 kali wireplumber[2616]: failed to activate route-settings metadata: Object activation aborted: PipeWire proxy destroyed
-2026-04-11T19:40:39.049653-04:00 kali wireplumber[2616]: <WpImplMetadata:0x56152c069080> Object activation aborted: PipeWire proxy destroyed
-2026-04-11T19:40:39.052451-04:00 kali wireplumber[2616]: failed to activate the sm-objects metadata: Object activation aborted: PipeWire proxy destroyed
-2026-04-11T19:40:39.082571-04:00 kali wireplumber[2616]: disconnected from pipewire
-2026-04-11T19:40:41.453408-04:00 kali systemd[2591]: Stopped wireplumber.service - Multimedia Service Session Manager.
-2026-04-11T19:40:41.533530-04:00 kali systemd[2591]: wireplumber.service: Consumed 12.448s CPU time over 26.673s wall clock time, 12.7M memory peak.
-2026-04-11T19:40:41.534786-04:00 kali systemd[2591]: Stopping pipewire.service - PipeWire Multimedia Service...
-2026-04-11T19:40:42.634199-04:00 kali systemd[2591]: Stopped pipewire.service - PipeWire Multimedia Service.
-2026-04-11T19:40:42.933677-04:00 kali systemd[2591]: pipewire.service: Consumed 2.897s CPU time over 28.782s wall clock time, 4.2M memory peak.
-2026-04-11T19:40:42.954539-04:00 kali systemd[2591]: Removed slice session.slice - User Core Session Slice.
-2026-04-11T19:40:42.954735-04:00 kali systemd[2591]: session.slice: Consumed 18.244s CPU time over 29.477s wall clock time, 26.2M memory peak.
-2026-04-11T19:40:43.086182-04:00 kali systemd[2591]: Stopped target basic.target - Basic System.
-2026-04-11T19:40:43.086673-04:00 kali systemd[2591]: Stopped target paths.target - Paths.
-2026-04-11T19:40:43.086785-04:00 kali systemd[2591]: Stopped target sockets.target - Sockets.
-2026-04-11T19:40:43.086860-04:00 kali systemd[2591]: Stopped target timers.target - Timers.
-2026-04-11T19:40:43.235886-04:00 kali systemd[2591]: Closed dbus.socket - D-Bus User Message Bus Socket.
-2026-04-11T19:40:43.238362-04:00 kali systemd[2591]: Closed dirmngr.socket - GnuPG network certificate management daemon.
-2026-04-11T19:40:43.249696-04:00 kali systemd[2591]: Closed gcr-ssh-agent.socket - GCR ssh-agent wrapper.
-2026-04-11T19:40:43.281299-04:00 kali systemd[2591]: Closed gnome-keyring-daemon.socket - GNOME Keyring daemon.
-2026-04-11T19:40:43.281967-04:00 kali systemd[2591]: Closed gpg-agent-browser.socket - GnuPG cryptographic agent and passphrase cache (access for web browsers).
-2026-04-11T19:40:43.282266-04:00 kali systemd[2591]: Closed gpg-agent-extra.socket - GnuPG cryptographic agent and passphrase cache (restricted).
-2026-04-11T19:40:43.282444-04:00 kali systemd[2591]: Closed gpg-agent-ssh.socket - GnuPG cryptographic agent (ssh-agent emulation).
-2026-04-11T19:40:43.282712-04:00 kali systemd[2591]: Closed gpg-agent.socket - GnuPG cryptographic agent and passphrase cache.
-2026-04-11T19:40:43.282896-04:00 kali systemd[2591]: Closed pipewire-pulse.socket - PipeWire PulseAudio.
-2026-04-11T19:40:43.283181-04:00 kali systemd[2591]: Closed pipewire.socket - PipeWire Multimedia System Sockets.
-2026-04-11T19:40:43.314341-04:00 kali systemd[2591]: Closed systemd-ask-password.socket - Query the User Interactively for a Password.
-2026-04-11T19:40:43.314986-04:00 kali systemd[2591]: Removed slice app.slice - User Application Slice.
-2026-04-11T19:40:43.528404-04:00 kali systemd[2591]: Reached target shutdown.target - Shutdown.
-2026-04-11T19:40:43.529626-04:00 kali systemd[2591]: Finished systemd-exit.service - Exit the Session.
-2026-04-11T19:40:43.682559-04:00 kali systemd[2591]: Reached target exit.target - Exit the Session.
-2026-04-11T19:40:44.433984-04:00 kali systemd[1]: user@1000.service: Deactivated successfully.
-2026-04-11T19:40:44.585933-04:00 kali systemd[1]: Stopped user@1000.service - User Manager for UID 1000.
-2026-04-11T19:40:44.601205-04:00 kali systemd[1]: user@1000.service: Consumed 21.788s CPU time over 31.280s wall clock time, 31.3M memory peak.
-2026-04-11T19:40:44.601642-04:00 kali systemd[1]: Stopping user-runtime-dir@1000.service - User Runtime Directory /run/user/1000...
-2026-04-11T19:40:44.602214-04:00 kali systemd[1]: run-user-1000.mount: Deactivated successfully.
-2026-04-11T19:40:44.602559-04:00 kali systemd[1]: user-runtime-dir@1000.service: Deactivated successfully.
-2026-04-11T19:40:44.632839-04:00 kali systemd[1]: Stopped user-runtime-dir@1000.service - User Runtime Directory /run/user/1000.
-2026-04-11T19:40:44.729331-04:00 kali systemd[1]: Removed slice user-1000.slice - User Slice of UID 1000.
-2026-04-11T19:40:44.729587-04:00 kali systemd[1]: user-1000.slice: Consumed 22.539s CPU time over 33.270s wall clock time, 31.5M memory peak.
-2026-04-11T19:44:02.634058-04:00 kali NetworkManager[626]: <info>  [1775951042.6328] dhcp4 (eth0): state changed new lease, address=192.168.116.129
-2026-04-11T19:44:02.845346-04:00 kali dbus-daemon[496]: [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.4' (uid=0 pid=626 comm="/usr/sbin/NetworkManager --no-daemon")
-2026-04-11T19:44:02.895796-04:00 kali systemd[1]: Starting NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service...
-2026-04-11T19:44:03.074389-04:00 kali dbus-daemon[496]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
-2026-04-11T19:44:03.074769-04:00 kali systemd[1]: Started NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service.
-2026-04-11T19:44:13.624044-04:00 kali systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
-2026-04-11T19:45:01.735061-04:00 kali CRON[2677]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
-2026-04-11T19:45:13.522589-04:00 kali rtkit-daemon[999]: The canary thread is apparently starving. Taking action.
-2026-04-11T19:45:13.558205-04:00 kali rtkit-daemon[999]: Demoting known real-time threads.
-2026-04-11T19:45:13.558776-04:00 kali rtkit-daemon[999]: Demoted 0 threads.
-2026-04-11T19:47:36.622240-04:00 kali systemd[1]: Created slice user-1000.slice - User Slice of UID 1000.
-2026-04-11T19:47:36.886669-04:00 kali systemd[1]: Starting user-runtime-dir@1000.service - User Runtime Directory /run/user/1000...
-2026-04-11T19:47:37.755424-04:00 kali systemd[1]: Finished user-runtime-dir@1000.service - User Runtime Directory /run/user/1000.
-2026-04-11T19:47:38.525066-04:00 kali systemd[1]: Starting user@1000.service - User Manager for UID 1000...
-2026-04-11T19:47:42.598545-04:00 kali systemd[2685]: Queued start job for default target default.target.
-2026-04-11T19:47:44.637648-04:00 kali systemd[2685]: Created slice app.slice - User Application Slice.
-2026-04-11T19:47:44.768915-04:00 kali systemd[2685]: Created slice session.slice - User Core Session Slice.
-2026-04-11T19:47:45.191513-04:00 kali systemd[2685]: Reached target paths.target - Paths.
-2026-04-11T19:47:45.854960-04:00 kali systemd[2685]: Reached target timers.target - Timers.
-2026-04-11T19:47:46.646810-04:00 kali systemd[2685]: Starting dbus.socket - D-Bus User Message Bus Socket...
-2026-04-11T19:47:48.265612-04:00 kali systemd[2685]: Listening on dirmngr.socket - GnuPG network certificate management daemon.
-2026-04-11T19:47:48.267384-04:00 kali systemd[2685]: Listening on gcr-ssh-agent.socket - GCR ssh-agent wrapper.
-2026-04-11T19:47:48.268064-04:00 kali systemd[2685]: Listening on gnome-keyring-daemon.socket - GNOME Keyring daemon.
-2026-04-11T19:47:48.273976-04:00 kali systemd[2685]: Listening on gpg-agent-browser.socket - GnuPG cryptographic agent and passphrase cache (access for web browsers).
-2026-04-11T19:47:48.278158-04:00 kali systemd[2685]: Listening on gpg-agent-extra.socket - GnuPG cryptographic agent and passphrase cache (restricted).
-2026-04-11T19:47:48.831363-04:00 kali systemd[2685]: Listening on gpg-agent-ssh.socket - GnuPG cryptographic agent (ssh-agent emulation).
-2026-04-11T19:47:48.832148-04:00 kali systemd[2685]: Listening on gpg-agent.socket - GnuPG cryptographic agent and passphrase cache.
-2026-04-11T19:47:49.022532-04:00 kali systemd[2685]: Listening on pipewire-pulse.socket - PipeWire PulseAudio.
-2026-04-11T19:47:49.364938-04:00 kali systemd[2685]: Listening on pipewire.socket - PipeWire Multimedia System Sockets.
-2026-04-11T19:47:49.365628-04:00 kali systemd[2685]: Listening on systemd-ask-password.socket - Query the User Interactively for a Password.
-2026-04-11T19:47:49.533454-04:00 kali systemd[2685]: Listening on dbus.socket - D-Bus User Message Bus Socket.
-2026-04-11T19:47:49.538568-04:00 kali systemd[2685]: Reached target sockets.target - Sockets.
-2026-04-11T19:47:50.196732-04:00 kali systemd[2685]: Reached target basic.target - Basic System.
-2026-04-11T19:47:50.199114-04:00 kali systemd[1]: Started user@1000.service - User Manager for UID 1000.
-2026-04-11T19:47:50.205760-04:00 kali systemd[2685]: Started pipewire.service - PipeWire Multimedia Service.
-2026-04-11T19:47:50.517335-04:00 kali systemd[1]: Started session-75.scope - Session 75 of User kali.
-2026-04-11T19:47:50.631035-04:00 kali systemd[2685]: Started filter-chain.service - PipeWire filter chain daemon.
-2026-04-11T19:47:50.648688-04:00 kali systemd[2685]: Started wireplumber.service - Multimedia Service Session Manager.
-2026-04-11T19:47:50.955655-04:00 kali systemd[2685]: Started pipewire-pulse.service - PipeWire PulseAudio.
-2026-04-11T19:47:51.148209-04:00 kali systemd[2685]: Reached target default.target - Main User Target.
-2026-04-11T19:47:51.180592-04:00 kali systemd[2685]: Startup finished in 11.585s.
+2026-04-12T07:31:04.987077-04:00 kali rsyslogd: [origin software="rsyslogd" swVersion="8.2510.0" x-pid="520" x-info="https://www.rsyslog.com"] rsyslogd was HUPed
+2026-04-12T07:31:17.029440-04:00 kali systemd[1]: man-db.service: Deactivated successfully.
+2026-04-12T07:31:17.040259-04:00 kali systemd[1]: Finished man-db.service - Daily man-db regeneration.
+2026-04-12T07:31:17.117708-04:00 kali systemd[1]: man-db.service: Consumed 20.205s CPU time over 3min 57.217s wall clock time, 6.3M memory peak.
+2026-04-12T07:35:02.261011-04:00 kali CRON[3158]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-12T07:36:13.798496-04:00 kali systemd[1]: plocate-updatedb.service: Deactivated successfully.
+2026-04-12T07:36:13.801180-04:00 kali systemd[1]: Finished plocate-updatedb.service - Update the plocate database.
+2026-04-12T07:36:13.802205-04:00 kali systemd[1]: plocate-updatedb.service: Consumed 3min 4.219s CPU time over 8min 59.968s wall clock time, 350M memory peak.
+2026-04-12T07:39:01.720834-04:00 kali CRON[3167]: (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+2026-04-12T07:39:09.407076-04:00 kali systemd[1]: Starting phpsessionclean.service - Clean php session files...
+2026-04-12T07:39:10.245565-04:00 kali systemd[1]: phpsessionclean.service: Deactivated successfully.
+2026-04-12T07:39:10.260554-04:00 kali systemd[1]: Finished phpsessionclean.service - Clean php session files.
+2026-04-12T07:45:01.275483-04:00 kali CRON[3214]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-12T07:45:04.739304-04:00 kali NetworkManager[626]: <info>  [1775994304.7341] dhcp4 (eth0): state changed new lease, address=192.168.116.129
+2026-04-12T07:45:04.781094-04:00 kali dbus-daemon[496]: [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.4' (uid=0 pid=626 comm="/usr/sbin/NetworkManager --no-daemon")
+2026-04-12T07:45:05.070418-04:00 kali systemd[1]: Starting NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service...
+2026-04-12T07:45:05.299356-04:00 kali dbus-daemon[496]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+2026-04-12T07:45:05.354961-04:00 kali systemd[1]: Started NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service.
+2026-04-12T07:45:15.525008-04:00 kali systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+2026-04-12T07:55:01.407442-04:00 kali CRON[3227]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-12T08:00:01.594492-04:00 kali CRON[3233]: (kali) CMD (/home/kali/test1/bonjour.sh)
+2026-04-12T08:00:04.744749-04:00 kali NetworkManager[626]: <info>  [1775995204.7370] dhcp4 (eth0): state changed new lease, address=192.168.116.129
+2026-04-12T08:00:04.761197-04:00 kali dbus-daemon[496]: [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.4' (uid=0 pid=626 comm="/usr/sbin/NetworkManager --no-daemon")
+2026-04-12T08:00:04.770837-04:00 kali systemd[1]: Starting NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service...
+2026-04-12T08:00:04.916750-04:00 kali dbus-daemon[496]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+2026-04-12T08:00:04.944037-04:00 kali systemd[1]: Started NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service.
+2026-04-12T08:00:14.991415-04:00 kali systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+2026-04-12T08:05:02.013431-04:00 kali CRON[3248]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-12T08:09:01.051567-04:00 kali CRON[3251]: (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+2026-04-12T08:09:09.230305-04:00 kali systemd[1]: Starting phpsessionclean.service - Clean php session files...
+2026-04-12T08:09:09.677782-04:00 kali systemd[1]: phpsessionclean.service: Deactivated successfully.
+2026-04-12T08:09:09.692711-04:00 kali systemd[1]: Finished phpsessionclean.service - Clean php session files.
+2026-04-12T08:15:01.259504-04:00 kali CRON[3299]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-12T08:15:04.907240-04:00 kali NetworkManager[626]: <info>  [1775996104.9042] dhcp4 (eth0): state changed new lease, address=192.168.116.129
+2026-04-12T08:15:04.986304-04:00 kali dbus-daemon[496]: [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.4' (uid=0 pid=626 comm="/usr/sbin/NetworkManager --no-daemon")
+2026-04-12T08:15:05.027323-04:00 kali systemd[1]: Starting NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service...
+2026-04-12T08:15:05.219313-04:00 kali dbus-daemon[496]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+2026-04-12T08:15:05.274164-04:00 kali systemd[1]: Started NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service.
+2026-04-12T08:15:15.345921-04:00 kali systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+2026-04-12T08:17:01.395070-04:00 kali CRON[3311]: (root) CMD (cd / && run-parts --report /etc/cron.hourly)
+2026-04-12T08:25:01.567090-04:00 kali CRON[3316]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-12T08:30:05.290992-04:00 kali NetworkManager[626]: <info>  [1775997005.2883] dhcp4 (eth0): state changed new lease, address=192.168.116.129
+2026-04-12T08:30:05.329018-04:00 kali dbus-daemon[496]: [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.4' (uid=0 pid=626 comm="/usr/sbin/NetworkManager --no-daemon")
+2026-04-12T08:30:05.941623-04:00 kali systemd[1]: Starting NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service...
+2026-04-12T08:30:06.868771-04:00 kali dbus-daemon[496]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+2026-04-12T08:30:06.869986-04:00 kali systemd[1]: Started NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service.
+2026-04-12T08:30:16.882053-04:00 kali systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+2026-04-12T08:35:01.861368-04:00 kali CRON[3330]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-12T08:39:01.982783-04:00 kali CRON[3336]: (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+2026-04-12T08:39:09.232656-04:00 kali systemd[1]: Starting phpsessionclean.service - Clean php session files...
+2026-04-12T08:39:09.890429-04:00 kali systemd[1]: phpsessionclean.service: Deactivated successfully.
+2026-04-12T08:39:09.909272-04:00 kali systemd[1]: Finished phpsessionclean.service - Clean php session files.
+2026-04-12T08:45:01.281266-04:00 kali CRON[3384]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-12T08:45:04.754742-04:00 kali NetworkManager[626]: <info>  [1775997904.7461] dhcp4 (eth0): state changed new lease, address=192.168.116.129
+2026-04-12T08:45:04.819289-04:00 kali dbus-daemon[496]: [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.4' (uid=0 pid=626 comm="/usr/sbin/NetworkManager --no-daemon")
+2026-04-12T08:45:04.849416-04:00 kali systemd[1]: Starting NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service...
+2026-04-12T08:45:05.020456-04:00 kali dbus-daemon[496]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+2026-04-12T08:45:05.032498-04:00 kali systemd[1]: Started NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service.
+2026-04-12T08:45:15.105272-04:00 kali systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+2026-04-12T08:55:02.336327-04:00 kali CRON[3398]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-12T09:00:04.746878-04:00 kali NetworkManager[626]: <info>  [1775998804.7446] dhcp4 (eth0): state changed new lease, address=192.168.116.129
+2026-04-12T09:00:05.225149-04:00 kali dbus-daemon[496]: [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.4' (uid=0 pid=626 comm="/usr/sbin/NetworkManager --no-daemon")
+2026-04-12T09:00:05.245249-04:00 kali systemd[1]: Starting NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service...
+2026-04-12T09:00:05.359387-04:00 kali dbus-daemon[496]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+2026-04-12T09:00:05.361532-04:00 kali systemd[1]: Started NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service.
+2026-04-12T09:00:15.474121-04:00 kali systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+2026-04-12T09:05:01.425642-04:00 kali CRON[3411]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-12T09:09:01.534222-04:00 kali CRON[3415]: (root) CMD (  [ -x /usr/lib/php/sessionclean ] && if [ ! -d /run/systemd/system ]; then /usr/lib/php/sessionclean; fi)
+2026-04-12T09:09:09.285943-04:00 kali systemd[1]: Starting phpsessionclean.service - Clean php session files...
+2026-04-12T09:09:09.808186-04:00 kali systemd[1]: phpsessionclean.service: Deactivated successfully.
+2026-04-12T09:09:09.836901-04:00 kali systemd[1]: Finished phpsessionclean.service - Clean php session files.
+2026-04-12T09:15:01.561693-04:00 kali CRON[3463]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-12T09:15:04.798787-04:00 kali NetworkManager[626]: <info>  [1775999704.7891] dhcp4 (eth0): state changed new lease, address=192.168.116.129
+2026-04-12T09:15:04.847218-04:00 kali dbus-daemon[496]: [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.4' (uid=0 pid=626 comm="/usr/sbin/NetworkManager --no-daemon")
+2026-04-12T09:15:04.897769-04:00 kali systemd[1]: Starting NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service...
+2026-04-12T09:15:04.974925-04:00 kali dbus-daemon[496]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+2026-04-12T09:15:04.979164-04:00 kali systemd[1]: Started NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service.
+2026-04-12T09:15:15.031023-04:00 kali systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+2026-04-12T09:17:01.941017-04:00 kali CRON[3476]: (root) CMD (cd / && run-parts --report /etc/cron.hourly)
+2026-04-12T09:25:02.020678-04:00 kali CRON[3480]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-12T09:30:04.845227-04:00 kali NetworkManager[626]: <info>  [1776000604.8323] dhcp4 (eth0): state changed new lease, address=192.168.116.129
+2026-04-12T09:30:04.998316-04:00 kali systemd[1]: Starting NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service...
+2026-04-12T09:30:05.002600-04:00 kali dbus-daemon[496]: [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.4' (uid=0 pid=626 comm="/usr/sbin/NetworkManager --no-daemon")
+2026-04-12T09:30:05.080377-04:00 kali dbus-daemon[496]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+2026-04-12T09:30:05.086100-04:00 kali systemd[1]: Started NetworkManager-dispatcher.service - Network Manager Script Dispatcher Service.
+2026-04-12T09:30:15.129339-04:00 kali systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+2026-04-12T09:35:01.099292-04:00 kali CRON[3493]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+2026-04-12T09:37:15.082319-04:00 kali systemd[1]: Created slice user-1000.slice - User Slice of UID 1000.
+2026-04-12T09:37:15.164204-04:00 kali systemd[1]: Starting user-runtime-dir@1000.service - User Runtime Directory /run/user/1000...
+2026-04-12T09:37:18.698458-04:00 kali systemd[1]: Finished user-runtime-dir@1000.service - User Runtime Directory /run/user/1000.
+2026-04-12T09:37:18.893706-04:00 kali systemd[1]: Starting user@1000.service - User Manager for UID 1000...
+2026-04-12T09:37:24.961050-04:00 kali systemd[3503]: Queued start job for default target default.target.
+2026-04-12T09:37:26.180282-04:00 kali systemd[3503]: Created slice app.slice - User Application Slice.
+2026-04-12T09:37:26.680598-04:00 kali systemd[3503]: Created slice session.slice - User Core Session Slice.
+2026-04-12T09:37:26.824516-04:00 kali systemd[3503]: Reached target paths.target - Paths.
+2026-04-12T09:37:27.128939-04:00 kali systemd[3503]: Reached target timers.target - Timers.
+2026-04-12T09:37:27.307943-04:00 kali systemd[3503]: Starting dbus.socket - D-Bus User Message Bus Socket...
+2026-04-12T09:37:27.438432-04:00 kali systemd[3503]: Listening on dirmngr.socket - GnuPG network certificate management daemon.
+2026-04-12T09:37:27.507280-04:00 kali systemd[3503]: Listening on gcr-ssh-agent.socket - GCR ssh-agent wrapper.
+2026-04-12T09:37:27.753915-04:00 kali systemd[3503]: Listening on gnome-keyring-daemon.socket - GNOME Keyring daemon.
+2026-04-12T09:37:27.843724-04:00 kali systemd[3503]: Listening on gpg-agent-browser.socket - GnuPG cryptographic agent and passphrase cache (access for web browsers).
+2026-04-12T09:37:27.905994-04:00 kali systemd[3503]: Listening on gpg-agent-extra.socket - GnuPG cryptographic agent and passphrase cache (restricted).
+2026-04-12T09:37:27.961259-04:00 kali systemd[3503]: Listening on gpg-agent-ssh.socket - GnuPG cryptographic agent (ssh-agent emulation).
+2026-04-12T09:37:28.041021-04:00 kali systemd[3503]: Listening on gpg-agent.socket - GnuPG cryptographic agent and passphrase cache.
+2026-04-12T09:37:28.261394-04:00 kali systemd[3503]: Listening on pipewire-pulse.socket - PipeWire PulseAudio.
+2026-04-12T09:37:28.315242-04:00 kali systemd[3503]: Listening on pipewire.socket - PipeWire Multimedia System Sockets.
+2026-04-12T09:37:28.340762-04:00 kali systemd[3503]: Listening on systemd-ask-password.socket - Query the User Interactively for a Password.
+2026-04-12T09:37:28.344607-04:00 kali systemd[3503]: Listening on dbus.socket - D-Bus User Message Bus Socket.
+2026-04-12T09:37:28.358121-04:00 kali systemd[3503]: Reached target sockets.target - Sockets.
+2026-04-12T09:37:28.410528-04:00 kali systemd[3503]: Reached target basic.target - Basic System.
+2026-04-12T09:37:28.448536-04:00 kali systemd[1]: Started user@1000.service - User Manager for UID 1000.
+2026-04-12T09:37:28.464949-04:00 kali systemd[3503]: Started pipewire.service - PipeWire Multimedia Service.
+2026-04-12T09:37:28.707159-04:00 kali systemd[1]: Started session-99.scope - Session 99 of User kali.
+2026-04-12T09:37:28.745352-04:00 kali systemd[3503]: Started filter-chain.service - PipeWire filter chain daemon.
+2026-04-12T09:37:28.942393-04:00 kali systemd[3503]: Started wireplumber.service - Multimedia Service Session Manager.
+2026-04-12T09:37:29.428973-04:00 kali systemd[3503]: Started pipewire-pulse.service - PipeWire PulseAudio.
+2026-04-12T09:37:29.457150-04:00 kali systemd[3503]: Reached target default.target - Main User Target.
+2026-04-12T09:37:29.538565-04:00 kali systemd[3503]: Startup finished in 9.713s.

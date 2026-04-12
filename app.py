@@ -1149,7 +1149,7 @@ def generate_pdf_report_bytes(analysis):
         pdf.set_y(-15)
         pdf.set_font("Helvetica", "I", 8)
         pdf.set_text_color(156, 163, 175)
-        pdf.cell(190, 10, clean_text_for_pdf("Document d'Audit Technique - LogAnalyzer PFE 2026 - Confidentiel"), align="C")
+        pdf.cell(190, 10, clean_text_for_pdf("Document d'Audit Technique - LogAnalyzer PFE_ESTSB_AWB - Confidentiel"), align="C")
 
         return pdf.output()
     except Exception as e:

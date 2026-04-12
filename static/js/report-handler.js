@@ -478,7 +478,15 @@ async function sendReportByEmail() {
 
     if (!isConfirmed) return;
 
-    // Feedback Progressif : Afficher le loader et le maintenir jusqu'à la réponse
+    // Mise à jour de l'état du bouton (Loading)
+    const btn = document.getElementById('sendEmailBtn');
+    const originalHtml = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Envoi en cours...';
+    }
+
+    // Feedback Progressif : Afficher le loader SweetAlert2
     Swal.fire({
         title: 'Transmission en cours...',
         html: '<div class="text-muted mb-3">Génération du PDF et envoi via SMTP sécurisé...</div>',
@@ -501,12 +509,11 @@ async function sendReportByEmail() {
         });
 
         const result = await response.json();
-        
         if (result.success) {
             Swal.fire({
                 icon: 'success',
                 title: 'Rapport Envoyé',
-                text: result.message,
+                text: result.message || "L'e-mail a été expédié avec succès.",
                 customClass: {
                     popup: 'swal-custom-popup',
                     title: 'swal-custom-title',
@@ -515,24 +522,14 @@ async function sendReportByEmail() {
                 buttonsStyling: false
             });
         } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Échec de l\'envoi',
-                text: result.message,
-                customClass: {
-                    popup: 'swal-custom-popup',
-                    title: 'swal-custom-title',
-                    confirmButton: 'swal-custom-confirm'
-                },
-                buttonsStyling: false
-            });
+            throw new Error(result.message || "Erreur lors de l'envoi.");
         }
     } catch (error) {
         console.error("Email API Error:", error);
         Swal.fire({
             icon: 'error',
-            title: 'Erreur SMTP/Réseau',
-            text: "Le serveur de messagerie est inaccessible ou vos identifiants sont invalides.",
+            title: 'Échec de l\'envoi',
+            text: error.message || "Une erreur est survenue lors de la communication avec le serveur mail.",
             customClass: {
                 popup: 'swal-custom-popup',
                 title: 'swal-custom-title',
@@ -540,5 +537,10 @@ async function sendReportByEmail() {
             },
             buttonsStyling: false
         });
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+        }
     }
 }
