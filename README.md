@@ -1,74 +1,75 @@
-# 🛡️ LogAnalyzer - Système d'Analyse de Logs Fedora (Version Pro)
+🛡️ LogAnalyzer - Système d'Analyse de Logs
 
-**LogAnalyzer** est une solution complète de monitoring et de sécurité. Elle permet de surveiller et d'analyser les logs des serveurs **Fedora** à distance via SSH, en exploitant l'IA (Google Gemini) pour transformer des logs techniques bruts en rapports d'audit exploitables.
+LogAnalyzer est une solution complète de monitoring et de sécurité. Elle permet de surveiller et d'analyser les logs des serveurs à distance via SSH, en exploitant l'IA pour transformer des logs techniques bruts en rapports d'audit exploitables.
+🚀 Nouvelles FonctionnalitéS
 
----
+    🔐 Auth & Multi-Roles : Système de connexion sécurisé (Super Admin / IT Analyst).
 
-## 🚀 Nouvelles Fonctionnalités (V2.0)
-* **🔐 Auth & Multi-Roles** : Système de connexion sécurisé avec deux niveaux d'accès :
-    * **Super Admin** : Gestion des utilisateurs et accès complet.
-    * **IT Analyst** : Consultation et analyse des serveurs.
-* **🤖 AI Security Audit** : Intégration avancée de Google Gemini pour l'analyse prédictive des erreurs.
-* **📡 SSH Log Streaming** : Extraction en temps réel depuis des environnements Linux distants.
-* **📊 Executive Dashboard** : Interface moderne (Glassmorphism) avec graphiques d'activité.
-* **📑 Audit Reports** : Génération de rapports PDF professionnels prêts à l'impression.
+    🤖 AI Security Audit : Intégration de Google Gemini pour l'analyse des vulnérabilités.
 
----
+    📑 Advanced Reporting : Génération de PDF professionnels incluant les logos institutionnels (Attijariwafa Bank & EST Sidi Bennour).
 
-## 🛠️ Configuration du Serveur Cible (Fedora)
+    📧 Email Dispatch : Envoi automatisé des rapports d'audit par e-mail via SMTP sécurisé.
 
-Pour que LogAnalyzer puisse communiquer avec votre serveur, vous devez configurer le service **SSH** correctement :
+    ❓ Centre d'Aide Interactif : Une page de documentation intégrée (FAQ) avec système d'accordéon pour guider l'utilisateur.
 
-### 1. Installation du service SSH
-Si SSH n'est pas encore installé sur votre serveur Fedora :
+    📊 Executive Dashboard : Interface moderne avec graphiques en temps réel (Chart.js).
+
+🏛️ Contexte Institutionnel
+
+Ce projet a été développé dans le cadre d'un Projet de Fin d'Études (PFE), fruit d'une collaboration entre :
+
+    Attijariwafa Bank : Partenaire stratégique et cadre d'application professionnel.
+
+    EST Sidi Bennour : Encadrement académique et technique.
+
+🛠️ Configuration & Prérequis
+1. Serveur Cible (Fedora/Ubuntu)
+
+Pour permettre l'extraction des logs, SSH doit être actif :
+Bash
+
 sudo dnf install openssh-server -y
+sudo systemctl enable --now sshd
+sudo firewall-cmd --add-service=ssh --permanent && sudo firewall-cmd --reload
 
-2. Activation et démarrage
-sudo systemctl enable sshd
-sudo systemctl start sshd
+Note : Assurez-vous que l'utilisateur SSH a les droits de lecture sur /var/log/.
+2. Configuration du Reporting (Email)
 
-3. Configuration du Firewall
+Pour activer l'envoi des rapports par mail :
 
-Il est impératif d'autoriser le port 22 (SSH) pour permettre la connexion entrante :
-sudo firewall-cmd --add-service=ssh --permanent
-sudo firewall-cmd --reload
+    Accédez à votre Profil.
 
-4. Vérification de l'IP
+    Configurez votre adresse Gmail et votre Mot de passe d'application (App Password).
 
-Notez l'adresse IP de votre serveur pour la configurer dans LogAnalyzer :
-ip addr show
+    Vérifiez les paramètres SMTP (Port 587).
 
 🏗️ Architecture Technique
 
-    Backend : Flask (Python 3.x)
+    Backend : Flask, Python 3.x, Flask-Login.
 
-    Base de Données : SQLite avec SQLAlchemy (Gestion des utilisateurs & sessions).
+    Base de Données : SQLite & SQLAlchemy.
 
-    Sécurité : Flask-Login & Werkzeug (Hashing des mots de passe).
+    Analyse AI : Google Generative AI (Gemini Pro).
 
-    Frontend : JavaScript ES6+, Bootstrap 5, Chart.js.
+    Frontend : Bootstrap 5, FontAwesome, JavaScript (ES6).
 
-    AI Integration : Google Generative AI SDK.
+    Libraries PDF : fpdf2 pour la génération dynamique.
 
-📦 Installation & Déploiement
+📦 Installation
+Bash
 
-    Cloner le projet :
-    git clone [https://github.com/AbdelfattahBOUABID05/Prj_PFE.git](https://github.com/AbdelfattahBOUABID05/Prj_PFE.git)
-    cd Prj_PFE
+git clone https://github.com/AbdelfattahBOUABID05/Prj_PFE.git
+cd Prj_PFE
+pip install -r requirements.txt
 
-    Installer les dépendances :
-    pip install -r requirements.txt
+Fichier .env :
+Extrait de code
 
-    Variables d'environnement (.env) :
-    Extrait de code
-
-    GEMINI_API_KEY=votre_cle_api
-    SECRET_KEY=votre_cle_secrete_flask
-
-    Lancement de l'application :
-    python app.py
-
-    Note : La base de données log_analyzer.db sera créée automatiquement au premier lancement.
+GEMINI_API_KEY=votre_cle_api
+SECRET_KEY=votre_cle_secrete_flask
+MAIL_USERNAME=votre_email@gmail.com
+MAIL_PASSWORD=votre_app_password
 
 👤 Accès par Défaut
 
@@ -76,4 +77,8 @@ ip addr show
 
     Password : Admin@12345
 
-Développé par : Abdelfattah Bouabid Étudiant en Ingénierie des Systèmes d'Information et Technologies Web (ISITW) - EST Sidi Bennour
+👨‍💻 Développeur
+
+Abdelfattah Bouabid
+Étudiant en Ingénierie des Systèmes d'Informatique et Technologies Web (ISITW) - EST Sidi Bennour.
+Stage de fin d'études effectué au sein d'Attijariwafa Bank.
