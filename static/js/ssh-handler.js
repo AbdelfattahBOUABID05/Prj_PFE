@@ -120,3 +120,120 @@ document.getElementById('todayBtn')?.addEventListener('click', function() {
         form.reportValidity();
     }
 });
+
+/**
+ * Gestion du Terminal Interactif
+ */
+const terminalBody = document.getElementById('terminalBody');
+const terminalInput = document.getElementById('terminalInput');
+const clearBtn = document.getElementById('clearTerminal');
+const terminalStatusDot = document.getElementById('terminalStatusDot');
+
+// Champs d'identification du terminal (Indépendants du formulaire principal)
+const termHost = document.getElementById('termHost');
+const termUser = document.getElementById('termUser');
+const termPass = document.getElementById('termPass');
+
+function updateTerminalStatus(status) {
+    if (!terminalStatusDot) return;
+    terminalStatusDot.className = 'status-dot';
+    if (status === 'success') {
+        terminalStatusDot.classList.add('bg-success');
+        terminalStatusDot.title = 'Connecté (Dernière commande réussie)';
+    } else if (status === 'error') {
+        terminalStatusDot.classList.add('bg-danger');
+        terminalStatusDot.title = 'Erreur de connexion / exécution';
+    } else {
+        terminalStatusDot.classList.add('bg-secondary');
+        terminalStatusDot.title = 'Déconnecté';
+    }
+}
+
+function appendToTerminal(text, type = 'output') {
+    if (!terminalBody) return;
+    const line = document.createElement('div');
+    line.className = `terminal-output-line ${type === 'error' ? 'terminal-error' : (type === 'cmd' ? 'terminal-cmd-echo' : '')}`;
+    line.textContent = text;
+    terminalBody.appendChild(line);
+    terminalBody.scrollTop = terminalBody.scrollHeight;
+}
+
+async function executeTerminalCommand() {
+    const commandValue = terminalInput.value.trim();
+    if (!commandValue) return;
+
+    // Gestion locale de la commande 'clear'
+    if (commandValue.toLowerCase() === 'clear') {
+        if (terminalBody) {
+            terminalBody.innerHTML = '<div class="text-success small mb-2"># Terminal effacé. Prêt.</div>';
+        }
+        terminalInput.value = '';
+        return;
+    }
+
+    // Récupération des identifiants depuis la barre supérieure du terminal
+    const host = termHost?.value.trim();
+    const user = termUser?.value.trim();
+    const pass = termPass?.value;
+
+    // Validation des champs avant l'envoi
+    if (!host || !user || !pass) {
+        appendToTerminal(`$ ${commandValue}`, "cmd"); // Echo the command first
+        appendToTerminal("Erreur : Veuillez remplir le Host, User et Pass.", "error");
+        updateTerminalStatus('error');
+        terminalInput.value = ''; // Clear input even on error
+        return;
+    }
+
+    appendToTerminal(`$ ${commandValue}`, "cmd");
+    terminalInput.value = '';
+    terminalInput.disabled = true;
+
+    try {
+        const response = await fetch('/terminal/exec', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                host: host,
+                user: user,
+                pass: pass,
+                command: commandValue 
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.status === "success") {
+            updateTerminalStatus('success');
+            if (result.output) appendToTerminal(result.output);
+            if (result.error) appendToTerminal(result.error, "error");
+            if (!result.output && !result.error) appendToTerminal("(Aucune sortie)");
+        } else {
+            updateTerminalStatus('error');
+            appendToTerminal(`Erreur : ${result.message}`, "error");
+        }
+    } catch (error) {
+        updateTerminalStatus('error');
+        appendToTerminal(`Erreur de communication : ${error.message}`, "error");
+    } finally {
+        terminalInput.disabled = false;
+        terminalInput.focus();
+    }
+}
+
+terminalInput?.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        executeTerminalCommand();
+    }
+});
+
+clearBtn?.addEventListener('click', function() {
+    if (terminalBody) {
+        terminalBody.innerHTML = '<div class="text-success small mb-2"># Terminal effacé. Prêt.</div>';
+    }
+});
+
+// Focus automatique sur l'input quand le modal s'ouvre
+document.getElementById('terminalModal')?.addEventListener('shown.bs.modal', function () {
+    terminalInput?.focus();
+});

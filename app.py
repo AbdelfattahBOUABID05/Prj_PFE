@@ -915,6 +915,12 @@ def ssh_analyze():
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(ip, username=user, password=pwd, timeout=10, banner_timeout=10, auth_timeout=10)
 
+        # Stockage des identifiants en session pour le terminal (Admins uniquement)
+        if getattr(current_user, "is_admin", False):
+            session['ssh_host'] = ip
+            session['ssh_user'] = user
+            session['ssh_pass'] = pwd
+
         # Construction de la commande SSH selon le mode (Tout ou Aujourd'hui uniquement)
         if today_only:
             # Récupération de la date actuelle aux formats standards
@@ -993,6 +999,67 @@ def ssh_analyze():
                 ssh.close()
         except Exception:
             pass
+
+@app.route('/terminal/exec', methods=['POST'])
+@admin_required
+def terminal_exec():
+    ssh = None
+    try:
+        data = request.get_json(silent=True) or {}
+        command = (data.get('command') or "").strip()
+
+        # Récupération des identifiants directement du payload JSON (Indépendance du formulaire d'analyse)
+        ip = (data.get('host') or "").strip()
+        user = (data.get('user') or "").strip()
+        pwd = data.get('pass') or ""
+
+        # Vérification des informations de connexion SSH fournies
+        if not ip or not user or not pwd:
+            return json_error("Veuillez renseigner le Host, User et Pass dans le terminal.", 400, code="MISSING_TERMINAL_CREDENTIALS")
+
+        if not command:
+            return json_error("Commande manquante", 400, code="MISSING_COMMAND")
+
+        # Bloquer les commandes interactives
+        interactive_cmds = ['vim', 'nano', 'top', 'htop', 'less', 'more']
+        first_word = command.split()[0].lower() if command.split() else ""
+        if first_word in interactive_cmds:
+            return json_error("L'édition interactive n'est pas supportée dans ce terminal web. Utilisez 'echo' ou 'cat' pour visualiser.", 403, code="INTERACTIVE_COMMAND_NOT_SUPPORTED")
+
+        # Durcissement basique : interdire certaines commandes dangereuses ou bloquantes
+        forbidden = ['rm -rf /', 'mkfs', 'dd if=', ':(){ :|:& };:']
+        if any(f in command for f in forbidden):
+            return json_error("Commande interdite pour des raisons de sécurité", 403, code="FORBIDDEN_COMMAND")
+
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        
+        try:
+            ssh.connect(ip, username=user, password=pwd, timeout=10, banner_timeout=10)
+        except (paramiko.AuthenticationException, paramiko.SSHException, Exception) as conn_err:
+            error_msg = str(conn_err)
+            if "getaddrinfo failed" in error_msg:
+                error_msg = f"Hôte introuvable ou invalide : {ip}"
+            elif "Authentication failed" in error_msg:
+                error_msg = "Échec d'authentification (User/Pass incorrect)"
+            return json_error(f"Échec de connexion SSH : {error_msg}", 401, code="SSH_CONNECT_FAILED")
+
+        # Configurer l'environnement terminal (TERM=xterm) pour éviter les erreurs de certaines commandes
+        full_command = f"export TERM=xterm && {command}"
+        stdin, stdout, stderr = ssh.exec_command(full_command, timeout=15)
+        output = stdout.read().decode('utf-8', errors='replace')
+        error = stderr.read().decode('utf-8', errors='replace')
+
+        return jsonify({
+            "status": "success",
+            "output": output,
+            "error": error
+        })
+    except Exception as e:
+        return json_error(str(e), 500, code="TERMINAL_EXEC_FAILED")
+    finally:
+        if ssh:
+            ssh.close()
 
 @app.route('/ai-analyze-line', methods=['POST'])
 @login_required

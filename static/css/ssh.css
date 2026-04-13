@@ -35,3 +35,48 @@
     background: #ccc;
     cursor: not-allowed;
 }
+
+/* Terminal Styles */
+.terminal-body {
+    scrollbar-width: thin;
+    scrollbar-color: #334155 #0f172a;
+    font-size: 13px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.terminal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.terminal-body::-webkit-scrollbar-track {
+    background: #0f172a;
+}
+
+.terminal-body::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 10px;
+}
+
+.terminal-input-container {
+    font-family: 'Courier New', Courier, monospace;
+}
+
+#terminalInput::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 13px;
+}
+
+.terminal-output-line {
+    margin-bottom: 2px;
+}
+
+.terminal-error {
+    color: #ef4444;
+}
+
+.terminal-cmd-echo {
+    color: #3b82f6;
+    font-weight: bold;
+}
