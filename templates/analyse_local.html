@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Analyse Locale{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mt-md-5 fade-in-up">
+    <div class="text-center mb-5">
+        <h3 class="fw-bold"><i class="fas fa-file-upload text-primary me-2"></i> Analyser un Fichier Local</h3>
+        <p class="text-muted">Glissez-déposez ou sélectionnez un fichier de log depuis votre ordinateur</p>
+    </div>
+
+    <div class="card glass-card border-0 p-4 mx-auto" style="max-width: 600px;">
+        <form id="localAnalysisForm" method="POST" enctype="multipart/form-data">
+            <div id="dropZone" class="upload-drop-zone mb-4">
+                <div class="drop-zone-content">
+                    <i class="fas fa-cloud-upload-alt fa-3x mb-3 text-primary opacity-75"></i>
+                    <p class="mb-2 fw-bold">Glissez votre fichier ici</p>
+                    <p class="text-muted small">ou cliquez pour parcourir</p>
+                    <input type="file" name="file" id="fileInput" class="d-none" accept=".log,.txt,syslog*">
+                </div>
+                <div id="fileInfo" class="d-none mt-3 p-2 bg-light rounded border">
+                    <i class="fas fa-file-alt me-2 text-primary"></i>
+                    <span id="fileName" class="small fw-medium"></span>
+                </div>
+            </div>
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-saas py-2 fw-bold" id="submitBtn">
+                    <i class="fas fa-magic me-2"></i> Lancer l'Analyse Locale
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .upload-drop-zone {
+        border: 2px dashed var(--border-color);
+        border-radius: 16px;
+        padding: 40px 20px;
+        text-align: center;
+        background: rgba(37, 99, 235, 0.02);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .upload-drop-zone:hover, .upload-drop-zone.dragover {
+        border-color: #2563eb;
+        background: rgba(37, 99, 235, 0.05);
+    }
+
+    .drop-zone-content i {
+        transition: transform 0.3s ease;
+    }
+
+    .upload-drop-zone:hover i {
+        transform: translateY(-5px);
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const form = document.getElementById('localAnalysisForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Click to browse
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        // File selection
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                updateFileInfo(this.files[0]);
+            }
+        });
+
+        // Drag & Drop
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                updateFileInfo(e.dataTransfer.files[0]);
+            }
+        });
+
+        function updateFileInfo(file) {
+            fileName.textContent = file.name;
+            fileInfo.classList.remove('d-none');
+            fileInfo.classList.add('fade-in-up');
+        }
+
+        form.addEventListener('submit', function() {
+            if (fileInput.files.length > 0) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Analyse en cours...';
+            }
+        });
+    });
+</script>
+{% endblock %}

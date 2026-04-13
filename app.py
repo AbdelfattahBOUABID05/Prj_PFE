@@ -512,6 +512,63 @@ def details():
 def ssh_page():
     return render_template('ssh_config.html')
 
+@app.route('/analyse-local', methods=['GET', 'POST'])
+@login_required
+def analyse_local_page():
+    if request.method == 'POST':
+        try:
+            if 'file' not in request.files:
+                flash("Aucun fichier fourni", "danger")
+                return redirect(request.url)
+
+            file = request.files['file']
+            if file.filename == '':
+                flash("Nom de fichier vide", "danger")
+                return redirect(request.url)
+
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+
+            results = parse_log_file(filepath)
+            meta = file_metadata(filepath)
+            
+            payload = {
+                "status": "success",
+                "generated_at": utc_now_iso(),
+                "meta": {
+                    "source_type": "local_upload",
+                    "source_path": filename,
+                    "server_ip": "Local Machine",
+                    **meta
+                },
+                "segments": results,
+                "stats": {
+                    "errors": len(results.get('ERROR', [])),
+                    "warnings": len(results.get('WARNING', [])),
+                    "info": len(results.get('INFO', [])),
+                    "total": sum(len(v) for v in results.values())
+                }
+            }
+            
+            analysis = save_analysis_for_current_user(
+                source_type="local_upload",
+                source_path=filename,
+                server_ip="Local Machine",
+                stats=payload["stats"],
+                segments=payload["segments"],
+                meta=payload["meta"],
+            )
+            
+            flash("Analyse locale terminée avec succès.", "success")
+            return redirect(url_for('report_page'))
+            
+        except Exception as e:
+            flash(f"Erreur lors de l'analyse : {str(e)}", "danger")
+            return redirect(request.url)
+            
+    return render_template('analyse_local.html')
+
 @app.route('/report')
 @login_required
 def report_page():
