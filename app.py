@@ -11,6 +11,9 @@ import paramiko
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename  # Ajout de l'utilitaire de nom de fichier sécurisé
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from PIL import Image, ImageEnhance # Pour le traitement d'image de la signature
+from cryptography.fernet import Fernet # Pour la sécurité des clés API
+import requests # Pour l'API Remove.bg
 
 import smtplib
 import ssl
@@ -20,6 +23,7 @@ from openai import OpenAI
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
+import time
 
 from src.parser import parse_log_file
 from config import Config
@@ -30,6 +34,33 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 app.config.from_object(Config)
+app.config['REMOVE_BG_API_KEY'] = os.getenv('REMOVE_BG_API_KEY') or get_decrypted_removebg_key()
+
+# S'assurer que le dossier des uploads statiques existe (pour les signatures)
+UPLOAD_STATIC_FOLDER = os.path.join(app.root_path, 'static', 'uploads')
+if not os.path.exists(UPLOAD_STATIC_FOLDER):
+    os.makedirs(UPLOAD_STATIC_FOLDER)
+app.config['UPLOAD_FOLDER'] = UPLOAD_STATIC_FOLDER
+
+# --- Configuration Uploads & Sécurité ---
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def get_decrypted_removebg_key():
+    """Déchiffre la clé API Remove.bg depuis les variables d'environnement."""
+    try:
+        fernet_key = os.getenv("FERNET_KEY")
+        encrypted_key = os.getenv("ENCRYPTED_REMOVEBG_KEY")
+        if not fernet_key or not encrypted_key:
+            return None
+        f = Fernet(fernet_key.encode())
+        return f.decrypt(encrypted_key.encode()).decode()
+    except Exception as e:
+        print(f"Erreur de déchiffrement API Key: {str(e)}")
+        return None
 
 # --- Authentification / Base de données ---
 db.init_app(app)
@@ -144,15 +175,33 @@ def _openai_style_completion(*, api_key: str, base_url: str | None, model_name: 
     return (resp.choices[0].message.content or "").strip()
 
 
-def generate_security_summary_text(log_text: str) -> str:
+def generate_security_summary_text(log_text: str, top_patterns: list = None) -> str:
     """
     Essaie d'abord l'endpoint Cursor/OpenAI-compatible (si CURSOR_API_KEY est fourni),
     puis une clé OpenAI, puis le modèle Gemini stable.
     Retourne le texte brut du modèle (JSON attendu par l'appelant).
     """
+    patterns_str = ""
+    if top_patterns:
+        patterns_str = "\nTop 10 Recurring Patterns (Message, Occurrences):\n" + \
+                       "\n".join([f"- {p[0]}: {p[1]}" for p in top_patterns])
+
     prompt = (
         "Analyze security-relevant logs and return ONLY valid JSON.\n"
-        "Required keys: ai_insights (2-4 sentences), security_level (LOW|MEDIUM|HIGH|CRITICAL).\n"
+        "Rules:\n"
+        "- If 'Failed password' is found, reduce score by 20 points per attempt.\n"
+        "- Score: 0-100 (100 is perfectly safe).\n"
+        "- Status: 'Sain' (score > 80), 'Attention' (score 50-80), 'Critique' (score < 50).\n"
+        "- Menaces: total number of distinct security threats, alerts or critical errors found.\n"
+        "Required JSON keys:\n"
+        "  \"ai_insights\": \"Bullet points summarizing findings\",\n"
+        "  \"security_level\": \"LOW|MEDIUM|HIGH|CRITICAL\",\n"
+        "  \"score\": <int>,\n"
+        "  \"status\": \"Sain|Attention|Critique\",\n"
+        "  \"menaces\": <int>,\n"
+        "  \"corrective_actions\": [\"Action 1\", \"Action 2\"],\n"
+        "  \"prevention_steps\": [\"Prevention 1\", \"Prevention 2\"]\n"
+        f"{patterns_str}\n"
         f"LOGS:\n{log_text}\n"
     )
 
@@ -218,51 +267,89 @@ def _heuristic_security_summary(log_text: str) -> dict:
     error_hits = sum(1 for t in (" error", "failed", "critical", "denied", "panic", "fatal") if t in low)
     warn_hits = sum(1 for t in (" warning", "warn", "timeout", "retry", "degraded") if t in low)
     auth_hits = sum(1 for t in ("auth", "sudo", "ssh", "login", "invalid user", "permission") if t in low)
+    failed_pass_hits = sum(1 for t in ("failed password",) if t in low)
 
-    if error_hits >= 3:
-        level = "HIGH"
-    elif error_hits >= 1 or warn_hits >= 3:
+    # Deduction for failed password attempts
+    score = 100 - (error_hits * 5) - (warn_hits * 2) - (failed_pass_hits * 20)
+    score = max(0, min(100, score))
+
+    if score > 80:
+        status = "Sain"
+        level = "LOW"
+    elif score >= 50:
+        status = "Attention"
         level = "MEDIUM"
     else:
-        level = "LOW"
+        status = "Critique"
+        level = "HIGH"
+
+    if error_hits >= 3 or failed_pass_hits >= 3:
+        level = "CRITICAL"
 
     summary = (
         f"Automated security analysis processed {len(lines)} log lines. "
         f"Detected {error_hits} critical/error indicators, {warn_hits} warning indicators, "
-        f"and {auth_hits} authentication or access-related signals. "
-        "Review repeated failures and access anomalies, then validate related services and credentials."
+        f"and {auth_hits} authentication signals including {failed_pass_hits} failed login attempts. "
+        "Review repeated failures and access anomalies, then validate related services."
     )
-    return {"ai_insights": summary, "security_level": level}
+    return {
+        "ai_insights": summary, 
+        "security_level": level,
+        "score": score,
+        "status": status,
+        "menaces": error_hits + failed_pass_hits
+    }
 
 
-def generate_security_summary(*, model, log_text: str):
+def generate_security_summary(*, model, log_text: str, top_patterns: list = None):
     """
     Produit un résumé concis orienté sécurité pour tout type de log.
-    Retourne un dict : {ai_insights, security_level}
+    Retourne un dict : {ai_insights, security_level, score, status, menaces, corrective_actions, prevention_steps}
     """
     import json as _json
 
     # 'model' est conservé pour la rétrocompatibilité avec les appels existants.
     try:
-        text = generate_security_summary_text(log_text)
+        text = generate_security_summary_text(log_text, top_patterns)
     except Exception as e:
         print(str(e))
         # Ne jamais laisser une erreur IA bloquer le flux métier (email/rapport).
-        return _heuristic_security_summary(log_text)
+        res = _heuristic_security_summary(log_text)
+        res.update({"corrective_actions": [], "prevention_steps": []})
+        return res
     try:
         parsed = _json.loads(text)
         ai_insights = str(parsed.get("ai_insights", "")).strip() or text[:600]
         security_level = str(parsed.get("security_level", "")).strip().upper()
         if security_level not in {"LOW", "MEDIUM", "HIGH", "CRITICAL"}:
             security_level = "MEDIUM"
-        return {"ai_insights": ai_insights, "security_level": security_level}
+        
+        return {
+            "ai_insights": ai_insights, 
+            "security_level": security_level,
+            "score": int(parsed.get("score", 70)),
+            "status": str(parsed.get("status", "Attention")),
+            "menaces": int(parsed.get("menaces", 0)),
+            "corrective_actions": parsed.get("corrective_actions", []),
+            "prevention_steps": parsed.get("prevention_steps", [])
+        }
     except Exception:
         if text:
-            return {"ai_insights": text[:600], "security_level": "MEDIUM"}
-        return _heuristic_security_summary(log_text)
+            return {
+                "ai_insights": text[:600], 
+                "security_level": "MEDIUM",
+                "score": 70,
+                "status": "Attention",
+                "menaces": 0,
+                "corrective_actions": [],
+                "prevention_steps": []
+            }
+        res = _heuristic_security_summary(log_text)
+        res.update({"corrective_actions": [], "prevention_steps": []})
+        return res
 
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
+if not os.path.exists(app.config.get('UPLOAD_FOLDER', 'uploads')):
+    os.makedirs(app.config.get('UPLOAD_FOLDER', 'uploads'))
 
 with app.app_context():
     db.create_all()
@@ -274,7 +361,18 @@ def analyses_query_for_user():
     return Analysis.query.filter_by(user_id=current_user.id)
 
 
-def save_analysis_for_current_user(*, source_type: str, source_path: str, server_ip: str | None, stats: dict, segments: dict, meta: dict):
+def save_analysis_for_current_user(*, source_type: str, source_path: str, server_ip: str | None, stats: dict, segments: dict, meta: dict, log_content: str = ""):
+    # Calcul des récurrences (Top 10) pour l'IA
+    all_lines = (segments.get('ERROR', []) + segments.get('WARNING', []) + segments.get('INFO', []))
+    counts = {}
+    for line in all_lines:
+        cleaned = str(line).split(' ', 3)[-1].strip() if ' ' in str(line) else str(line)
+        counts[cleaned] = counts.get(cleaned, 0) + 1
+    top_patterns = sorted(counts.items(), key=lambda x: x[1], reverse=True)[:10]
+
+    # Génération des métriques IA avant sauvegarde
+    ai_metrics = generate_security_summary(model=None, log_text=log_content, top_patterns=top_patterns) if log_content else None
+    
     a = Analysis(
         user_id=current_user.id,
         source_type=source_type,
@@ -283,7 +381,20 @@ def save_analysis_for_current_user(*, source_type: str, source_path: str, server
         stats=stats,
         segments=segments,
         meta=meta,
+        ai_score=ai_metrics.get("score") if ai_metrics else None,
+        ai_status=ai_metrics.get("status") if ai_metrics else None,
+        ai_menaces=ai_metrics.get("menaces") if ai_metrics else None,
     )
+    
+    # Intégration des insights IA dans les meta pour le dashboard et rapport
+    if ai_metrics:
+        a.meta = {
+            **(a.meta or {}), 
+            "ai_insights": ai_metrics.get("ai_insights"),
+            "corrective_actions": ai_metrics.get("corrective_actions", []),
+            "prevention_steps": ai_metrics.get("prevention_steps", [])
+        }
+
     db.session.add(a)
     db.session.commit()
     
@@ -462,6 +573,20 @@ def index():
     if not last_analysis:
         last_analysis = Analysis.query.filter_by(user_id=current_user.id).order_by(Analysis.created_at.desc()).first()
 
+    # Statistiques globales pour le dashboard basées sur les métriques IA
+    total_audits = Analysis.query.filter_by(user_id=current_user.id).count()
+    active_servers = db.session.query(Analysis.server_ip).filter(Analysis.user_id == current_user.id, Analysis.server_ip != None).distinct().count()
+    
+    # Récupération des 5 dernières analyses pour calculer les moyennes et totaux
+    recent_analyses = Analysis.query.filter_by(user_id=current_user.id).order_by(Analysis.created_at.desc()).limit(5).all()
+    
+    # Menaces critiques (Basé sur ai_menaces si disponible, sinon sur stats.errors)
+    critical_threats = sum((a.ai_menaces if a.ai_menaces is not None else int(a.stats.get('errors', 0))) for a in recent_analyses)
+    
+    # Score de santé système (Basé sur ai_score si disponible, sinon calcul heuristique)
+    scores = [(a.ai_score if a.ai_score is not None else _global_health_score(a.stats)) for a in recent_analyses]
+    system_health = round(sum(scores) / len(scores)) if scores else 100
+
     results = None
     if last_analysis:
         results = {
@@ -470,11 +595,20 @@ def index():
             "meta": last_analysis.meta,
             "segments": last_analysis.segments,
             "stats": last_analysis.stats,
+            "ai_score": last_analysis.ai_score,
+            "ai_status": last_analysis.ai_status,
+            "ai_menaces": last_analysis.ai_menaces,
             "generated_at": last_analysis.created_at.isoformat()
         }
         session['last_analysis_id'] = last_analysis.id
             
-    return render_template('index.html', analysis_data=results)
+    return render_template('index.html', 
+                           analysis_data=results, 
+                           total_audits=total_audits,
+                           active_servers=active_servers,
+                           critical_threats=critical_threats,
+                           system_health=system_health,
+                           recent_activities=recent_analyses)
 
 @app.route('/details')
 @login_required
@@ -551,6 +685,10 @@ def analyse_local_page():
                 }
             }
             
+            # Lecture du contenu pour l'analyse IA
+            with open(filepath, 'r', encoding='utf-8', errors='replace') as f:
+                log_content = f.read(50000)
+
             analysis = save_analysis_for_current_user(
                 source_type="local_upload",
                 source_path=filename,
@@ -558,6 +696,7 @@ def analyse_local_page():
                 stats=payload["stats"],
                 segments=payload["segments"],
                 meta=payload["meta"],
+                log_content=log_content
             )
             
             flash("Analyse locale terminée avec succès.", "success")
@@ -717,6 +856,88 @@ def profile():
             db.session.commit()
             flash("Configuration email mise à jour.", "success")
             
+        elif action == 'update_signature':
+            if 'signature' not in request.files:
+                flash("Aucun fichier de signature fourni.", "danger")
+                return redirect(url_for("profile"))
+            
+            file = request.files['signature']
+            if file.filename == '':
+                flash("Veuillez sélectionner une image pour la signature.", "danger")
+                return redirect(url_for("profile"))
+            
+            if file and allowed_file(file.filename):
+                try:
+                    # Supprimer l'ancienne signature si elle existe
+                    if current_user.signature_path:
+                        old_path = os.path.join(app.config['UPLOAD_FOLDER'], current_user.signature_path)
+                        if os.path.exists(old_path):
+                            try:
+                                os.remove(old_path)
+                            except Exception:
+                                pass
+                    
+                    # Générer un nom unique forcé en .png
+                    filename = f"sig_{current_user.id}_{int(time.time())}.png"
+                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    
+                    # Force l'utilisation de la clé du .env
+                    api_key = os.getenv('REMOVE_BG_API_KEY')
+                    
+                    if not api_key:
+                        flash("Erreur : Clé API Remove.bg manquante dans le fichier .env.", "danger")
+                        return redirect(url_for("profile"))
+
+                    try:
+                        file.seek(0)
+                        # Appel API Remove.bg avec les paramètres optimisés
+                        response = requests.post(
+                            'https://api.remove.bg/v1.0/removebg',
+                            files={'image_file': ('signature.png', file.read(), 'image/png')},
+                            data={'size': 'auto'},
+                            headers={'X-Api-Key': api_key},
+                        )
+                        
+                        if response.status_code == requests.codes.ok:
+                            with open(filepath, 'wb') as out:
+                                out.write(response.content)
+                            
+                            # Vérifier que le fichier a bien été créé avant de mettre à jour la base
+                            if os.path.exists(filepath):
+                                user = db.session.get(User, current_user.id)
+                                user.signature_path = filename
+                                db.session.commit()
+                                flash("Signature mise à jour avec succès via Remove.bg (Qualité Pro).", "success")
+                            else:
+                                flash("Erreur critique : le fichier de signature n'a pas pu être enregistré.", "danger")
+                        else:
+                            error_detail = response.json() if response.content else {"errors": [{"title": "Erreur inconnue"}]}
+                            msg = error_detail.get('errors', [{}])[0].get('title', 'Erreur API')
+                            flash(f"Échec de l'API Remove.bg : {msg} (Status: {response.status_code})", "danger")
+                            print(f"Remove.bg Error: {response.status_code} - {response.text}")
+                            
+                    except Exception as api_err:
+                        flash(f"Erreur de communication avec l'API Remove.bg : {str(api_err)}", "danger")
+                        print(f"Remove.bg API Call Failed: {str(api_err)}")
+                except Exception as e:
+                    flash(f"Erreur lors du traitement de l'image : {str(e)}", "danger")
+            else:
+                flash("Format de fichier non autorisé (PNG, JPG, JPEG uniquement).", "danger")
+
+        elif action == 'delete_signature':
+            if current_user.signature_path:
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], current_user.signature_path)
+                if os.path.exists(filepath):
+                    try:
+                        os.remove(filepath)
+                    except Exception:
+                        pass
+                
+                user = db.session.get(User, current_user.id)
+                user.signature_path = None
+                db.session.commit()
+                flash("Signature supprimée.", "info")
+            
         return redirect(url_for("profile"))
 
     return render_template('profile.html')
@@ -871,6 +1092,10 @@ def upload_file():
                 "total": sum(len(v) for v in results.values())
             }
         }
+        # Lecture du contenu pour l'analyse IA
+        with open(filepath, 'r', encoding='utf-8', errors='replace') as f:
+            log_content = f.read(50000) # Limite pour l'IA
+
         analysis = save_analysis_for_current_user(
             source_type="upload",
             source_path=payload["meta"]["source_path"],
@@ -878,6 +1103,7 @@ def upload_file():
             stats=payload["stats"],
             segments=payload["segments"],
             meta=payload["meta"],
+            log_content=log_content
         )
         payload["analysis_id"] = analysis.id
         
@@ -984,6 +1210,7 @@ def ssh_analyze():
             stats=payload["stats"],
             segments=payload["segments"],
             meta=payload["meta"],
+            log_content=log_content
         )
         payload["analysis_id"] = analysis.id
         return jsonify(payload)
@@ -1157,7 +1384,7 @@ def generate_pdf_report_bytes(analysis):
         # AWB Logo (Top Right) - Increased size to match 55px height
         if os.path.exists(logo_awb_path):
             # A4 is 210mm wide. We align to the right margin
-            pdf.image(logo_awb_path, x=175, y=10, h=14)
+            pdf.image(logo_awb_path, x=165, y=10, h=14)
 
         # Separate the header from the content
         pdf.set_draw_color(221, 221, 221) # #ddd
@@ -1274,6 +1501,74 @@ def generate_pdf_report_bytes(analysis):
                 cleaned_err = clean_text_for_pdf(str(err))
                 pdf.multi_cell(190, 5, cleaned_err, border=1, ln=True)
         
+        # --- AI Actions & Prevention (New Section) ---
+        meta = analysis.meta or {}
+        actions = meta.get('corrective_actions', [])
+        preventions = meta.get('prevention_steps', [])
+        
+        if actions or preventions:
+            pdf.add_page()
+            pdf.set_font("Helvetica", "B", 14)
+            pdf.set_text_color(17, 24, 39)
+            pdf.cell(190, 10, clean_text_for_pdf("5. Recommandations de l'Intelligence Artificielle"), ln=True)
+            pdf.ln(5)
+            
+            if actions:
+                pdf.set_font("Helvetica", "B", 11)
+                pdf.set_text_color(220, 38, 38)
+                pdf.cell(190, 8, clean_text_for_pdf("Actions Correctives Immédiates :"), ln=True)
+                pdf.set_font("Helvetica", "", 10)
+                pdf.set_text_color(55, 65, 81)
+                for action in actions:
+                    pdf.multi_cell(190, 6, clean_text_for_pdf(f"- {action}"), ln=True)
+                pdf.ln(5)
+                
+            if preventions:
+                pdf.set_font("Helvetica", "B", 11)
+                pdf.set_text_color(37, 99, 235)
+                pdf.cell(190, 8, clean_text_for_pdf("Préventions & Optimisations :"), ln=True)
+                pdf.set_font("Helvetica", "", 10)
+                pdf.set_text_color(55, 65, 81)
+                for prev in preventions:
+                    pdf.multi_cell(190, 6, clean_text_for_pdf(f"- {prev}"), ln=True)
+                pdf.ln(10)
+
+        # --- User Signature Section ---
+        user = db.session.get(User, analysis.user_id)
+        if user and user.signature_path:
+            # S'assurer qu'on ne signe pas sur une page vide si on est trop bas
+            if pdf.get_y() > 230:
+                pdf.add_page()
+            
+            # Utiliser le chemin absolu direct vers le dossier uploads
+            base_upload_path = os.path.abspath(app.config['UPLOAD_FOLDER'])
+            sig_full_path = os.path.join(base_upload_path, user.signature_path)
+            
+            if os.path.exists(sig_full_path):
+                # On mémorise la position Y actuelle
+                y_before = pdf.get_y() + 10
+                
+                # Aligner la mention à droite
+                pdf.set_y(y_before)
+                pdf.set_x(130) # Se déplacer vers la droite
+                pdf.set_font("Helvetica", "B", 10)
+                pdf.set_text_color(17, 24, 39)
+                pdf.cell(70, 10, clean_text_for_pdf("Signé électroniquement par l'expert :"), 0, 1, 'C')
+                
+                # Insertion de l'image PNG avec support de la transparence (type='PNG' forcé)
+                # L'image juste en dessous (x=150 pour la droite)
+                y_img = pdf.get_y()
+                pdf.image(sig_full_path, x=150, y=y_img, w=40, type='PNG')
+                
+                # On repositionne le curseur pour que le texte (Nom/Email) s'écrive juste en dessous
+                pdf.set_y(y_img + 20)
+                
+                pdf.set_font("Helvetica", "I", 9)
+                pdf.set_text_color(107, 114, 128)
+                # Informations de l'expert alignées à droite
+                pdf.cell(190, 5, clean_text_for_pdf(f"Expert : {user.username} ({user.email})"), ln=True, align='R')
+                pdf.cell(190, 5, clean_text_for_pdf(f"Date de signature : {datetime.now().strftime('%d/%m/%Y %H:%M')}"), ln=True, align='R')
+
         # --- Footer ---
         pdf.set_y(-15)
         pdf.set_font("Helvetica", "I", 8)
@@ -1288,6 +1583,11 @@ def generate_pdf_report_bytes(analysis):
 @app.route('/download-pdf/<int:analysis_id>')
 @login_required
 def download_pdf_report(analysis_id):
+    # Règle Métier : Vérifier si l'utilisateur a une signature avant de générer
+    if not current_user.signature_path:
+        flash("Action impossible : Vous devez d'abord ajouter votre signature dans votre profil pour valider les rapports.", "danger")
+        return redirect(url_for("profile"))
+
     analysis = Analysis.query.filter_by(id=analysis_id, user_id=current_user.id).first()
     if not analysis:
         return "Analyse introuvable", 404
@@ -1338,6 +1638,10 @@ def send_report_email():
     """
     Envoie le rapport PDF complet avec statistiques et Top 10 patterns.
     """
+    # Règle Métier : Vérifier si l'utilisateur a une signature avant d'envoyer
+    if not current_user.signature_path:
+        return jsonify({"success": False, "message": "Action impossible : Vous devez d'abord ajouter votre signature dans votre profil pour valider les rapports."}), 403
+
     try:
         data = request.get_json() or {}
         analysis_id = data.get('analysis_id')

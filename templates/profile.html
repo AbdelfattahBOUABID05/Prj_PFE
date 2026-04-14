@@ -75,6 +75,45 @@
             </button>
         </form>
     </div>
+
+    <!-- Section Signature -->
+    <div class="glass-card p-4 mt-4 mb-5" style="max-width: 720px;">
+        <h5 class="fw-bold mb-4"><i class="fas fa-signature me-2"></i>Signature Numérique</h5>
+        <p class="text-muted small mb-4">Cette signature sera apposée au bas de vos rapports PDF générés.</p>
+        
+        {% if current_user.signature_path %}
+        <div class="mb-4 p-3 border rounded bg-light text-center position-relative shadow-sm" style="max-width: 300px;">
+            <img src="{{ url_for('static', filename='uploads/' + current_user.signature_path) }}" alt="Signature" class="img-fluid" style="max-height: 100px;">
+            <form method="POST" class="position-absolute top-0 end-0 m-1">
+                <input type="hidden" name="action" value="delete_signature">
+                <button type="submit" class="btn btn-danger btn-sm rounded-circle" title="Supprimer la signature">
+                    <i class="fas fa-times"></i>
+                </button>
+            </form>
+        </div>
+        {% else %}
+        <div class="alert alert-info small py-2 mb-4">
+            <i class="fas fa-info-circle me-2"></i>Aucune signature enregistrée.
+        </div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate id="signatureForm">
+            <input type="hidden" name="action" value="update_signature">
+            <div class="mb-3">
+                <label class="form-label fw-bold small">Upload de la signature (Image PNG/JPG)</label>
+                <div class="input-group">
+                    <input type="file" class="form-control input-saas" name="signature" accept="image/png, image/jpeg" required>
+                    <button class="btn btn-saas" type="submit">
+                        <i class="fas fa-upload me-2"></i>Enregistrer
+                    </button>
+                </div>
+                <div class="invalid-feedback">Veuillez sélectionner une image.</div>
+                <div class="text-muted small mt-2">
+                    <i class="fas fa-lightbulb me-1"></i> Conseil : Utilisez un fond blanc ou transparent pour un meilleur rendu sur le PDF.
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
 
 <script>

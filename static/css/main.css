@@ -1254,28 +1254,73 @@ body,
     color: var(--text-muted-color);
 }
 
-/* Cartes KPI du tableau de bord */
-.stat-card {
+/* --- Modern Dashboard Enhancements --- */
+.bg-cyber-blue {
+    background: rgba(37, 99, 235, 0.15) !important;
+    color: #3b82f6 !important;
+    border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.table-cyber {
+    border-collapse: separate;
+    border-spacing: 0 8px;
+}
+
+.table-cyber tr {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    transition: all 0.2s var(--ease-saas);
+}
+
+.table-cyber tr td {
     border: none;
-    border-radius: var(--radius-lg);
-    background: transparent;
-    padding: 1.5rem;
-    transition: all 0.3s var(--ease-saas);
-    box-shadow: none;
+    padding: 1rem 0.85rem;
 }
 
-.stat-card:hover {
-    transform: translateY(-3px);
+.table-cyber tr td:first-child { border-radius: 8px 0 0 8px; }
+.table-cyber tr td:last-child { border-radius: 0 8px 8px 0; }
+
+.table-cyber tr:hover {
+    background: rgba(37, 99, 235, 0.08) !important;
+    transform: scale(1.005);
 }
 
-.stat-icon {
-    font-size: 1.5rem;
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 12px;
+.bg-soft-danger { background: rgba(220, 38, 38, 0.12) !important; }
+.bg-soft-warning { background: rgba(217, 119, 6, 0.12) !important; }
+.bg-soft-success { background: rgba(22, 163, 74, 0.12) !important; }
+
+.progress {
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* --- Dark Mode specific dashboard fixes --- */
+html[data-theme="dark"] .table-cyber tr {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+html[data-theme="dark"] .table-cyber tr:hover {
+    background: rgba(79, 147, 228, 0.15) !important;
+}
+
+html[data-theme="dark"] .table-cyber tr td {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+html[data-theme="dark"] .table-cyber thead th {
+    color: rgba(159, 179, 207, 0.7) !important;
+}
+
+/* Responsivité mobile dashboard */
+@media (max-width: 768px) {
+    .stat-card {
+        padding: 1rem;
+    }
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
 }
 
 /* Custom SweetAlert2 Styles for Professional Dark Theme */

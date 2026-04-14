@@ -18,13 +18,15 @@ function readCssVar(name, fallback = '') {
 function getThemeColors() {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     return {
-        deepRed: '#B42318',
-        amber: '#F79009',
-        softBlue: readCssVar('--accent-color', '#2E90FA'),
-        grid: isDark ? 'rgba(159, 179, 207, 0.16)' : 'rgba(15, 23, 42, 0.08)',
-        text: readCssVar('--text-color', 'rgba(26, 26, 26, 0.85)'),
-        tooltipBg: isDark ? 'rgba(7, 13, 22, 0.95)' : 'rgba(17, 24, 39, 0.92)',
-        pointBg: isDark ? '#0b1424' : '#ffffff'
+        deepRed: isDark ? '#f43f5e' : '#B42318', // Cyber Red gradient start
+        deepRedSoft: isDark ? 'rgba(244, 63, 94, 0.2)' : 'rgba(180, 35, 24, 0.15)',
+        amber: isDark ? '#fbbf24' : '#F79009',
+        softBlue: isDark ? '#3b82f6' : '#2E90FA', // Cyber Blue
+        softBlueSoft: isDark ? 'rgba(59, 130, 246, 0.2)' : 'rgba(46, 144, 250, 0.15)',
+        grid: isDark ? 'rgba(159, 179, 207, 0.1)' : 'rgba(15, 23, 42, 0.05)',
+        text: isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(26, 26, 26, 0.85)',
+        tooltipBg: isDark ? 'rgba(15, 24, 40, 0.95)' : 'rgba(17, 24, 39, 0.92)',
+        pointBg: isDark ? '#0f172a' : '#ffffff'
     };
 }
 
@@ -55,31 +57,48 @@ function updateDashboard(data) {
     currentAnalysisData = data;
     const colors = getThemeColors();
 
-    // Mise à jour du compteur d'erreurs dans l'interface
-    const errElem = document.getElementById('errCount');
-    if (errElem) errElem.innerText = data.stats.errors;
-
     renderSeverityChart(data);
     renderActivityChart(data);
     hideSkeleton('severitySkeleton');
     hideSkeleton('activitySkeleton');
 
-    // Met à jour la zone d'information et injecte le bouton de génération du rapport.
+    // Met à jour la zone "Points Clés de l'Audit IA"
     const aiResult = document.getElementById('aiResult');
     if (aiResult) {
+        const insights = data.ai_insights || (data.meta && data.meta.ai_insights) || "Analyse en cours...";
+        
+        // Transformation du texte en liste à puces si c'est un paragraphe long
+        let bulletPoints = insights;
+        if (insights.length > 50 && !insights.includes('<li>')) {
+            const sentences = insights.split('. ').filter(s => s.trim().length > 0);
+            bulletPoints = `<ul class="mb-0 ps-3">` + 
+                sentences.map(s => `<li class="mb-2">${s.trim().replace(/\.$/, '')}.</li>`).join('') + 
+                `</ul>`;
+        }
+
         aiResult.innerHTML = `
-            <div class="glass-card p-3 text-start">
-                <div class="d-flex align-items-start gap-2">
-                    <div class="mt-1" style="color:${colors.softBlue};"><i class="fas fa-check-circle"></i></div>
-                    <div>
-                        <div style="font-weight:700; color:${colors.text};">Données SSH chargées</div>
-                        <div class="small text-muted">Dernière analyse: ${new Date().toLocaleTimeString()}</div>
+            <div class="glass-card p-4 text-start" style="border-left: 4px solid ${colors.softBlue};">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="mt-1" style="color:${colors.softBlue}; font-size: 1.2rem;"><i class="fas fa-robot"></i></div>
+                    <div class="w-100">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div style="font-weight:700; color:${colors.text}; font-size: 1.1rem;">Synthèse de l'Audit</div>
+                            <div class="small text-muted"><i class="far fa-clock me-1"></i>${new Date().toLocaleTimeString()}</div>
+                        </div>
+                        <div class="ai-insights-list" style="color:${colors.text}; line-height: 1.6;">
+                            ${bulletPoints}
+                        </div>
+                        <div class="mt-3 d-flex gap-2">
+                            <button id="generateReportBtn" class="btn btn-saas btn-sm" type="button">
+                                <i class="fas fa-magic me-2"></i>Affiner l'analyse
+                            </button>
+                            <a href="/report" class="btn btn-outline-saas btn-sm">
+                                <i class="fas fa-external-link-alt me-2"></i>Rapport complet
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
-            <button id="generateReportBtn" class="btn btn-outline-saas btn-sm mt-3" type="button">
-                <i class="fas fa-magic me-2"></i>Générer un rapport IA
-            </button>
         `;
         attachGenerateReportHandler();
     }
@@ -167,6 +186,15 @@ function renderSeverityChart(data) {
 
     const colors = getThemeColors();
 
+    // Création de gradients cyber
+    const gradRed = ctx.createLinearGradient(0, 0, 0, 200);
+    gradRed.addColorStop(0, colors.deepRed);
+    gradRed.addColorStop(1, '#991b1b');
+
+    const gradBlue = ctx.createLinearGradient(0, 0, 0, 200);
+    gradBlue.addColorStop(0, colors.softBlue);
+    gradBlue.addColorStop(1, '#1e40af');
+
     severityChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
@@ -174,19 +202,30 @@ function renderSeverityChart(data) {
             datasets: [{
                 data: [data.stats.errors, data.stats.warnings, data.stats.info],
                 backgroundColor: [
-                    colors.deepRed,
+                    gradRed,
                     colors.amber,
-                    colors.softBlue
+                    gradBlue
                 ],
-                hoverOffset: 10,
+                hoverOffset: 12,
                 borderWidth: 0,
-                cutout: '85%', // Taille du trou central
-                borderRadius: 10, // Arrondi des segments
-                spacing: 5 // Espace entre les segments
+                cutout: '80%',
+                borderRadius: 12,
+                spacing: 8
             }]
         },
         options: {
-            ...baseChartOptions()
+            ...baseChartOptions(),
+            plugins: {
+                ...baseChartOptions().plugins,
+                legend: {
+                    ...baseChartOptions().plugins.legend,
+                    position: 'right',
+                    labels: {
+                        ...baseChartOptions().plugins.legend.labels,
+                        padding: 20
+                    }
+                }
+            }
         }
     });
 }
@@ -203,44 +242,41 @@ function renderActivityChart(data) {
     const labels = points.map(p => p.label);
     const values = points.map(p => p.count);
 
-    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height || 240);
-    gradient.addColorStop(0, 'rgba(46, 144, 250, 0.35)');
-    gradient.addColorStop(1, 'rgba(46, 144, 250, 0.02)');
+    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, colors.softBlueSoft);
+    gradient.addColorStop(1, 'transparent');
 
     activityChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels,
             datasets: [{
-                label: 'Journaux',
+                label: 'Volume de Logs',
                 data: values,
                 borderColor: colors.softBlue,
                 backgroundColor: gradient,
                 fill: true,
-                tension: 0.35,
-                pointRadius: 2,
-                pointHoverRadius: 5,
-                pointBackgroundColor: colors.pointBg,
-                pointBorderColor: colors.softBlue,
-                borderWidth: 2
+                tension: 0.4,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointBackgroundColor: colors.softBlue,
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                borderWidth: 3
             }]
         },
         options: {
             ...baseChartOptions(),
             scales: {
                 x: {
-                    grid: { color: 'transparent' },
+                    grid: { display: false },
                     ticks: { color: colors.text, maxRotation: 0, autoSkip: true, maxTicksLimit: 7 }
                 },
                 y: {
-                    grid: { color: colors.grid },
+                    grid: { color: colors.grid, drawBorder: false },
                     ticks: { color: colors.text, precision: 0 },
                     beginAtZero: true
                 }
-            },
-            animation: {
-                duration: 650,
-                easing: 'easeOutQuart'
             }
         }
     });

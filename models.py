@@ -24,6 +24,7 @@ class User(db.Model, UserMixin):
     email_password_enc = db.Column(db.String(255), nullable=True)
     smtp_server = db.Column(db.String(255), nullable=True)
     smtp_port = db.Column(db.Integer, nullable=True)
+    signature_path = db.Column(db.String(255), nullable=True) # Chemin vers le fichier image de la signature
 
     def set_password(self, password: str) -> None:
         self.password_hash = generate_password_hash(password)
@@ -51,6 +52,11 @@ class Analysis(db.Model):
     stats = db.Column(db.JSON, nullable=False)
     segments = db.Column(db.JSON, nullable=False)
     meta = db.Column(db.JSON, nullable=False)
+
+    # Métriques IA pour le dashboard
+    ai_score = db.Column(db.Integer, nullable=True)
+    ai_status = db.Column(db.String(20), nullable=True)
+    ai_menaces = db.Column(db.Integer, nullable=True)
 
     user = db.relationship("User", backref=db.backref("analyses", lazy="dynamic"))
 
