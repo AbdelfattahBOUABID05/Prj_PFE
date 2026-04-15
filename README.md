@@ -1,84 +1,143 @@
-🛡️ LogAnalyzer - Système d'Analyse de Logs
+# 🛡️ LogAnalyzer - AI-Powered Log Monitoring System
 
-LogAnalyzer est une solution complète de monitoring et de sécurité. Elle permet de surveiller et d'analyser les logs des serveurs à distance via SSH, en exploitant l'IA pour transformer des logs techniques bruts en rapports d'audit exploitables.
-🚀 Nouvelles FonctionnalitéS
+## 📌 Description
 
-    🔐 Auth & Multi-Roles : Système de connexion sécurisé (Super Admin / IT Analyst).
+**LogAnalyzer** est une plateforme intelligente de monitoring et d’analyse de logs basée sur l’intelligence artificielle.
+Elle permet d’automatiser la collecte, l’analyse et l’interprétation des journaux systèmes afin de détecter rapidement les anomalies et renforcer la sécurité des infrastructures.
 
-    🤖 AI Security Audit : Intégration de Google Gemini pour l'analyse des vulnérabilités.
+---
 
-    📑 Advanced Reporting : Génération de PDF professionnels incluant les logos institutionnels (Attijariwafa Bank & EST Sidi Bennour).
+## 🚀 Fonctionnalités Clés
 
-    📧 Email Dispatch : Envoi automatisé des rapports d'audit par e-mail via SMTP sécurisé.
+* 🔐 **Authentification Multi-Rôles**
+  Gestion sécurisée des accès (Super Admin / IT Analyst)
 
-    ❓ Centre d'Aide Interactif : Une page de documentation intégrée (FAQ) avec système d'accordéon pour guider l'utilisateur.
+* 🤖 **Analyse IA des Logs**
+  Détection d’anomalies et vulnérabilités via Google Gemini Pro
 
-    📊 Executive Dashboard : Interface moderne avec graphiques en temps réel (Chart.js).
+* 📑 **Génération de Rapports PDF**
+  Rapports professionnels avec identité visuelle
 
-🏛️ Contexte Institutionnel
+* 📧 **Envoi Automatique par Email**
+  Dispatch des rapports via SMTP sécurisé
 
-Ce projet a été développé dans le cadre d'un Projet de Fin d'Études (PFE), fruit d'une collaboration entre :
+* 📊 **Dashboard Interactif**
+  Visualisation en temps réel avec graphiques (Chart.js)
 
-    Attijariwafa Bank : Partenaire stratégique et cadre d'application professionnel.
+* ❓ **Centre d’Aide Intégré**
+  FAQ interactive pour faciliter l’utilisation
 
-    EST Sidi Bennour : Encadrement académique et technique.
+---
 
-🛠️ Configuration & Prérequis
-1. Serveur Cible (Fedora/Ubuntu)
+## 🏛️ Contexte du Projet
 
-Pour permettre l'extraction des logs, SSH doit être actif :
-Bash
+Ce projet s’inscrit dans une collaboration entre :
 
-sudo dnf install openssh-server -y
-sudo systemctl enable --now sshd
-sudo firewall-cmd --add-service=ssh --permanent && sudo firewall-cmd --reload
+* 🏦 **Attijariwafa Bank** — Contexte professionnel et besoins métiers
+* 🎓 **EST Sidi Bennour** — Encadrement académique (ISITW)
 
-Note : Assurez-vous que l'utilisateur SSH a les droits de lecture sur /var/log/.
-2. Configuration du Reporting (Email)
+---
 
-Pour activer l'envoi des rapports par mail :
+## 🔄 Workflow de l’Application
 
-    Accédez à votre Profil.
+1. Authentification utilisateur
+2. Saisie des informations SSH
+3. Connexion au serveur distant
+4. Extraction des logs (/var/log)
+5. Analyse via IA (Gemini)
+6. Génération d’un rapport PDF
+7. Envoi automatique par email
 
-    Configurez votre adresse Gmail et votre Mot de passe d'application (App Password).
+---
 
-    Vérifiez les paramètres SMTP (Port 587).
+## 🏗️ Architecture Technique
 
-🏗️ Architecture Technique
+| Composant       | Technologie                               |
+| --------------- | ----------------------------------------- |
+| Backend         | Flask (Python 3), Flask-Login, Flask-Mail |
+| Base de données | SQLite + SQLAlchemy                       |
+| IA              | Google Generative AI (Gemini Pro)         |
+| Frontend        | Bootstrap 5, JavaScript (ES6), Chart.js   |
+| PDF             | FPDF2                                     |
 
-    Backend : Flask, Python 3.x, Flask-Login.
+---
 
-    Base de Données : SQLite & SQLAlchemy.
+## 🔐 Sécurité
 
-    Analyse AI : Google Generative AI (Gemini Pro).
+* Authentification sécurisée (sessions Flask)
+* Accès SSH contrôlé
+* Validation des entrées utilisateur
+* Protection des variables sensibles via `.env`
+* Utilisation de mots de passe d’application (SMTP)
 
-    Frontend : Bootstrap 5, FontAwesome, JavaScript (ES6).
+---
 
-    Libraries PDF : fpdf2 pour la génération dynamique.
+## 📸 Aperçu de l’Application
 
-📦 Installation
-Bash
+👉 *(Ajoute هنا screenshots ديالك)*
 
+* Dashboard
+* Login
+* Analyse des logs
+* Rapport PDF
+
+---
+
+## 🎥 Démo
+
+👉 *(حط هنا lien ديال vidéo ولا GitHub demo)*
+
+---
+
+## 🛠️ Installation
+
+```bash
+# Cloner le projet
 git clone https://github.com/AbdelfattahBOUABID05/Prj_PFE.git
 cd Prj_PFE
+
+# Installer les dépendances
 pip install -r requirements.txt
+```
 
-Fichier .env :
-Extrait de code
+---
 
-GEMINI_API_KEY=votre_cle_api
-SECRET_KEY=votre_cle_secrete_flask
-MAIL_USERNAME=votre_email@gmail.com
-MAIL_PASSWORD=votre_app_password
+## ⚙️ Configuration
 
-👤 Accès par Défaut
+### 🔑 Variables d’environnement (.env)
 
-    Username : admin
+```env
+GEMINI_API_KEY=your_api_key
+SECRET_KEY=your_secret_key
+MAIL_USERNAME=your_email@gmail.com
+MAIL_PASSWORD=your_app_password
+REMOVE_BG_API_KEY=your_key
+```
 
-    Password : Admin@12345
+---
 
-👨‍💻 Développeur
+## 🖥️ Configuration Serveur (SSH)
 
-Abdelfattah Bouabid
-Étudiant en Ingénierie des Systèmes d'Informatique et Technologies Web (ISITW) - EST Sidi Bennour.
-Stage de fin d'études effectué au sein d'Attijariwafa Bank.
+```bash
+sudo dnf install openssh-server -y
+sudo systemctl enable --now sshd
+sudo firewall-cmd --add-service=ssh --permanent
+sudo firewall-cmd --reload
+```
+
+⚠️ L’utilisateur SSH doit avoir accès à `/var/log/`
+
+---
+
+## 👤 Accès par Défaut
+
+* **Username:** admin
+* **Password:** Admin@12345
+
+---
+
+## 👨‍💻 Auteur
+
+**Abdelfattah Bouabid**
+🎓 Étudiant ISITW - EST Sidi Bennour
+🏦 Stage PFE chez Attijariwafa Bank
