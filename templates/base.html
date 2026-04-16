@@ -68,11 +68,14 @@
                         <a href="/profile" class="nav-link {% if request.path == '/profile' %}active{% endif %}">
                             <i class="fas fa-gear"></i> Profil / Paramètres
                         </a>
-                        {% if current_user.role == 'Admin' %}
-                            <a href="/admin/users" class="nav-link {% if request.path == '/admin/users' %}active{% endif %}">
-                                <i class="fas fa-users-gear"></i> Gérer les utilisateurs
-                            </a>
-                        {% endif %}
+                    {% if current_user.role == 'Admin' %}
+                        <a href="/admin/users" class="nav-link {% if request.path == '/admin/users' %}active{% endif %}">
+                            <i class="fas fa-users-gear"></i> Gérer les utilisateurs
+                        </a>
+                        <a href="/admin/scheduled-jobs" class="nav-link {% if request.path == '/admin/scheduled-jobs' %}active{% endif %}">
+                            <i class="fas fa-clock"></i> Admin Jobs
+                        </a>
+                    {% endif %}
                         <a href="/logout" class="nav-link nav-link-danger" onclick="localStorage.clear();">
                             <i class="fas fa-right-from-bracket"></i> Déconnexion
                         </a>
@@ -159,8 +162,8 @@
                         <li><a class="dropdown-item" href="/profile"><i class="fas fa-gear me-2"></i>Profil / Paramètres</a></li>
                         {% if current_user.role == 'Admin' %}
                             <li><a class="dropdown-item" href="/admin/users"><i class="fas fa-users-gear me-2"></i>Gérer les utilisateurs</a></li>
-                        {% endif %}
-                        <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/admin/scheduled-jobs"><i class="fas fa-clock me-2"></i>Admin Jobs</a></li>
+                        {% endif %}                        <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item text-danger" href="/logout" onclick="localStorage.clear();"><i class="fas fa-right-from-bracket me-2"></i>Déconnexion</a></li>
                     {% else %}
                         <li><a class="dropdown-item" href="/login"><i class="fas fa-right-to-bracket me-2"></i>Connexion</a></li>

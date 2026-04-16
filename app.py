@@ -27,7 +27,7 @@ import time
 
 from src.parser import parse_log_file
 from config import Config
-from models import db, User, Analysis
+from models import db, User, Analysis, AnalysisJob
 
 load_dotenv()
 
@@ -1997,6 +1997,286 @@ def api_analysis_get(analysis_id: int):
             "meta": a.meta,
             "stats": a.stats,
             "segments": a.segments,
+        }
+    })
+
+# --- ROUTES DE PLANIFICATION D'ANALYSES ---
+
+@app.route('/admin/scheduled-jobs', methods=['GET'])
+@admin_required
+def list_scheduled_jobs():
+    """Liste toutes les tâches d'analyse planifiées"""
+    jobs = AnalysisJob.query.order_by(AnalysisJob.created_at.desc()).all()
+    return render_template('admin_scheduled_jobs.html', jobs=jobs)
+
+
+@app.route('/admin/job/create', methods=['GET', 'POST'])
+@admin_required
+def create_scheduled_job():
+    """Créer une nouvelle tâche d'analyse planifiée"""
+    if request.method == 'POST':
+        try:
+            target_ip = (request.form.get('target_ip') or "").strip()
+            log_path = (request.form.get('log_path') or "/var/log/syslog").strip()
+            frequency = (request.form.get('frequency') or "daily").strip()
+            ssh_username = (request.form.get('ssh_username') or "").strip()
+            ssh_password = request.form.get('ssh_password') or ""
+            notification_email = (request.form.get('notification_email') or "").strip()
+            user_id = request.form.get('user_id')
+            
+            if not target_ip or not user_id:
+                flash("IP cible et utilisateur sont obligatoires.", "danger")
+                return redirect(url_for('create_scheduled_job'))
+            
+            if frequency not in ('hourly', 'daily', 'weekly', 'monthly'):
+                flash("Fréquence invalide.", "danger")
+                return redirect(url_for('create_scheduled_job'))
+            
+            user = User.query.get(int(user_id))
+            if not user:
+                flash("Utilisateur introuvable.", "danger")
+                return redirect(url_for('create_scheduled_job'))
+            
+            # Créer la tâche
+            job = AnalysisJob(
+                user_id=user.id,
+                target_ip=target_ip,
+                log_path=log_path,
+                frequency=frequency,
+                ssh_username=ssh_username,
+                ssh_password_enc=f"encrypted:{ssh_password}",  # À implémenter avec Fernet si nécessaire
+                notification_email=notification_email,
+                status='pending'  # En attente d'approbation
+            )
+            
+            db.session.add(job)
+            db.session.commit()
+            
+            flash(f"Tâche planifiée créée. En attente d'approbation de l'admin.", "info")
+            return redirect(url_for('list_scheduled_jobs'))
+            
+        except Exception as e:
+            flash(f"Erreur : {str(e)}", "danger")
+            return redirect(url_for('create_scheduled_job'))
+    
+    users = User.query.filter_by(role='Analyst').all()
+    return render_template('create_scheduled_job.html', users=users)
+
+
+@app.route('/admin/job/<int:job_id>/approve', methods=['POST'])
+@admin_required
+def approve_analysis_job(job_id: int):
+    """Approuver une tâche d'analyse planifiée et la lancer dans le scheduler"""
+    from scheduler import scheduler
+    from datetime import datetime, timezone
+    
+    try:
+        job = AnalysisJob.query.get(job_id)
+        if not job:
+            return jsonify({"success": False, "message": "Tâche introuvable"}), 404
+        
+        job.status = 'active'
+        job.approved_at = datetime.now(timezone.utc)
+        job.next_run_at = datetime.now(timezone.utc)
+        
+        # Ajouter la tâche au scheduler
+        frequency_map = {
+            'hourly': 'cron',
+            'daily': 'cron',
+            'weekly': 'cron',
+            'monthly': 'cron'
+        }
+        
+        trigger_args = {
+            'hourly': {'hour': '*'},
+            'daily': {'hour': 2, 'minute': 0},
+            'weekly': {'day_of_week': 'mon', 'hour': 2, 'minute': 0},
+            'monthly': {'day': 1, 'hour': 2, 'minute': 0}
+        }
+        
+        scheduler.add_job(
+            func=run_planned_analysis,
+            trigger='cron',
+            args=[job_id, app],
+            id=f'job_{job_id}',
+            name=f'Analysis Job {job_id} - {job.target_ip}',
+            replace_existing=True,
+            **trigger_args.get(job.frequency, {'hour': '*'})
+        )
+        
+        db.session.commit()
+        flash(f"Tâche {job_id} approuvée et activée.", "success")
+        return jsonify({"success": True, "message": "Tâche approuvée et lancée"})
+        
+    except Exception as e:
+        flash(f"Erreur : {str(e)}", "danger")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route('/admin/job/<int:job_id>/refuse', methods=['POST'])
+@admin_required
+def refuse_analysis_job(job_id: int):
+    """Refuser une tâche d'analyse planifiée"""
+    try:
+        job = AnalysisJob.query.get(job_id)
+        if not job:
+            return jsonify({"success": False, "message": "Tâche introuvable"}), 404
+        
+        reason = (request.form.get('reason') or request.json.get('reason', "")).strip()
+        
+        job.status = 'refused'
+        job.refusal_reason = reason
+        
+        db.session.commit()
+        flash(f"Tâche {job_id} refusée.", "info")
+        return jsonify({"success": True, "message": "Tâche refusée"})
+        
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route('/jobs/<int:job_id>/stop', methods=['POST'])
+@login_required
+def stop_analysis_job(job_id: int):
+    """Arrêter une tâche planifiée"""
+    from scheduler import scheduler
+    
+    try:
+        job = AnalysisJob.query.get(job_id)
+        if not job:
+            return jsonify({"success": False, "message": "Tâche introuvable"}), 404
+        
+        # Vérifier que l'utilisateur est le propriétaire ou admin
+        if job.user_id != current_user.id and not current_user.is_admin:
+            return jsonify({"success": False, "message": "Accès refusé"}), 403
+        
+        job.status = 'stopped'
+        
+        # Supprimer du scheduler
+        try:
+            scheduler.remove_job(f'job_{job_id}')
+        except Exception:
+            pass  # La tâche n'existait peut-être pas
+        
+        db.session.commit()
+        flash(f"Tâche {job_id} arrêtée.", "success")
+        return jsonify({"success": True, "message": "Tâche arrêtée avec succès"})
+        
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+# --- ROUTES DE PLANIFICATION D'ANALYSES ---
+
+@app.route('/api/jobs', methods=['GET'])
+@login_required
+def api_get_jobs():
+    """Récupérer les tâches de l'utilisateur actuel"""
+    jobs = AnalysisJob.query.filter_by(user_id=current_user.id).order_by(AnalysisJob.created_at.desc()).all()
+    
+    return jsonify({
+        "status": "success",
+        "jobs": [
+            {
+                "id": j.id,
+                "target_ip": j.target_ip,
+                "log_path": j.log_path,
+                "frequency": j.frequency,
+                "status": j.status,
+                "created_at": j.created_at.isoformat(),
+                "next_run_at": j.next_run_at.isoformat() if j.next_run_at else None,
+                "last_run_at": j.last_run_at.isoformat() if j.last_run_at else None
+            }
+            for j in jobs
+        ]
+    })
+
+# --- ROUTE DASHBOARD AVEC SCHEDULED JOBS ---
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    """
+    Affiche le tableau de bord avec les jobs d'analyse planifiés de l'utilisateur.
+    """
+    # Récupération de l'ID d'analyse depuis la session ou la dernière en base
+    analysis_id = session.get('last_analysis_id')
+    last_analysis = None
+    
+    if analysis_id:
+        last_analysis = Analysis.query.filter_by(id=analysis_id, user_id=current_user.id).first()
+    
+    if not last_analysis:
+        last_analysis = Analysis.query.filter_by(user_id=current_user.id).order_by(Analysis.created_at.desc()).first()
+
+    # Statistiques globales
+    total_audits = Analysis.query.filter_by(user_id=current_user.id).count()
+    active_servers = db.session.query(Analysis.server_ip).filter(
+        Analysis.user_id == current_user.id,
+        Analysis.server_ip != None
+    ).distinct().count()
+    
+    # Récupération des 5 dernières analyses
+    recent_analyses = Analysis.query.filter_by(user_id=current_user.id).order_by(Analysis.created_at.desc()).limit(5).all()
+    
+    # Menaces critiques
+    critical_threats = sum((a.ai_menaces if a.ai_menaces is not None else int(a.stats.get('errors', 0))) 
+                          for a in recent_analyses)
+    
+    # Score de santé système
+    scores = [(a.ai_score if a.ai_score is not None else _global_health_score(a.stats)) 
+             for a in recent_analyses]
+    system_health = round(sum(scores) / len(scores)) if scores else 100
+
+    results = None
+    if last_analysis:
+        results = {
+            "status": "success",
+            "analysis_id": last_analysis.id,
+            "meta": last_analysis.meta,
+            "segments": last_analysis.segments,
+            "stats": last_analysis.stats,
+            "ai_score": last_analysis.ai_score,
+            "ai_status": last_analysis.ai_status,
+            "ai_menaces": last_analysis.ai_menaces,
+            "generated_at": last_analysis.created_at.isoformat()
+        }
+        session['last_analysis_id'] = last_analysis.id
+    
+    # Récupérer les jobs planifiés de l'utilisateur
+    scheduled_jobs = AnalysisJob.query.filter_by(user_id=current_user.id).order_by(
+        AnalysisJob.created_at.desc()
+    ).all()
+    
+    return render_template(
+        'index.html',
+        analysis_data=results,
+        total_audits=total_audits,
+        active_servers=active_servers,
+        critical_threats=critical_threats,
+        system_health=system_health,
+        recent_activities=recent_analyses,
+        scheduled_jobs=scheduled_jobs  # ← Passer les jobs au template
+    )
+
+@app.route('/api/job/<int:job_id>', methods=['GET'])
+@admin_required
+def api_get_job(job_id: int):
+    """Récupère les détails d'une tâche planifiée"""
+    job = AnalysisJob.query.get(job_id)
+    if not job:
+        return jsonify({"success": False, "message": "Tâche introuvable"}), 404
+    
+    return jsonify({
+        "success": True,
+        "job": {
+            "id": job.id,
+            "target_ip": job.target_ip,
+            "log_path": job.log_path,
+            "frequency": job.frequency,
+            "status": job.status,
+            "refusal_reason": job.refusal_reason,
+            "user_username": job.user.username,
+            "created_at": job.created_at.isoformat()
         }
     })
 

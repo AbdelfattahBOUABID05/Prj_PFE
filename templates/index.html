@@ -186,13 +186,327 @@
     </div>
 </div>
 {% endif %}
+
+<!-- SECTION: SCHEDULED JOBS -->
+<div class="row g-4 mt-4 fade-in-up" style="animation-delay: 200ms;">
+    <div class="col-md-12">
+        <div class="stat-card glass-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h5 class="fw-bold mb-1">
+                        <i class="fas fa-clock me-2 text-primary"></i>Analyses Planifiées
+                    </h5>
+                    <p class="text-muted mb-0 small">Gestion des tâches d'analyse automatisées</p>
+                </div>
+                <button type="button" class="btn btn-saas" data-bs-toggle="modal" data-bs-target="#scheduleJobModal">
+                    <i class="fas fa-plus me-2"></i>Planifier une Analyse
+                </button>
+            </div>
+
+            {% if scheduled_jobs and scheduled_jobs|length > 0 %}
+            <div class="table-responsive">
+                <table class="table table-hover table-cyber align-middle mb-0">
+                    <thead class="text-muted small">
+                        <tr>
+                            <th>IP CIBLE</th>
+                            <th>CHEMIN LOG</th>
+                            <th>FRÉQUENCE</th>
+                            <th>STATUT</th>
+                            <th>CRÉÉE</th>
+                            <th>PROCHAIN RUN</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for job in scheduled_jobs %}
+                        <tr>
+                            <td><span class="fw-bold text-main">{{ job.target_ip }}</span></td>
+                            <td><code class="small">{{ job.log_path }}</code></td>
+                            <td>
+                                <span class="badge rounded-pill bg-info">{{ job.frequency | capitalize }}</span>
+                            </td>
+                            <td>
+                                {% if job.status == 'pending' %}
+                                    <span class="badge rounded-pill bg-soft-warning text-warning">
+                                        <i class="fas fa-hourglass-half me-1"></i>En attente
+                                    </span>
+                                {% elif job.status == 'active' %}
+                                    <span class="badge rounded-pill bg-soft-success text-success">
+                                        <i class="fas fa-check-circle me-1"></i>Actif
+                                    </span>
+                                {% elif job.status == 'refused' %}
+                                    <span class="badge rounded-pill bg-soft-danger text-danger">
+                                        <i class="fas fa-times-circle me-1"></i>Refusé
+                                    </span>
+                                {% else %}
+                                    <span class="badge rounded-pill bg-secondary">{{ job.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="small">{{ job.created_at.strftime('%d/%m/%Y') }}</td>
+                            <td class="small">
+                                {% if job.next_run_at %}
+                                    {{ job.next_run_at.strftime('%d/%m %H:%M') }}
+                                {% else %}
+                                    <span class="text-muted">--</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if job.status == 'active' %}
+                                    <button type="button" class="btn btn-sm btn-outline-danger py-1" 
+                                            onclick="stopAnalysisJob({{ job.id }})">
+                                        <i class="fas fa-stop me-1"></i>Arrêter
+                                    </button>
+                                {% elif job.status == 'pending' %}
+                                    <span class="small text-muted">En attente d'approbation</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <p class="text-muted mb-3">Aucune analyse planifiée pour le moment</p>
+                <button type="button" class="btn btn-outline-saas" data-bs-toggle="modal" data-bs-target="#scheduleJobModal">
+                    <i class="fas fa-calendar-plus me-2"></i>Créer une tâche planifiée
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+</div>
+{% endblock %}
+
+{% block modals %}
+<!-- Modal: Planifier une Analyse -->
+<div class="modal fade" id="scheduleJobModal" tabindex="-1" aria-labelledby="scheduleJobModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-card border-0">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="scheduleJobModalLabel">
+                    <i class="fas fa-clock me-2 text-primary"></i>Planifier une Analyse
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="scheduleJobForm">
+                    <!-- Target IP -->
+                    <div class="mb-3">
+                        <label for="targetIp" class="form-label fw-bold">
+                            <i class="fas fa-network-wired me-2"></i>Adresse IP Cible
+                        </label>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            id="targetIp" 
+                            name="target_ip" 
+                            placeholder="192.168.1.100"
+                            required
+                        >
+                        <small class="text-muted">Adresse IP du serveur à analyser</small>
+                    </div>
+
+                    <!-- Log Path -->
+                    <div class="mb-3">
+                        <label for="logPath" class="form-label fw-bold">
+                            <i class="fas fa-file-alt me-2"></i>Chemin du Fichier Log
+                        </label>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            id="logPath" 
+                            name="log_path" 
+                            value="/var/log/syslog"
+                            placeholder="/var/log/syslog"
+                        >
+                        <small class="text-muted">Chemin absolu du fichier log sur le serveur</small>
+                    </div>
+
+                    <!-- Frequency -->
+                    <div class="mb-3">
+                        <label for="frequency" class="form-label fw-bold">
+                            <i class="fas fa-repeat me-2"></i>Fréquence d'Exécution
+                        </label>
+                        <select class="form-select" id="frequency" name="frequency" required>
+                            <option value="hourly">Toutes les heures</option>
+                            <option value="daily" selected>Quotidienne (02:00)</option>
+                            <option value="weekly">Hebdomadaire (Lundi 02:00)</option>
+                            <option value="monthly">Mensuelle (1er du mois 02:00)</option>
+                        </select>
+                        <small class="text-muted">La tâche s'exécutera automatiquement selon cette fréquence</small>
+                    </div>
+
+                    <!-- SSH Username -->
+                    <div class="mb-3">
+                        <label for="sshUsername" class="form-label fw-bold">
+                            <i class="fas fa-user me-2"></i>Utilisateur SSH
+                        </label>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            id="sshUsername" 
+                            name="ssh_username" 
+                            placeholder="root"
+                            required
+                        >
+                    </div>
+
+                    <!-- SSH Password -->
+                    <div class="mb-3">
+                        <label for="sshPassword" class="form-label fw-bold">
+                            <i class="fas fa-key me-2"></i>Mot de passe SSH
+                        </label>
+                        <input 
+                            type="password" 
+                            class="form-control" 
+                            id="sshPassword" 
+                            name="ssh_password" 
+                            required
+                        >
+                        <small class="text-muted">Mot de passe sécurisé pour la connexion SSH</small>
+                    </div>
+
+                    <!-- Notification Email -->
+                    <div class="mb-3">
+                        <label for="notificationEmail" class="form-label fw-bold">
+                            <i class="fas fa-envelope me-2"></i>Email de Notification (Optionnel)
+                        </label>
+                        <input 
+                            type="email" 
+                            class="form-control" 
+                            id="notificationEmail" 
+                            name="notification_email" 
+                            placeholder="admin@example.com"
+                        >
+                        <small class="text-muted">Où envoyer les alertes en cas d'anomalie détectée</small>
+                    </div>
+
+                    <div class="alert alert-info border-0 small" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note:</strong> Cette tâche doit être approuvée par un administrateur avant d'être activée.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-saas" onclick="submitScheduleJobForm()">
+                    <i class="fas fa-check me-2"></i>Créer la Tâche
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-    {% if analysis_data %}
-    <script>
-        window.SERVER_ANALYSIS_DATA = {{ analysis_data | tojson | safe }};
-    </script>
-    {% endif %}
+<script>
+    window.SERVER_ANALYSIS_DATA = {{ analysis_data | tojson | safe if analysis_data else 'null' }};
+
+    /**
+     * Soumet le formulaire de planification d'analyse en AJAX
+     */
+    function submitScheduleJobForm() {
+        const form = document.getElementById('scheduleJobForm');
+        const formData = new FormData(form);
+
+        // Valider le formulaire
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Création...';
+
+        fetch('/admin/job/create', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Tâche créée!',
+                    text: 'Votre tâche a été créée et est en attente d\'approbation.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    // Fermer le modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('scheduleJobModal'));
+                    modal.hide();
+                    
+                    // Réinitialiser le formulaire
+                    form.reset();
+                    
+                    // Recharger la page après 1s
+                    setTimeout(() => location.reload(), 1000);
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: data.message || 'Une erreur est survenue',
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Erreur',
+                text: 'Erreur de communication avec le serveur',
+            });
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        });
+    }
+
+    /**
+     * Arrête une tâche d'analyse planifiée
+     */
+    function stopAnalysisJob(jobId) {
+        Swal.fire({
+            title: 'Arrêter la tâche?',
+            text: 'Cette action arrêtera les analyses planifiées pour ce job.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Arrêter',
+            cancelButtonText: 'Annuler',
+            confirmButtonColor: '#dc3545'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/jobs/${jobId}/stop`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Arrêté',
+                            text: 'La tâche a été arrêtée avec succès',
+                            confirmButtonText: 'OK'
+                        }).then(() => location.reload());
+                    } else {
+                        Swal.fire('Erreur', data.message || 'Une erreur est survenue', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire('Erreur', 'Erreur de communication', 'error');
+                });
+            }
+        });
+    }
+</script>
 {% endblock %}

@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="admin-jobs-page">
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="stat-card glass-card d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="fw-bold mb-2">
+                        <i class="fas fa-clock me-2 text-primary"></i>Administration des Tâches Planifiées
+                    </h3>
+                    <p class="text-muted mb-0">Approbation et gestion des analyses automatisées</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card glass-card d-flex align-items-center p-3">
+                <div class="stat-icon bg-warning text-white me-3"><i class="fas fa-hourglass-half"></i></div>
+                <div>
+                    <p class="text-muted small mb-0">En Attente</p>
+                    <h4 class="fw-bold mb-0">{{ jobs | selectattr('status', 'equalto', 'pending') | list | length }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card glass-card d-flex align-items-center p-3">
+                <div class="stat-icon bg-success text-white me-3"><i class="fas fa-check-circle"></i></div>
+                <div>
+                    <p class="text-muted small mb-0">Actives</p>
+                    <h4 class="fw-bold mb-0">{{ jobs | selectattr('status', 'equalto', 'active') | list | length }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card glass-card d-flex align-items-center p-3">
+                <div class="stat-icon bg-danger text-white me-3"><i class="fas fa-times-circle"></i></div>
+                <div>
+                    <p class="text-muted small mb-0">Refusées</p>
+                    <h4 class="fw-bold mb-0">{{ jobs | selectattr('status', 'equalto', 'refused') | list | length }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card glass-card d-flex align-items-center p-3">
+                <div class="stat-icon bg-info text-white me-3"><i class="fas fa-tasks"></i></div>
+                <div>
+                    <p class="text-muted small mb-0">Total</p>
+                    <h4 class="fw-bold mb-0">{{ jobs | length }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Jobs Table -->
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="stat-card glass-card">
+                <h5 class="fw-bold mb-4">Toutes les Tâches</h5>
+
+                {% if jobs and jobs | length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-hover table-cyber align-middle mb-0">
+                        <thead class="text-muted small">
+                            <tr>
+                                <th>UTILISATEUR</th>
+                                <th>IP CIBLE</th>
+                                <th>CHEMIN LOG</th>
+                                <th>FRÉQUENCE</th>
+                                <th>STATUT</th>
+                                <th>CRÉÉE</th>
+                                <th>ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for job in jobs %}
+                            <tr>
+                                <td>
+                                    <span class="fw-bold">{{ job.user.username }}</span>
+                                    <br>
+                                    <small class="text-muted">{{ job.user.email }}</small>
+                                </td>
+                                <td><span class="fw-bold text-main">{{ job.target_ip }}</span></td>
+                                <td><code class="small">{{ job.log_path }}</code></td>
+                                <td>
+                                    <span class="badge rounded-pill bg-info">{{ job.frequency | capitalize }}</span>
+                                </td>
+                                <td>
+                                    {% if job.status == 'pending' %}
+                                        <span class="badge rounded-pill bg-soft-warning text-warning">
+                                            <i class="fas fa-hourglass-half me-1"></i>En attente
+                                        </span>
+                                    {% elif job.status == 'active' %}
+                                        <span class="badge rounded-pill bg-soft-success text-success">
+                                            <i class="fas fa-check-circle me-1"></i>Actif
+                                        </span>
+                                    {% elif job.status == 'refused' %}
+                                        <span class="badge rounded-pill bg-soft-danger text-danger">
+                                            <i class="fas fa-times-circle me-1"></i>Refusé
+                                        </span>
+                                    {% elif job.status == 'stopped' %}
+                                        <span class="badge rounded-pill bg-soft-secondary text-secondary">
+                                            <i class="fas fa-stop-circle me-1"></i>Arrêté
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="small">{{ job.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                                <td>
+                                    {% if job.status == 'pending' %}
+                                        <div class="d-flex gap-2">
+                                            <button type="button" class="btn btn-sm btn-outline-success py-1" 
+                                                    onclick="approveJob({{ job.id }})">
+                                                <i class="fas fa-check me-1"></i>Approuver
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger py-1" 
+                                                    onclick="refuseJobModal({{ job.id }})">
+                                                <i class="fas fa-times me-1"></i>Refuser
+                                            </button>
+                                        </div>
+                                    {% elif job.status == 'active' %}
+                                        <button type="button" class="btn btn-sm btn-outline-warning py-1" 
+                                                onclick="stopAdminJob({{ job.id }})">
+                                            <i class="fas fa-stop me-1"></i>Arrêter
+                                        </button>
+                                    {% elif job.status == 'refused' %}
+                                        <small class="text-muted" onclick="showRefusalReason({{ job.id }})">
+                                            Cliquez pour voir la raison
+                                        </small>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <p class="text-muted"><i class="fas fa-check-circle me-2"></i>Aucune tâche à gérer</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function approveJob(jobId) {
+        Swal.fire({
+            title: 'Approuver cette tâche?',
+            text: 'La tâche sera activée et exécutée selon sa fréquence.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Approuver',
+            cancelButtonText: 'Annuler',
+            confirmButtonColor: '#28a745'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/admin/job/${jobId}/approve`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Approuvée!',
+                            text: 'La tâche a été approuvée et activée',
+                            confirmButtonText: 'OK'
+                        }).then(() => location.reload());
+                    } else {
+                        Swal.fire('Erreur', data.message || 'Une erreur est survenue', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire('Erreur', 'Erreur de communication', 'error');
+                });
+            }
+        });
+    }
+
+    function refuseJobModal(jobId) {
+        Swal.fire({
+            title: 'Refuser cette tâche',
+            input: 'textarea',
+            inputLabel: 'Motif du refus',
+            inputPlaceholder: 'Décrivez pourquoi vous refusez cette tâche...',
+            showCancelButton: true,
+            confirmButtonText: 'Refuser',
+            cancelButtonText: 'Annuler',
+            confirmButtonColor: '#dc3545'
+        }).then((result) => {
+            if (result.isConfirmed && result.value) {
+                fetch(`/admin/job/${jobId}/refuse`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        reason: result.value
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Refusée',
+                            text: 'La tâche a été refusée',
+                            confirmButtonText: 'OK'
+                        }).then(() => location.reload());
+                    } else {
+                        Swal.fire('Erreur', data.message || 'Une erreur est survenue', 'error');
+                    }
+                });
+            }
+        });
+    }
+
+    function stopAdminJob(jobId) {
+        Swal.fire({
+            title: 'Arrêter cette tâche?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Arrêter',
+            cancelButtonText: 'Annuler',
+            confirmButtonColor: '#dc3545'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/jobs/${jobId}/stop`, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire('Arrêtée', 'La tâche a été arrêtée', 'success')
+                            .then(() => location.reload());
+                    } else {
+                        Swal.fire('Erreur', data.message || 'Une erreur est survenue', 'error');
+                    }
+                });
+            }
+        });
+    }
+
+    function showRefusalReason(jobId) {
+        // Fetch job details pour afficher la raison
+        fetch(`/api/job/${jobId}`, {
+            method: 'GET'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    title: 'Motif du Refus',
+                    text: data.job.refusal_reason || 'Aucun motif spécifié',
+                    icon: 'info'
+                });
+            }
+        });
+    }
+</script>
+{% endblock %}

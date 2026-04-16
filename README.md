@@ -70,25 +70,6 @@ Ce projet s’inscrit dans une collaboration entre :
 * Protection des variables sensibles via `.env`
 * Utilisation de mots de passe d’application (SMTP)
 
----
-
-## 📸 Aperçu de l’Application
-
-👉 *(Ajoute هنا screenshots ديالك)*
-
-* Dashboard
-* Login
-* Analyse des logs
-* Rapport PDF
-
----
-
-## 🎥 Démo
-
-👉 *(حط هنا lien ديال vidéo ولا GitHub demo)*
-
----
-
 ## 🛠️ Installation
 
 ```bash
@@ -109,8 +90,6 @@ pip install -r requirements.txt
 ```env
 GEMINI_API_KEY=your_api_key
 SECRET_KEY=your_secret_key
-MAIL_USERNAME=your_email@gmail.com
-MAIL_PASSWORD=your_app_password
 REMOVE_BG_API_KEY=your_key
 ```
 
