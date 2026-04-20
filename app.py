@@ -6,7 +6,9 @@ from fpdf.enums import XPos, YPos
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session, send_file
 import io
 from flask_cors import CORS
+from flask import request, jsonify
 from datetime import datetime, timezone, timedelta
+from sqlalchemy import func
 import paramiko
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename  # Ajout de l'utilitaire de nom de fichier sécurisé
@@ -18,6 +20,7 @@ import requests # Pour l'API Remove.bg
 import smtplib
 import ssl
 import json
+import re
 import dns.resolver # Pour la détection MX
 from openai import OpenAI
 from email.mime.text import MIMEText
@@ -27,14 +30,37 @@ import time
 
 from src.parser import parse_log_file
 from config import Config
-from models import db, User, Analysis, AnalysisJob
+from extensions import db, scheduler                # ← source unique de db
+from scheduler import run_planned_analysis
+from models import User, Analysis, AnalysisJob
+from flask import jsonify
 
 load_dotenv()
+
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 CORS(app)
 app.config.from_object(Config)
 app.config['REMOVE_BG_API_KEY'] = os.getenv('REMOVE_BG_API_KEY') or get_decrypted_removebg_key()
+
+app = Flask(__name__)
+app.config.from_object(Config)
+
+db.init_app(app)        # ← lie l'unique instance db à app
+scheduler.init_app(app)
+scheduler.start()
+
+login_manager = LoginManager() 
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 
 # S'assurer que le dossier des uploads statiques existe (pour les signatures)
 UPLOAD_STATIC_FOLDER = os.path.join(app.root_path, 'static', 'uploads')
@@ -63,11 +89,68 @@ def get_decrypted_removebg_key():
         return None
 
 # --- Authentification / Base de données ---
-db.init_app(app)
+if 'sqlalchemy' not in app.extensions:
+    db.init_app(app)
+    print("✓ SQLAlchemy initialisé.")
+else:
+    print("! SQLAlchemy déjà enregistré, passage à la suite.")
 login_manager = LoginManager()
 login_manager.login_view = "login"
 login_manager.init_app(app)
+if 'sqlalchemy' not in app.extensions:
+    db.init_app(app)
+    print("SQLAlchemy initialisé avec succès.")
+else:
+    print("SQLAlchemy était déjà enregistré, passage à la suite.")
 
+
+@app.context_processor
+def inject_global_stats():
+    """Injecte des données globales pour les badges de notification."""
+    data = {
+        'pending_jobs_count': 0,
+        'user_notifications': [],
+        'unread_notif_count': 0
+    }
+    
+    if current_user.is_authenticated:
+        # Pour l'admin : nombre de jobs en attente d'approbation
+        if current_user.is_admin:
+            data['pending_jobs_count'] = AnalysisJob.query.filter_by(status='pending').count()
+            
+        # Pour l'analyste : jobs activés/refusés non lus
+        unread_jobs = AnalysisJob.query.filter(
+            AnalysisJob.user_id == current_user.id,
+            AnalysisJob.user_notified == False,
+            AnalysisJob.status.in_(['active', 'refused'])
+        ).all()
+        
+        for job in unread_jobs:
+            status_fr = "activée" if job.status == 'active' else "refusée"
+            data['user_notifications'].append({
+                'id': job.id,
+                'message': f"Votre tâche pour {job.target_ip} a été {status_fr} par l'administrateur.",
+                'status': job.status,
+                'ip': job.target_ip
+            })
+        
+        data['unread_notif_count'] = len(data['user_notifications'])
+        
+    return data
+
+@app.route('/api/notifications/mark-read', methods=['POST'])
+@login_required
+def mark_notifications_read():
+    """Marque toutes les notifications de jobs de l'utilisateur comme lues."""
+    try:
+        AnalysisJob.query.filter_by(user_id=current_user.id, user_notified=False).update({
+            'user_notified': True
+        })
+        db.session.commit()
+        return jsonify({"success": True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": str(e)}), 500
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -175,6 +258,40 @@ def _openai_style_completion(*, api_key: str, base_url: str | None, model_name: 
     return (resp.choices[0].message.content or "").strip()
 
 
+def send_user_notification(user, subject, content):
+    """Envoie une notification à l'utilisateur si une adresse de destination est configurée."""
+    dest = user.notification_email or user.email
+    if dest:
+        return send_notification(dest, subject, content)
+    return False
+
+def send_notification(email_dest, subject, content):
+    """Envoie une notification par email en utilisant un compte Gmail SMTP fixe."""
+    msg = MIMEMultipart()
+    # Récupérer les identifiants SMTP fixes depuis les variables d'environnement
+    smtp_user = os.getenv("SMTP_USER")
+    smtp_pass = os.getenv("SMTP_PASS")
+    
+    if not smtp_user or not smtp_pass:
+        logger.error("SMTP_USER ou SMTP_PASS non configuré dans les variables d'environnement.")
+        return False
+
+    msg['From'] = smtp_user
+    msg['To'] = email_dest
+    msg['Subject'] = subject
+    msg.attach(MIMEText(content, 'html'))
+
+    try:
+        context = ssl.create_default_context()
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls(context=context)
+            server.login(smtp_user, smtp_pass)
+            server.send_message(msg)
+        return True
+    except Exception as e:
+        logger.error(f"Erreur d'envoi d'email: {e}")
+        return False
+
 def generate_security_summary_text(log_text: str, top_patterns: list = None) -> str:
     """
     Essaie d'abord l'endpoint Cursor/OpenAI-compatible (si CURSOR_API_KEY est fourni),
@@ -188,19 +305,21 @@ def generate_security_summary_text(log_text: str, top_patterns: list = None) -> 
 
     prompt = (
         "Analyze security-relevant logs and return ONLY valid JSON.\n"
+        "STRICT JSON FORMAT REQUIRED. No markdown, no extra text.\n\n"
+        "Required JSON keys:\n"
+        "  \"ai_status\": \"Critique|Attention|Normal\",\n"
+        "  \"ai_score\": <int 0-100>,\n"
+        "  \"ai_menaces\": <int>,\n"
+        "  \"severity_counts\": {\"Critique\": X, \"Moyen\": Y, \"Faible\": Z},\n"
+        "  \"activity_trend\": [f1, f2, f3, ...], (list of frequencies over time)\n"
+        "  \"audit_points\": [\"Point 1\", \"Point 2\", ...], (key audit findings)\n"
+        "  \"ai_insights\": \"Short summary paragraph\",\n"
+        "  \"security_level\": \"LOW|MEDIUM|HIGH|CRITICAL\",\n"
+        "  \"corrective_actions\": [\"Action 1\", \"Action 2\"],\n"
+        "  \"prevention_steps\": [\"Prevention 1\", \"Prevention 2\"]\n\n"
         "Rules:\n"
         "- If 'Failed password' is found, reduce score by 20 points per attempt.\n"
-        "- Score: 0-100 (100 is perfectly safe).\n"
-        "- Status: 'Sain' (score > 80), 'Attention' (score 50-80), 'Critique' (score < 50).\n"
-        "- Menaces: total number of distinct security threats, alerts or critical errors found.\n"
-        "Required JSON keys:\n"
-        "  \"ai_insights\": \"Bullet points summarizing findings\",\n"
-        "  \"security_level\": \"LOW|MEDIUM|HIGH|CRITICAL\",\n"
-        "  \"score\": <int>,\n"
-        "  \"status\": \"Sain|Attention|Critique\",\n"
-        "  \"menaces\": <int>,\n"
-        "  \"corrective_actions\": [\"Action 1\", \"Action 2\"],\n"
-        "  \"prevention_steps\": [\"Prevention 1\", \"Prevention 2\"]\n"
+        "- ai_status mapping: score > 80 -> Normal, 50-80 -> Attention, < 50 -> Critique.\n"
         f"{patterns_str}\n"
         f"LOGS:\n{log_text}\n"
     )
@@ -297,56 +416,70 @@ def _heuristic_security_summary(log_text: str) -> dict:
         "security_level": level,
         "score": score,
         "status": status,
-        "menaces": error_hits + failed_pass_hits
+        "menaces": error_hits + failed_pass_hits,
+        "severity_counts": {"Critique": error_hits, "Moyen": warn_hits, "Faible": auth_hits},
+        "activity_trend": [],
+        "audit_points": [
+            f"Détection de {error_hits} erreurs critiques.",
+            f"Détection de {warn_hits} avertissements.",
+            f"Détection de {failed_pass_hits} échecs d'authentification."
+        ]
     }
 
 
 def generate_security_summary(*, model, log_text: str, top_patterns: list = None):
     """
     Produit un résumé concis orienté sécurité pour tout type de log.
-    Retourne un dict : {ai_insights, security_level, score, status, menaces, corrective_actions, prevention_steps}
+    Retourne un dict avec les métriques IA demandées.
     """
     import json as _json
 
-    # 'model' est conservé pour la rétrocompatibilité avec les appels existants.
     try:
         text = generate_security_summary_text(log_text, top_patterns)
+        print("DEBUG - IA Response:", text) # Debugging requirement
     except Exception as e:
-        print(str(e))
-        # Ne jamais laisser une erreur IA bloquer le flux métier (email/rapport).
+        print(f"Error calling AI: {str(e)}")
         res = _heuristic_security_summary(log_text)
-        res.update({"corrective_actions": [], "prevention_steps": []})
+        res.update({
+            "ai_status": res.get("status", "Attention"),
+            "ai_score": res.get("score", 70),
+            "ai_menaces": res.get("menaces", 0),
+            "corrective_actions": [],
+            "prevention_steps": []
+        })
         return res
+
+    parsed = {}
     try:
+        # 1. Essai de parsing JSON standard
         parsed = _json.loads(text)
-        ai_insights = str(parsed.get("ai_insights", "")).strip() or text[:600]
-        security_level = str(parsed.get("security_level", "")).strip().upper()
-        if security_level not in {"LOW", "MEDIUM", "HIGH", "CRITICAL"}:
-            security_level = "MEDIUM"
-        
-        return {
-            "ai_insights": ai_insights, 
-            "security_level": security_level,
-            "score": int(parsed.get("score", 70)),
-            "status": str(parsed.get("status", "Attention")),
-            "menaces": int(parsed.get("menaces", 0)),
-            "corrective_actions": parsed.get("corrective_actions", []),
-            "prevention_steps": parsed.get("prevention_steps", [])
-        }
     except Exception:
-        if text:
-            return {
-                "ai_insights": text[:600], 
-                "security_level": "MEDIUM",
-                "score": 70,
-                "status": "Attention",
-                "menaces": 0,
-                "corrective_actions": [],
-                "prevention_steps": []
-            }
-        res = _heuristic_security_summary(log_text)
-        res.update({"corrective_actions": [], "prevention_steps": []})
-        return res
+        # 2. Parsing robuste via Regex si JSON standard échoue
+        try:
+            match = re.search(r'\{.*\}', text, re.DOTALL)
+            if match:
+                parsed = _json.loads(match.group(0))
+        except Exception as re_err:
+            print(f"Regex Parsing Error: {str(re_err)}")
+
+    # Extraction sécurisée avec valeurs par défaut pour éviter les crashs frontend
+    ai_insights = str(parsed.get("ai_insights", "")).strip() or text[:600]
+    security_level = str(parsed.get("security_level", "MEDIUM")).strip().upper()
+    if security_level not in {"LOW", "MEDIUM", "HIGH", "CRITICAL"}:
+        security_level = "MEDIUM"
+    
+    return {
+        "ai_insights": ai_insights,
+        "security_level": security_level,
+        "score": int(parsed.get("ai_score", parsed.get("score", 70))),
+        "status": str(parsed.get("ai_status", parsed.get("status", "Attention"))),
+        "menaces": int(parsed.get("ai_menaces", parsed.get("menaces", 0))),
+        "severity_counts": parsed.get("severity_counts", {"Critique": 0, "Moyen": 0, "Faible": 0}),
+        "activity_trend": parsed.get("activity_trend", []),
+        "audit_points": parsed.get("audit_points", []),
+        "corrective_actions": parsed.get("corrective_actions", []),
+        "prevention_steps": parsed.get("prevention_steps", [])
+    }
 
 if not os.path.exists(app.config.get('UPLOAD_FOLDER', 'uploads')):
     os.makedirs(app.config.get('UPLOAD_FOLDER', 'uploads'))
@@ -386,13 +519,17 @@ def save_analysis_for_current_user(*, source_type: str, source_path: str, server
         ai_menaces=ai_metrics.get("menaces") if ai_metrics else None,
     )
     
-    # Intégration des insights IA dans les meta pour le dashboard et rapport
+    # Intégration des métriques IA complètes dans les meta pour le dashboard et rapport
     if ai_metrics:
         a.meta = {
             **(a.meta or {}), 
             "ai_insights": ai_metrics.get("ai_insights"),
+            "severity_counts": ai_metrics.get("severity_counts"),
+            "activity_trend": ai_metrics.get("activity_trend"),
+            "audit_points": ai_metrics.get("audit_points"),
             "corrective_actions": ai_metrics.get("corrective_actions", []),
-            "prevention_steps": ai_metrics.get("prevention_steps", [])
+            "prevention_steps": ai_metrics.get("prevention_steps", []),
+            "security_level": ai_metrics.get("security_level")
         }
 
     db.session.add(a)
@@ -573,17 +710,20 @@ def index():
     if not last_analysis:
         last_analysis = Analysis.query.filter_by(user_id=current_user.id).order_by(Analysis.created_at.desc()).first()
 
-    # Statistiques globales pour le dashboard basées sur les métriques IA
+    # Statistiques globales pour le dashboard basées sur l'historique (7 derniers jours)
+    seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    recent_analyses = Analysis.query.filter(
+        Analysis.user_id == current_user.id,
+        Analysis.created_at >= seven_days_ago
+    ).order_by(Analysis.created_at.desc()).all()
+
     total_audits = Analysis.query.filter_by(user_id=current_user.id).count()
     active_servers = db.session.query(Analysis.server_ip).filter(Analysis.user_id == current_user.id, Analysis.server_ip != None).distinct().count()
     
-    # Récupération des 5 dernières analyses pour calculer les moyennes et totaux
-    recent_analyses = Analysis.query.filter_by(user_id=current_user.id).order_by(Analysis.created_at.desc()).limit(5).all()
-    
-    # Menaces critiques (Basé sur ai_menaces si disponible, sinon sur stats.errors)
+    # Menaces critiques (Cumul des menaces sur les analyses récentes)
     critical_threats = sum((a.ai_menaces if a.ai_menaces is not None else int(a.stats.get('errors', 0))) for a in recent_analyses)
     
-    # Score de santé système (Basé sur ai_score si disponible, sinon calcul heuristique)
+    # Score de santé système (Moyenne des scores récents)
     scores = [(a.ai_score if a.ai_score is not None else _global_health_score(a.stats)) for a in recent_analyses]
     system_health = round(sum(scores) / len(scores)) if scores else 100
 
@@ -1115,13 +1255,15 @@ def upload_file():
 @app.route('/ssh-analyze', methods=['POST'])
 @login_required
 def ssh_analyze():
+    import traceback
     ssh = None
     try:
         data = request.get_json(silent=True) or {}
         ip = (data.get('ip') or "").strip()
         user = (data.get('username') or "").strip()
-        pwd = data.get('password') or ""
+        pwd = (data.get('password') or "").strip()
         path = (data.get('path') or "/var/log/messages").strip()
+        target_date = data.get('target_date') # Format "YYYY-MM-DD"
         today_only = data.get('today_only', False)
 
         try:
@@ -1132,7 +1274,7 @@ def ssh_analyze():
         if not ip or not user or not pwd:
             return json_error("Identifiants SSH manquants", 400, code="MISSING_SSH_FIELDS")
 
-        # Durcissement basique anti-injection : caractères sûrs et limite bornée.
+        # Durcissement basique anti-injection
         limit = max(1, min(limit, 5000))
         if any(c in path for c in [';', '&', '|', '`', '$', '>', '<', '\n', '\r']):
             return json_error("Chemin invalide", 400, code="INVALID_PATH")
@@ -1141,91 +1283,113 @@ def ssh_analyze():
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(ip, username=user, password=pwd, timeout=10, banner_timeout=10, auth_timeout=10)
 
-        # Stockage des identifiants en session pour le terminal (Admins uniquement)
-        if getattr(current_user, "is_admin", False):
-            session['ssh_host'] = ip
-            session['ssh_user'] = user
-            session['ssh_pass'] = pwd
-
-        # Construction de la commande SSH selon le mode (Tout ou Aujourd'hui uniquement)
-        if today_only:
-            # Récupération de la date actuelle aux formats standards
-            now = datetime.now()
-            # Format Syslog : "Apr 11" (Abbréviation mois en anglais + Jour avec espace)
-            # Utilisation de mapping manuel pour garantir le format anglais attendu par syslog
-            months_map = {
-                1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun',
-                7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'
-            }
-            month_abbr = months_map[now.month]
-            day = str(now.day).rjust(2) # " 1" ou "11"
-            date_syslog = month_abbr + " " + day
+        # Construction de la commande SSH optimisée et multi-format
+        if target_date:
+            from datetime import datetime
+            try:
+                dt = datetime.fromisoformat(target_date)
+            except ValueError:
+                return json_error("Format de date invalide", 400)
             
-            # Format ISO : "2026-04-11"
-            date_iso = now.strftime("%Y-%m-%d")
+            # Format Syslog : "Apr 10" ou "Apr  8"
+            months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+            m_abbr = months[dt.month-1]
+            day_str = f"{dt.day:2d}" 
+            date_syslog = f"{m_abbr} {day_str}"
             
-            # Utilisation de grep pour filtrer les lignes commençant par l'un des formats
-            # L'option -a (ou --text) force grep à traiter le fichier comme du texte
-            command = f"grep -aE '^{date_syslog}|{date_iso}' {path}"
+            # Autres formats (ISO: 2026-04-10, Slash: 10/04/2026)
+            date_iso = dt.strftime("%Y-%m-%d")
+            date_slash = dt.strftime("%d/%m/%Y")
+            
+            regex = "|".join([f"^{date_syslog}", date_iso, date_slash])
+            
+            # Commande STRICTE pour la date sélectionnée
+            command = f"grep -aE '{regex}' {path}"
+        elif today_only:
+            from datetime import datetime
+            dt = datetime.now()
+            months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+            m_abbr = months[dt.month-1]
+            day_str = f"{dt.day:2d}"
+            date_syslog = f"{m_abbr} {day_str}"
+            date_iso = dt.strftime("%Y-%m-%d")
+            regex = "|".join([f"^{date_syslog}", date_iso])
+            command = f"grep -aE '{regex}' {path}"
         else:
             command = f"tail -n {limit} {path}"
 
         stdin, stdout, stderr = ssh.exec_command(command)
         log_content = stdout.read().decode('utf-8', errors='replace')
-        error_content = stderr.read().decode('utf-8', errors='replace')
+        
+        if not log_content or not log_content.strip():
+            date_label = target_date if target_date else ("aujourd'hui" if today_only else "récents")
+            return jsonify({"status": "error", "message": f"Aucun log trouvé pour {date_label}.", "code": "NO_LOGS_FOUND"}), 200
 
-        if error_content:
-            return json_error(error_content.strip(), 400, code="SSH_COMMAND_ERROR")
-
-        if today_only and not log_content.strip():
-            return json_error("Aucun log trouvé pour aujourd'hui", status_code=200, code="NO_LOGS_TODAY")
-
-        temp_path = os.path.join(app.config['UPLOAD_FOLDER'], "ssh_temp.log")
+        # Parser les logs
+        from src.parser import parse_log_file
+        temp_path = os.path.join(app.config['UPLOAD_FOLDER'], f"ssh_{current_user.id}.log")
         with open(temp_path, "w", encoding="utf-8") as f:
             f.write(log_content)
+        
+        try:
+            results = parse_log_file(temp_path)
+        except Exception as pe:
+            logger.error(f"Erreur parsing logs: {pe}")
+            return json_error("Erreur lors de l'analyse du format des logs.", 500)
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
 
-        results = parse_log_file(temp_path)
-        meta = file_metadata(temp_path)
-        payload = {
-            "status": "success",
-            "generated_at": utc_now_iso(),
-            "meta": {
-                "source_type": "ssh",
-                "source_path": path,
-                "server_ip": ip,
-                **meta
-            },
-            "segments": results,
-            "stats": {
-                "errors": len(results.get('ERROR', [])),
-                "warnings": len(results.get('WARNING', [])),
-                "info": len(results.get('INFO', [])),
-                "total": sum(len(v) for v in results.values())
-            }
+        # Calculer les stats
+        stats = {
+            "errors": len(results.get('ERROR', [])),
+            "warnings": len(results.get('WARNING', [])),
+            "info": len(results.get('INFO', [])),
+            "total": sum(len(v) for v in results.values())
         }
+
+        # Sauvegarder l'analyse
         analysis = save_analysis_for_current_user(
             source_type="ssh",
-            source_path=payload["meta"]["source_path"],
-            server_ip=payload["meta"]["server_ip"],
-            stats=payload["stats"],
-            segments=payload["segments"],
-            meta=payload["meta"],
+            source_path=path,
+            server_ip=ip,
+            stats=stats,
+            segments=results,
+            meta={"target_date": target_date, "today_only": today_only},
             log_content=log_content
         )
-        payload["analysis_id"] = analysis.id
-        return jsonify(payload)
-    except paramiko.AuthenticationException:
-        return json_error("Échec d'authentification", 401, code="SSH_AUTH_FAILED")
-    except paramiko.SSHException as e:
-        return json_error(str(e), 502, code="SSH_ERROR")
-    except Exception as e:
-        return json_error(str(e), 500, code="SSH_ANALYZE_FAILED")
-    finally:
+
+        # Enregistrer ou mettre à jour le profil serveur pour Quick Connect
         try:
-            if ssh:
+            save_or_update_ssh_profile(
+                user_id=current_user.id,
+                ip=ip,
+                username=user,
+                password=pwd,
+                log_path=path
+            )
+        except Exception as e:
+            logger.error(f"Erreur profil SSH: {e}")
+
+        return jsonify({
+            "status": "success",
+            "message": "Analyse SSH terminée",
+            "stats": stats,
+            "analysis_id": analysis.id
+        })
+
+    except paramiko.AuthenticationException:
+        return json_error("Échec d'authentification SSH", 401, code="SSH_AUTH_FAILED")
+    except Exception as e:
+        traceback.print_exc()
+        logger.error(f"[SSH ANALYZE ERROR] {str(e)}")
+        return json_error(f"Erreur lors de l'analyse : {str(e)}", 500, code="SSH_ANALYZE_FAILED")
+    finally:
+        if ssh:
+            try:
                 ssh.close()
-        except Exception:
-            pass
+            except:
+                pass
 
 @app.route('/terminal/exec', methods=['POST'])
 @admin_required
@@ -1636,98 +1800,114 @@ def get_latest_report():
 @login_required
 def send_report_email():
     """
-    Envoie le rapport PDF complet avec statistiques et Top 10 patterns.
+    Envoie le rapport PDF complet via le SMTP serveur.
+    Supporte Gmail avec App Password (16 caractères).
     """
-    # Règle Métier : Vérifier si l'utilisateur a une signature avant d'envoyer
-    if not current_user.signature_path:
-        return jsonify({"success": False, "message": "Action impossible : Vous devez d'abord ajouter votre signature dans votre profil pour valider les rapports."}), 403
-
+    import traceback
     try:
         data = request.get_json() or {}
         analysis_id = data.get('analysis_id')
-        recipient = data.get('recipient')
+        recipient = data.get('recipient') or data.get('email') or current_user.notification_email or current_user.email
         
+        # Récupération des variables de configuration SMTP avec flexibilité (Optionnel)
+        # On essaie d'abord les données envoyées par le frontend (email_source/app_password)
+        # Sinon on se replie sur les variables d'environnement.
+        smtp_user = data.get('sender_email') or data.get('email_source') or os.getenv("MAIL_USERNAME") or os.getenv("SMTP_USER") or current_user.email
+        smtp_pass = data.get('app_password') or os.getenv("MAIL_PASSWORD") or os.getenv("SMTP_PASS")
+        
+        smtp_server = os.getenv("MAIL_SERVER", "smtp.gmail.com")
+        smtp_port = int(os.getenv("MAIL_PORT", 587))
+        use_tls = os.getenv("MAIL_USE_TLS", "True").lower() == "true"
+
+        logger.info(f"[EMAIL] Tentative d'envoi à {recipient} depuis {smtp_user} via {smtp_server}:{smtp_port} (Auth: {'Oui' if smtp_pass else 'Non'})")
+
+        if not recipient:
+            return jsonify({"success": False, "message": "Email du destinataire manquant."}), 400
+            
         if not analysis_id:
-            return jsonify({"success": False, "message": "ID d'analyse manquant"}), 400
+            return jsonify({"success": False, "message": "ID d'analyse manquant."}), 400
         
-        user = db.session.get(User, current_user.id)
         analysis = Analysis.query.filter_by(id=analysis_id, user_id=current_user.id).first()
-        
         if not analysis:
-            return jsonify({"success": False, "message": "Analyse introuvable"}), 404
+            return jsonify({"success": False, "message": f"Rapport {analysis_id} introuvable."}), 404
 
-        target_email = (recipient or user.email).strip()
+        # 1. Génération du PDF
+        try:
+            pdf_content = generate_pdf_report_bytes(analysis)
+        except Exception as ge:
+            logger.error(f"Erreur génération PDF: {ge}")
+            return jsonify({"success": False, "message": "Erreur lors de la création du fichier PDF."}), 500
         
-        # 1. Génération du PDF via le helper unifié
-        pdf_content = generate_pdf_report_bytes(analysis)
-        
-        # 2. Préparation du corps de l'email (HTML pour le tableau)
-        stats = analysis.stats or {}
-        date_str = analysis.created_at.strftime('%d/%m/%Y')
-        total_lines = stats.get('total', 0)
-        alerts_count = int(stats.get('errors', 0)) + int(stats.get('warnings', 0))
-        source_path = analysis.source_path or "/var/log/syslog"
-
-        msg = MIMEMultipart("alternative")
-        msg['From'] = user.email_sender
-        msg['To'] = target_email
-        msg['Subject'] = f"Rapport d'Audit Logs - {analysis.server_ip or 'Local'}"
+        # 2. Préparation du message
+        subject = data.get('subject') or f"Rapport d'Audit Logs - {analysis.server_ip or 'Local'}"
+        message_notes = data.get('message') or ""
         
         html_body = f"""
         <html>
         <body style="font-family: Arial, sans-serif; color: #333;">
+            <h2>Rapport d'analyse LogAnalyzer</h2>
             <p>Bonjour,</p>
-            <p>Voici le résumé de l'analyse effectuée le <strong>{date_str}</strong>.</p>
-            
-            <table style="border-collapse: collapse; width: 100%; max-width: 500px; margin: 20px 0; border: 1px solid #ddd;">
-                <tr style="background-color: #f2f2f2;">
-                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Champ</th>
-                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Détails</th>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd;">Fichier</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">{source_path}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd;">Lignes</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">{total_lines}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd;">Alertes</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">{alerts_count}</td>
-                </tr>
-            </table>
-            
-            <p>Veuillez trouver en pièce jointe le rapport PDF complet contenant l'analyse détaillée et le Top 10 des récurrences.</p>
-            
-            <p>Cordialement,<br><strong>Système LogAnalyzer</strong></p>
+            <p>Voici le rapport d'analyse pour le serveur <strong>{analysis.server_ip or 'Local'}</strong>.</p>
+            <ul>
+                <li><strong>Score de sécurité :</strong> {analysis.ai_score}/100</li>
+                <li><strong>Statut :</strong> {analysis.ai_status}</li>
+                <li><strong>Date :</strong> {analysis.created_at.strftime('%d/%m/%Y %H:%M')}</li>
+            </ul>
+            {f'<p><strong>Note de l\'analyste :</strong> {message_notes}</p>' if message_notes else ''}
+            <p>Le rapport détaillé est joint à cet email au format PDF.</p>
+            <hr>
+            <p style="font-size: 0.8em; color: #666;">Envoyé automatiquement par LogAnalyzer SOC.</p>
         </body>
         </html>
         """
+        
+        msg = MIMEMultipart("mixed")
+        msg['Subject'] = subject
+        msg['To'] = recipient
+        msg['From'] = smtp_user
         msg.attach(MIMEText(html_body, 'html'))
         
-        # 3. Pièce jointe PDF
         attachment = MIMEApplication(pdf_content)
         attachment.add_header('Content-Disposition', 'attachment', filename=f"Rapport_Audit_{analysis_id}.pdf")
         msg.attach(attachment)
 
-        # 4. Envoi SMTP
-        smtp_server = user.smtp_server
-        smtp_port = user.smtp_port
-        if not smtp_server or not smtp_port:
-            smtp_server, smtp_port = get_smtp_config(user.email_sender)
-
-        context = ssl.create_default_context()
-        with smtplib.SMTP(smtp_server, int(smtp_port), timeout=20) as server:
-            server.ehlo()
-            server.starttls(context=context)
-            server.ehlo()
-            server.login(user.email_sender, user.email_password_enc)
-            server.send_message(msg)
+        # 3. Envoi via SMTP avec capture d'erreur robuste
+        try:
+            context = ssl.create_default_context()
+            with smtplib.SMTP(smtp_server, smtp_port, timeout=20) as server:
+                if use_tls:
+                    server.starttls(context=context)
                 
-        return jsonify({"success": True, "message": f"Email envoyé avec succès à {target_email} !"})
+                # AUTHENTIFICATION CONDITIONNELLE
+                if smtp_pass:
+                    try:
+                        server.login(smtp_user, smtp_pass)
+                        logger.info(f"[EMAIL] Authentification réussie pour {smtp_user}")
+                    except smtplib.SMTPAuthenticationError as auth_err:
+                        logger.error(f"SMTP Auth Error: {auth_err}")
+                        return jsonify({
+                            "success": False, 
+                            "message": "Authentification SMTP échouée. Vérifiez vos identifiants ou le 'App Password'."
+                        }), 401
+                else:
+                    logger.info(f"[EMAIL] Envoi sans authentification (Relais SMTP)")
+                
+                server.send_message(msg)
+            
+            return jsonify({"success": True, "message": f"Email envoyé avec succès à {recipient} !"})
+            
+        except smtplib.SMTPException as se:
+            logger.error(f"Erreur SMTP: {se}")
+            return jsonify({"success": False, "message": f"Erreur lors de l'envoi de l'email : {str(se)}"}), 500
+        except Exception as smtp_e:
+            logger.error(f"Erreur SMTP Inconnue: {smtp_e}")
+            return jsonify({"success": False, "message": f"Erreur de connexion SMTP : {str(smtp_e)}"}), 500
+            
     except Exception as e:
-        return jsonify({"success": False, "message": f"Erreur : {str(e)}"}), 500
+        traceback.print_exc()
+        logger.error(f"[EMAIL ERROR] {str(e)}")
+        return jsonify({"success": False, "message": f"Erreur interne : {str(e)}"}), 500
+        return jsonify({"success": False, "message": f"Erreur interne lors de l'envoi : {str(e)}"}), 500
         
 @app.route('/generate-report', methods=['POST'])
 @login_required
@@ -1854,111 +2034,24 @@ def _smtp_send_with_fallback(sender_email: str, app_password: str, msg: MIMEMult
 @app.route('/send-email', methods=['POST'])
 @login_required
 def send_email():
-    data = request.get_json(silent=True) or {}
-
-    user_sender_email = (data.get('sender_email') or "").strip()
-    user_app_password = data.get('app_password') or ""
-    dest_email = (data.get('email') or data.get('dest_email') or "").strip()
-    subject = (data.get('subject') or "Rapport LogAnalyzer").strip()
-    comment = data.get('message') or ""
-    analysis_id = data.get('analysis_id')
-    report_data = data.get('report_data') or {}
-    if not analysis_id and isinstance(report_data, dict):
-        analysis_id = report_data.get("analysis_id")
-
-    if not user_sender_email or not user_app_password or not dest_email:
-        return json_error("Champs e-mail manquants", 400, code="MISSING_EMAIL_FIELDS")
-
-    msg = MIMEMultipart("mixed")
-    msg['From'] = user_sender_email
-    msg['To'] = dest_email
-    msg['Subject'] = subject
-
+    """Version simplifiée de l'envoi d'email utilisant le SMTP serveur."""
     try:
-        analysis_id_int = int(analysis_id)
-    except Exception:
-        return json_error("analysis_id invalide ou manquant.", 400, code="INVALID_ANALYSIS_ID")
+        data = request.get_json(silent=True) or {}
+        dest_email = data.get('email') or data.get('dest_email') or current_user.notification_email or current_user.email
+        subject = data.get('subject') or "Rapport LogAnalyzer"
+        message = data.get('message') or ""
+        
+        if not dest_email:
+            return jsonify({"success": False, "message": "Email de destination manquant."}), 400
 
-    analysis = analyses_query_for_user().filter_by(id=analysis_id_int).first()
-    if not analysis:
-        return json_error("Analyse introuvable.", 404, code="ANALYSIS_NOT_FOUND")
-
-    stats = analysis.stats or {}
-    meta = analysis.meta or {}
-    pdf_path = meta.get("report_pdf_path")
-    if not pdf_path or not os.path.exists(pdf_path):
-        return json_error(
-            "Rapport PDF introuvable pour cette analyse. Veuillez d'abord exporter le PDF (Rapport → Exporter en PDF).",
-            400,
-            code="PDF_NOT_FOUND",
-        )
-
-    # Génère un résumé de sécurité pour le corps de l'email
-    seg = analysis.segments or {}
-    sample_lines = []
-    sample_lines += (seg.get("ERROR") or [])[:8]
-    sample_lines += (seg.get("WARNING") or [])[:6]
-    sample_lines += (seg.get("INFO") or [])[:3]
-    sample_text = "\n".join(sample_lines[:15]) or "\n".join((seg.get("INFO") or [])[:15]) or str(analysis.source_path or "")
-
-    sec = generate_security_summary(model=None, log_text=sample_text)
-    verdict = sec.get("ai_insights") or "N/A"
-    security_level = sec.get("security_level") or "MEDIUM"
-
-    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    filename = os.path.basename(meta.get("source_path") or analysis.source_path or "logs")
-
-    html_body = f"""
-    <html>
-      <body style="font-family: Inter, Arial, sans-serif; color:#111827;">
-        <h2 style="margin:0 0 8px 0;">LogAnalyzer — Rapport d'audit de sécurité</h2>
-        <p style="margin:0 0 16px 0; color:#4b5563;">Veuillez trouver le rapport PDF en pièce jointe.</p>
-
-        <table cellpadding="10" cellspacing="0" style="border-collapse:collapse; width:100%; max-width:680px; border:1px solid #e5e7eb;">
-          <tr style="background:#f8fafc;">
-            <td style="font-weight:700;">Date du Rapport</td>
-            <td>{now_str}</td>
-          </tr>
-          <tr>
-            <td style="font-weight:700;">Fichier Analysé</td>
-            <td>{filename}</td>
-          </tr>
-          <tr style="background:#f8fafc;">
-            <td style="font-weight:700;">Aperçus IA</td>
-            <td>{verdict or "N/A"}</td>
-          </tr>
-          <tr>
-            <td style="font-weight:700;">Niveau de sécurité</td>
-            <td>{security_level}</td>
-          </tr>
-        </table>
-
-        <p style="margin-top:16px; color:#6b7280; font-size:12px;">
-          Statistiques : total={stats.get('total','N/A')} erreurs={stats.get('errors','N/A')} avertissements={stats.get('warnings','N/A')} info={stats.get('info','N/A')}
-        </p>
-
-      </body>
-    </html>
-    """
-
-    alt = MIMEMultipart("alternative")
-    alt.attach(MIMEText(html_body, "html", "utf-8"))
-    msg.attach(alt)
-
-    if comment:
-        msg.attach(MIMEText(comment, "plain", "utf-8"))
-
-    with open(pdf_path, "rb") as fp:
-        part = MIMEApplication(fp.read(), _subtype="pdf")
-    part.add_header("Content-Disposition", "attachment", filename=os.path.basename(pdf_path))
-    msg.attach(part)
-
-    try:
-        _smtp_send_with_fallback(user_sender_email, user_app_password, msg)
-        return jsonify({"status": "success", "message": "Email envoyé avec succès !"})
+        success = send_user_notification(current_user, subject, f"<html><body>{message}</body></html>")
+        
+        if success:
+            return jsonify({"success": True, "message": f"Email envoyé à {dest_email}"})
+        else:
+            return jsonify({"success": False, "message": "Échec de l'envoi."}), 500
     except Exception as e:
-        return json_error(f"Erreur: {str(e)}", 500, code="SMTP_SEND_FAILED")
-
+        return jsonify({"success": False, "message": str(e)}), 500
 
 @app.route('/api/analyses', methods=['GET'])
 @login_required
@@ -2000,6 +2093,54 @@ def api_analysis_get(analysis_id: int):
         }
     })
 
+@app.route('/profile/update_notifications', methods=['POST'])
+@login_required
+def update_profile_notifications():
+    """Met à jour les préférences de notification de l'utilisateur."""
+    try:
+        enabled = request.form.get('email_notifications_enabled') == 'on'
+        email = request.form.get('notification_email', '').strip()
+        
+        current_user.email_notifications_enabled = enabled
+        current_user.notification_email = email
+        
+        db.session.commit()
+        flash("Préférences de notification mises à jour.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Erreur lors de la mise à jour : {e}", "danger")
+    
+    return redirect(url_for('profile'))
+
+@app.route('/jobs/<int:job_id>/history', methods=['GET'])
+@app.route('/api/jobs/<int:job_id>/history', methods=['GET'])
+@login_required
+def get_job_history(job_id: int):
+    """Récupère l'historique des analyses pour un job spécifique."""
+    job = AnalysisJob.query.get(job_id)
+    if not job:
+        return jsonify({"success": False, "message": "Job introuvable"}), 404
+    
+    if job.user_id != current_user.id and not current_user.is_admin:
+        return jsonify({"success": False, "message": "Accès refusé"}), 403
+    
+    history = []
+    for analysis in job.history.order_by(Analysis.created_at.desc()).all():
+        history.append({
+            "id": analysis.id,
+            "created_at": analysis.created_at.isoformat(),
+            "ai_status": analysis.ai_status,
+            "ai_score": analysis.ai_score,
+            "ai_menaces": analysis.ai_menaces
+        })
+    
+    return jsonify({
+        "success": True,
+        "job_id": job.id,
+        "target_ip": job.target_ip,
+        "history": history
+    })
+
 # --- ROUTES DE PLANIFICATION D'ANALYSES ---
 
 @app.route('/admin/scheduled-jobs', methods=['GET'])
@@ -2009,107 +2150,161 @@ def list_scheduled_jobs():
     jobs = AnalysisJob.query.order_by(AnalysisJob.created_at.desc()).all()
     return render_template('admin_scheduled_jobs.html', jobs=jobs)
 
+# --- ROUTE DE CRÉATION DE TÂCHE PLANIFIÉE ---
 
-@app.route('/admin/job/create', methods=['GET', 'POST'])
-@admin_required
+@app.route('/admin/job/create', methods=['POST'])
+@login_required
 def create_scheduled_job():
-    """Créer une nouvelle tâche d'analyse planifiée"""
-    if request.method == 'POST':
+    try:
+        # 1. Récupération des données (Indentation correcte: 8 spaces)
+        target_ip = (request.form.get('target_ip') or "").strip()
+        log_path = (request.form.get('log_path') or "/var/log/syslog").strip()
+        frequency = (request.form.get('frequency') or "daily").strip()
+        custom_minutes = request.form.get('custom_minutes')
+        ssh_username = (request.form.get('ssh_username') or "").strip()
+        ssh_password = request.form.get('ssh_password') or ""
+        notification_email = (request.form.get('notification_email') or "").strip()
+        
+        # 2. Validation des champs obligatoires
+        if not target_ip or not ssh_username or not ssh_password:
+            return jsonify({"success": False, "message": "Champs obligatoires manquants."}), 400
+        
+        # 3. Validation de la fréquence (C'était ici l'erreur de syntaxe)
+        valid_frequencies = ('hourly', 'daily', 'weekly', 'monthly', 'custom')
+        if frequency not in valid_frequencies:
+            return jsonify({"success": False, "message": "Fréquence invalide."}), 400
+
+        # 4. Gestion du cas "custom"
+        interval_val = None
+        if frequency == 'custom':
+            if not custom_minutes or not str(custom_minutes).isdigit():
+                return jsonify({"success": False, "message": "Minutes invalides."}), 400
+            interval_val = int(custom_minutes)
+
+        # 5. Validation de l'IP (Import local pour la propreté)
+        import re
+        if not re.match(r'^(\d{1,3}\.){3}\d{1,3}$', target_ip):
+            return jsonify({"success": False, "message": "Format IP invalide."}), 400
+        
+        # 6. Chiffrement du mot de passe
         try:
-            target_ip = (request.form.get('target_ip') or "").strip()
-            log_path = (request.form.get('log_path') or "/var/log/syslog").strip()
-            frequency = (request.form.get('frequency') or "daily").strip()
-            ssh_username = (request.form.get('ssh_username') or "").strip()
-            ssh_password = request.form.get('ssh_password') or ""
-            notification_email = (request.form.get('notification_email') or "").strip()
-            user_id = request.form.get('user_id')
+            fernet_key = os.getenv("FERNET_KEY")
+            if not fernet_key:
+                return jsonify({"success": False, "message": "Clé de sécurité manquante."}), 500
             
-            if not target_ip or not user_id:
-                flash("IP cible et utilisateur sont obligatoires.", "danger")
-                return redirect(url_for('create_scheduled_job'))
-            
-            if frequency not in ('hourly', 'daily', 'weekly', 'monthly'):
-                flash("Fréquence invalide.", "danger")
-                return redirect(url_for('create_scheduled_job'))
-            
-            user = User.query.get(int(user_id))
-            if not user:
-                flash("Utilisateur introuvable.", "danger")
-                return redirect(url_for('create_scheduled_job'))
-            
-            # Créer la tâche
+            f = Fernet(fernet_key.encode() if isinstance(fernet_key, str) else fernet_key)
+            encrypted_password = f.encrypt(ssh_password.encode()).decode()
+        except Exception as e:
+            return jsonify({"success": False, "message": "Erreur chiffrement."}), 500
+        
+        # 7. Sauvegarde dans la DB
+        try:
             job = AnalysisJob(
-                user_id=user.id,
+                user_id=current_user.id,
                 target_ip=target_ip,
                 log_path=log_path,
                 frequency=frequency,
+                custom_minutes=interval_val,
                 ssh_username=ssh_username,
-                ssh_password_enc=f"encrypted:{ssh_password}",  # À implémenter avec Fernet si nécessaire
-                notification_email=notification_email,
-                status='pending'  # En attente d'approbation
+                ssh_password_enc=encrypted_password,
+                notification_email=notification_email or None,
+                status='pending',
+                admin_notified=False
             )
-            
             db.session.add(job)
             db.session.commit()
             
-            flash(f"Tâche planifiée créée. En attente d'approbation de l'admin.", "info")
-            return redirect(url_for('list_scheduled_jobs'))
+            # Notification à l'admin (optionnel, si configuré)
+            admin_users = User.query.filter_by(role='Admin').all()
+            for admin in admin_users:
+                if admin.email:
+                    subject = f"Nouvelle demande d'analyse planifiée - {target_ip}"
+                    content = f"""
+                    <h2>Nouvelle demande d'analyse planifiée</h2>
+                    <p>L'utilisateur <strong>{current_user.username}</strong> a créé une nouvelle demande d'analyse pour le serveur <strong>{target_ip}</strong>.</p>
+                    <p>Veuillez vous connecter à l'interface d'administration pour approuver ou refuser cette demande.</p>
+                    """
+                    send_notification(admin.email, subject, content)
+            
+            return jsonify({"success": True, "message": "Demande envoyée", "job_id": job.id}), 201
             
         except Exception as e:
-            flash(f"Erreur : {str(e)}", "danger")
-            return redirect(url_for('create_scheduled_job'))
+            db.session.rollback()
+            return jsonify({"success": False, "message": f"Erreur DB: {str(e)}"}), 500
     
-    users = User.query.filter_by(role='Analyst').all()
-    return render_template('create_scheduled_job.html', users=users)
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Erreur serveur: {str(e)}"}), 500
 
 
+@app.route('/admin/approve_job', methods=['POST'])
 @app.route('/admin/job/<int:job_id>/approve', methods=['POST'])
 @admin_required
-def approve_analysis_job(job_id: int):
-    """Approuver une tâche d'analyse planifiée et la lancer dans le scheduler"""
-    from scheduler import scheduler
-    from datetime import datetime, timezone
+def approve_analysis_job(job_id: int = None):
+    # Gérer les deux routes (avec paramètre ou via form)
+    if job_id is None:
+        job_id = request.form.get('job_id') or request.json.get('job_id')
     
+    if not job_id:
+        return jsonify({"success": False, "message": "ID de tâche manquant."}), 400
+
+    from datetime import datetime, timezone
+    from models import AnalysisJob
+
     try:
         job = AnalysisJob.query.get(job_id)
         if not job:
-            return jsonify({"success": False, "message": "Tâche introuvable"}), 404
-        
+            return jsonify({"success": False, "message": "Tâche introuvable."}), 404
+
+        if job.status == 'active':
+            return jsonify({"success": True, "message": "La tâche est déjà active."})
+
         job.status = 'active'
         job.approved_at = datetime.now(timezone.utc)
         job.next_run_at = datetime.now(timezone.utc)
-        
-        # Ajouter la tâche au scheduler
-        frequency_map = {
-            'hourly': 'cron',
-            'daily': 'cron',
-            'weekly': 'cron',
-            'monthly': 'cron'
-        }
-        
-        trigger_args = {
-            'hourly': {'hour': '*'},
-            'daily': {'hour': 2, 'minute': 0},
-            'weekly': {'day_of_week': 'mon', 'hour': 2, 'minute': 0},
-            'monthly': {'day': 1, 'hour': 2, 'minute': 0}
-        }
-        
-        scheduler.add_job(
-            func=run_planned_analysis,
-            trigger='cron',
-            args=[job_id, app],
-            id=f'job_{job_id}',
-            name=f'Analysis Job {job_id} - {job.target_ip}',
-            replace_existing=True,
-            **trigger_args.get(job.frequency, {'hour': '*'})
-        )
-        
+        job.user_notified = False
+
+        # Notification à l'utilisateur
+        subject = "Votre tâche d'analyse a été approuvée"
+        content = f"Votre demande d'analyse planifiée pour {job.target_ip} a été approuvée par un administrateur."
+        send_user_notification(job.user, subject, content)
+
+        # Si fréquence custom, utiliser interval, sinon cron
+        from scheduler import scheduler
+        if job.frequency == 'custom' and job.custom_minutes:
+            scheduler.add_job(
+                func=run_planned_analysis,
+                trigger='interval',
+                minutes=job.custom_minutes,
+                args=[job_id],
+                id=f'job_{job_id}',
+                name=f'Analyse Planifiée {job_id}',
+                replace_existing=True
+            )
+        else:
+            trigger_map = {
+                'hourly':  {'hour': '*'},
+                'daily':   {'hour': 2,  'minute': 0},
+                'weekly':  {'day_of_week': 'mon', 'hour': 2, 'minute': 0},
+                'monthly': {'day': 1,   'hour': 2, 'minute': 0},
+            }
+            cron_params = trigger_map.get(job.frequency, {'hour': 2, 'minute': 0})
+
+            scheduler.add_job(
+                func=run_planned_analysis,
+                trigger='cron',
+                args=[job_id],
+                id=f'job_{job_id}',
+                name=f'Analyse Planifiée {job_id}',
+                replace_existing=True,
+                **cron_params
+            )
+
         db.session.commit()
-        flash(f"Tâche {job_id} approuvée et activée.", "success")
-        return jsonify({"success": True, "message": "Tâche approuvée et lancée"})
-        
+        return jsonify({"success": True, "message": "Tâche approuvée et programmée."})
+
     except Exception as e:
-        flash(f"Erreur : {str(e)}", "danger")
+        db.session.rollback()
+        print(f"[APPROVE ERROR] {e}")
         return jsonify({"success": False, "message": str(e)}), 500
 
 
@@ -2126,7 +2321,13 @@ def refuse_analysis_job(job_id: int):
         
         job.status = 'refused'
         job.refusal_reason = reason
+        job.user_notified = False
         
+        # Notification à l'utilisateur
+        subject = "Votre tâche d'analyse a été refusée"
+        content = f"Votre demande d'analyse planifiée pour {job.target_ip} a été refusée par l'administrateur.<br>Raison : {reason}"
+        send_user_notification(job.user, subject, content)
+            
         db.session.commit()
         flash(f"Tâche {job_id} refusée.", "info")
         return jsonify({"success": True, "message": "Tâche refusée"})
@@ -2170,8 +2371,12 @@ def stop_analysis_job(job_id: int):
 @app.route('/api/jobs', methods=['GET'])
 @login_required
 def api_get_jobs():
-    """Récupérer les tâches de l'utilisateur actuel"""
-    jobs = AnalysisJob.query.filter_by(user_id=current_user.id).order_by(AnalysisJob.created_at.desc()).all()
+    """Récupérer les tâches de l'utilisateur actuel (approuvées uniquement pour la planification)"""
+    # Filtrer par user_id et par statut 'active' (ou selon ta logique d'approbation)
+    jobs = AnalysisJob.query.filter(
+        AnalysisJob.user_id == current_user.id,
+        AnalysisJob.status == 'active'
+    ).order_by(AnalysisJob.created_at.desc()).all()
     
     return jsonify({
         "status": "success",
@@ -2242,10 +2447,10 @@ def dashboard():
         }
         session['last_analysis_id'] = last_analysis.id
     
-    # Récupérer les jobs planifiés de l'utilisateur
-    scheduled_jobs = AnalysisJob.query.filter_by(user_id=current_user.id).order_by(
-        AnalysisJob.created_at.desc()
-    ).all()
+    # Récupérer TOUS les jobs planifiés de l'utilisateur (tous statuts)
+    scheduled_jobs = AnalysisJob.query.filter(
+        AnalysisJob.user_id == current_user.id
+    ).order_by(AnalysisJob.created_at.desc()).all()
     
     return render_template(
         'index.html',
@@ -2280,5 +2485,294 @@ def api_get_job(job_id: int):
         }
     })
 
+@app.route('/api/stats', methods=['GET'])
+@login_required
+def api_stats():
+    period = request.args.get('period', '7d')
+    now = datetime.now(timezone.utc)
+    until = now # Par défaut
+
+    # ── Configuration de la plage et du formatage ──
+    if period == '24h':
+        since = now - timedelta(hours=24)
+        group_fmt = '%H:00'
+        step = timedelta(hours=2)
+    elif period == '7d':
+        since = now - timedelta(days=7)
+        group_fmt = '%d %b'
+        step = timedelta(days=1)
+    elif period == 'weekend':
+        days_since_sat = (now.weekday() - 5) % 7
+        since = (now - timedelta(days=days_since_sat)).replace(hour=0, minute=0, second=0)
+        group_fmt = '%a %Hh'
+        step = timedelta(hours=6)
+    elif period == 'custom':
+        try:
+            start_date_str = request.args.get('start_date')
+            end_date_str = request.args.get('end_date')
+            
+            if not start_date_str or not end_date_str:
+                return jsonify({"error": "Dates de début et de fin requises"}), 400
+                
+            since = datetime.fromisoformat(start_date_str.replace('T', ' ')).replace(tzinfo=timezone.utc)
+            until = datetime.fromisoformat(end_date_str.replace('T', ' ')).replace(tzinfo=timezone.utc)
+            
+            # Définition flexible de group_fmt pour le mode custom
+            diff = until - since
+            if diff.days <= 1:
+                group_fmt = '%H:00'
+                step = timedelta(hours=1)
+            elif diff.days <= 31:
+                group_fmt = '%d %b'
+                step = timedelta(days=1)
+            else:
+                group_fmt = '%b %Y'
+                step = timedelta(days=30)
+        except (ValueError, TypeError) as e:
+            return jsonify({"error": f"Dates invalides: {str(e)}"}), 400
+    else:
+        return jsonify({"error": "Période invalide"}), 400
+
+    # ── Requête Base de données ──
+    analyses = Analysis.query.filter(
+        Analysis.user_id == current_user.id,
+        Analysis.created_at >= since,
+        Analysis.created_at <= until
+    ).all()
+
+    # ── Initialisation des Buckets (Stats par catégorie) ──
+    buckets = {}
+    cursor = since
+    while cursor <= until:
+        label = cursor.strftime(group_fmt)
+        if label not in buckets:
+            buckets[label] = {"Critique": 0, "Avertissement": 0, "Info": 0, "total_logs": 0, "total_errors": 0, "total_warnings": 0}
+        cursor += step
+
+    # ── Remplissage des données ──
+    for a in analyses:
+        label = a.created_at.strftime(group_fmt)
+        if label not in buckets:
+            buckets[label] = {"Critique": 0, "Avertissement": 0, "Info": 0, "total_logs": 0, "total_errors": 0, "total_warnings": 0}
+        
+        # 1. Stats par Analyse (pour le graphique à barres existant)
+        status = str(a.ai_status or "").lower()
+        if 'critique' in status or 'danger' in status:
+            buckets[label]['Critique'] += 1
+        elif 'attention' in status or 'warning' in status:
+            buckets[label]['Avertissement'] += 1
+        else:
+            buckets[label]['Info'] += 1
+            
+        # 2. Agrégation des volumes réels (pour les compteurs du dashboard)
+        astats = a.stats or {}
+        buckets[label]['total_logs'] += int(astats.get('total', 0))
+        buckets[label]['total_errors'] += int(astats.get('errors', 0))
+        buckets[label]['total_warnings'] += int(astats.get('warnings', 0))
+
+    # Trier les buckets par date pour l'affichage
+    sorted_labels = sorted(buckets.keys(), key=lambda x: datetime.strptime(x, group_fmt) if '%' in group_fmt else x)
+    
+    return jsonify({
+        "labels": sorted_labels,
+        "critique": [buckets[lb]['Critique'] for lb in sorted_labels],
+        "avertissement": [buckets[lb]['Avertissement'] for lb in sorted_labels],
+        "info": [buckets[lb]['Info'] for lb in sorted_labels],
+        "total_logs": sum(buckets[lb]['total_logs'] for lb in sorted_labels),
+        "total_errors": sum(buckets[lb]['total_errors'] for lb in sorted_labels),
+        "total_warnings": sum(buckets[lb]['total_warnings'] for lb in sorted_labels)
+    })
+
+# --- GESTION DES PROFILS SERVEURS SSH ---
+
+def _get_fernet():
+    key = os.getenv("FERNET_KEY")
+    if not key:
+        # Fallback pour le développement, mais devrait être dans .env
+        key = Fernet.generate_key().decode()
+    return Fernet(key.encode())
+
+@app.route('/api/ssh/profiles', methods=['GET'])
+@login_required
+def get_ssh_profiles():
+    """Récupère les serveurs enregistrés de l'utilisateur."""
+    from models import SavedServer
+    profiles = SavedServer.query.filter_by(user_id=current_user.id).order_by(SavedServer.last_used_at.desc()).all()
+    
+    # Déchiffrement du nom d'utilisateur pour l'affichage (pas le mot de passe)
+    f = _get_fernet()
+    
+    return jsonify({
+        "success": True,
+        "profiles": [
+            {
+                "id": p.id,
+                "ip": p.ip,
+                "username": f.decrypt(p.encrypted_username.encode()).decode(),
+                "log_path": p.log_path,
+                "last_used_at": p.last_used_at.isoformat() if p.last_used_at else None
+            }
+            for p in profiles
+        ]
+    })
+
+@app.route('/api/ssh/profiles/<int:profile_id>/decrypt', methods=['POST'])
+@login_required
+def decrypt_ssh_profile(profile_id):
+    """Déchiffre le nom d'utilisateur et le mot de passe d'un serveur pour remplissage auto."""
+    from models import SavedServer
+    profile = SavedServer.query.filter_by(id=profile_id, user_id=current_user.id).first()
+    
+    if not profile:
+        return jsonify({"success": False, "message": "Serveur introuvable"}), 404
+        
+    try:
+        f = _get_fernet()
+        username = f.decrypt(profile.encrypted_username.encode()).decode()
+        password = f.decrypt(profile.encrypted_password.encode()).decode()
+        return jsonify({
+            "success": True,
+            "username": username,
+            "password": password
+        })
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Erreur de déchiffrement : {str(e)}"}), 500
+
+@app.route('/api/ssh/profiles/<int:profile_id>', methods=['DELETE'])
+@login_required
+def delete_ssh_profile(profile_id):
+    """Supprime un serveur enregistré."""
+    from models import SavedServer
+    profile = SavedServer.query.filter_by(id=profile_id, user_id=current_user.id).first()
+    
+    if not profile:
+        return jsonify({"success": False, "message": "Serveur introuvable"}), 404
+        
+    db.session.delete(profile)
+    db.session.commit()
+    return jsonify({"success": True, "message": "Serveur supprimé"})
+
+def save_or_update_ssh_profile(user_id, ip, username, password, log_path):
+    """Enregistre ou met à jour un serveur après une connexion réussie."""
+    from models import SavedServer
+    
+    # Chiffrement AES-256
+    f = _get_fernet()
+    enc_user = f.encrypt(username.encode()).decode()
+    enc_pass = f.encrypt(password.encode()).decode()
+    
+    profile = SavedServer.query.filter_by(user_id=user_id, ip=ip, log_path=log_path).first()
+    
+    if profile:
+        profile.encrypted_username = enc_user
+        profile.encrypted_password = enc_pass
+        profile.last_used_at = datetime.now(timezone.utc)
+    else:
+        profile = SavedServer(
+            user_id=user_id,
+            ip=ip,
+            encrypted_username=enc_user,
+            encrypted_password=enc_pass,
+            log_path=log_path,
+            last_used_at=datetime.now(timezone.utc)
+        )
+        db.session.add(profile)
+        
+    db.session.commit()
+    return profile
+
+@app.route('/api/ssh/analyze-all-today', methods=['POST'])
+@login_required
+def analyze_all_today():
+    """Analyse globale : scanne tous les serveurs enregistrés pour une date donnée."""
+    from models import SavedServer
+    from datetime import datetime
+    
+    data = request.get_json(silent=True) or {}
+    target_date = data.get('target_date') # Format "YYYY-MM-DD"
+    
+    servers = SavedServer.query.filter_by(user_id=current_user.id).all()
+    
+    if not servers:
+        return jsonify({"success": False, "message": "Aucun serveur enregistré trouvé."}), 404
+        
+    results = []
+    f = _get_fernet()
+    success_count = 0
+    
+    # Préparation des patterns de date
+    dt = datetime.fromisoformat(target_date) if target_date else datetime.now()
+    months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+    m_abbr = months[dt.month-1]
+    day_str = f"{dt.day:2d}"
+    date_syslog = f"{m_abbr} {day_str}"
+    date_iso = dt.strftime("%Y-%m-%d")
+    date_slash = dt.strftime("%d/%m/%Y")
+    date_slash_short = dt.strftime("%d/%b/%Y")
+    
+    regex = "|".join([f"^{date_syslog}", date_iso, date_slash, date_slash_short])
+    date_label = dt.strftime("%d %B %Y")
+    
+    for s in servers:
+        ssh = None
+        try:
+            username = f.decrypt(s.encrypted_username.encode()).decode()
+            password = f.decrypt(s.encrypted_password.encode()).decode()
+            
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(s.ip, username=username, password=password, timeout=10)
+            
+            # Commande optimisée
+            cmd = f"grep -aE '{regex}' {s.log_path} | tail -n 200"
+            
+            _, stdout, _ = ssh.exec_command(cmd)
+            log_content = stdout.read().decode('utf-8', errors='replace')
+            
+            if log_content.strip():
+                from src.parser import parse_log_file
+                temp_path = os.path.join(app.config['UPLOAD_FOLDER'], f"global_{s.id}.log")
+                with open(temp_path, "w", encoding="utf-8") as tmp:
+                    tmp.write(log_content)
+                
+                parsed_results = parse_log_file(temp_path)
+                os.remove(temp_path)
+                
+                stats = {
+                    "errors": len(parsed_results.get('ERROR', [])),
+                    "warnings": len(parsed_results.get('WARNING', [])),
+                    "info": len(parsed_results.get('INFO', [])),
+                    "total": sum(len(v) for v in parsed_results.values())
+                }
+                
+                save_analysis_for_current_user(
+                    source_type="ssh_global",
+                    source_path=s.log_path,
+                    server_ip=s.ip,
+                    stats=stats,
+                    segments=parsed_results,
+                    meta={"mode": "global_scan", "date": date_label},
+                    log_content=log_content
+                )
+                success_count += 1
+                results.append({"ip": s.ip, "status": "success"})
+            else:
+                results.append({"ip": s.ip, "status": "no_logs"})
+                
+        except Exception as e:
+            results.append({"ip": s.ip, "status": "error", "message": str(e)})
+        finally:
+            if ssh: ssh.close()
+            
+    return jsonify({
+        "success": True,
+        "message": f"{success_count} serveurs analysés pour le {date_label}.",
+        "date_analyzed": date_label,
+        "results": results
+    })
+
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+        ensure_default_admin()
     app.run(debug=True, port=5000)

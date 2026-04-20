@@ -1,4 +1,5 @@
 // Conserve les instances des graphiques pour un re-rendu propre.
+let statsChart = null; // Instance globale pour le graphique des stats
 let severityChart = null;
 let activityChart = null;
 let currentAnalysisData = null;
@@ -26,7 +27,9 @@ function getThemeColors() {
         grid: isDark ? 'rgba(159, 179, 207, 0.1)' : 'rgba(15, 23, 42, 0.05)',
         text: isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(26, 26, 26, 0.85)',
         tooltipBg: isDark ? 'rgba(15, 24, 40, 0.95)' : 'rgba(17, 24, 39, 0.92)',
-        pointBg: isDark ? '#0f172a' : '#ffffff'
+        pointBg: isDark ? '#0f172a' : '#ffffff',
+        glassBg: isDark ? 'rgba(30, 41, 59, 0.7)' : 'rgba(255, 255, 255, 0.7)',
+        glassBorder: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
     };
 }
 
@@ -35,6 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialise la préférence visuelle enregistrée et relie les boutons.
     initThemeSwitch();
     initNotificationsUI();
+    initStatsFilters(); // Initialisation des filtres de stats
 
     // Priorité à l'analyse injectée par le serveur (Session Flask)
     // Sinon, repli sur le localStorage (pour compatibilité immédiate après analyse)
@@ -47,7 +51,171 @@ document.addEventListener('DOMContentLoaded', function() {
         updateDashboard(data);
         initDetailsMonitoringView(data);
     }
+
+    // Charger les stats initiales (7 jours par défaut)
+    loadStats('7d');
 });
+
+/**
+ * Initialisation des filtres de statistiques
+ */
+function initStatsFilters() {
+    const periodRadios = document.querySelectorAll('input[name="period"]');
+    periodRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                loadStats(e.target.value);
+                document.getElementById('custom-range-container')?.classList.add('d-none');
+            }
+        });
+    });
+
+    const customToggle = document.getElementById('custom-range-toggle');
+    customToggle?.addEventListener('click', () => {
+        const container = document.getElementById('custom-range-container');
+        container?.classList.toggle('d-none');
+    });
+
+    const applyCustomBtn = document.getElementById('apply-custom');
+    applyCustomBtn?.addEventListener('click', () => {
+        const start = document.getElementById('start-date').value;
+        const end = document.getElementById('end-date').value;
+        if (start && end) {
+            loadStats('custom', start, end);
+        } else {
+            Swal.fire('Erreur', 'Veuillez sélectionner une date de début et de fin.', 'warning');
+        }
+    });
+}
+
+/**
+ * Charge les statistiques depuis l'API et met à jour l'UI
+ */
+async function loadStats(period, start = null, end = null) {
+    const loader = document.getElementById('chart-loader');
+    loader?.classList.remove('d-none');
+
+    let url = `/api/stats?period=${period}`;
+    if (period === 'custom' && start && end) {
+        url += `&start_date=${start}&end_date=${end}`;
+    }
+
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.error) throw new Error(data.error);
+
+        updateStatsUI(data);
+        renderStatsChart(data);
+    } catch (error) {
+        console.error("Erreur stats:", error);
+        // Optionnel: afficher une erreur sur le chart
+    } finally {
+        loader?.classList.add('d-none');
+    }
+}
+
+function updateStatsUI(data) {
+    const totalLogs = data.total_logs || 0;
+    const totalAnomalies = (data.total_errors || 0) + (data.total_warnings || 0);
+    const totalNormal = Math.max(0, totalLogs - totalAnomalies);
+
+    animateCounter('m-total', totalLogs);
+    animateCounter('m-anomaly', totalAnomalies);
+    animateCounter('m-normal', totalNormal);
+}
+
+function animateCounter(id, target) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    
+    const start = parseInt(el.textContent) || 0;
+    const duration = 800;
+    const startTime = performance.now();
+
+    function update(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const ease = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+        const current = Math.floor(start + (target - start) * ease);
+        
+        el.textContent = current;
+        
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        }
+    }
+    requestAnimationFrame(update);
+}
+
+function renderStatsChart(data) {
+    const canvas = document.getElementById('statsChart');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (statsChart) statsChart.destroy();
+
+    const colors = getThemeColors();
+
+    statsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.labels,
+            datasets: [
+                {
+                    label: 'Critique',
+                    data: data.critique,
+                    backgroundColor: colors.deepRed,
+                    borderRadius: 4,
+                    stack: 'Stack 0',
+                },
+                {
+                    label: 'Avertissement',
+                    data: data.avertissement,
+                    backgroundColor: colors.amber,
+                    borderRadius: 4,
+                    stack: 'Stack 0',
+                },
+                {
+                    label: 'Info',
+                    data: data.info,
+                    backgroundColor: colors.softBlue,
+                    borderRadius: 4,
+                    stack: 'Stack 0',
+                }
+            ]
+        },
+        options: {
+            ...baseChartOptions(),
+            plugins: {
+                ...baseChartOptions().plugins,
+                legend: {
+                    ...baseChartOptions().plugins.legend,
+                    position: 'top',
+                    align: 'end'
+                }
+            },
+            scales: {
+                x: {
+                    stacked: true,
+                    grid: { display: false },
+                    ticks: { color: colors.text }
+                },
+                y: {
+                    stacked: true,
+                    grid: { color: colors.grid, drawBorder: false },
+                    ticks: { color: colors.text, precision: 0 },
+                    beginAtZero: true
+                }
+            },
+            animation: {
+                duration: 1000,
+                easing: 'easeOutQuart'
+            }
+        }
+    });
+}
 
 /**
  * Met à jour les éléments du tableau de bord.
@@ -65,15 +233,25 @@ function updateDashboard(data) {
     // Met à jour la zone "Points Clés de l'Audit IA"
     const aiResult = document.getElementById('aiResult');
     if (aiResult) {
-        const insights = data.ai_insights || (data.meta && data.meta.ai_insights) || "Analyse en cours...";
+        const meta = data.meta || {};
+        const auditPoints = meta.audit_points || data.audit_points;
+        const insights = meta.ai_insights || data.ai_insights || "Analyse en cours...";
         
-        // Transformation du texte en liste à puces si c'est un paragraphe long
-        let bulletPoints = insights;
-        if (insights.length > 50 && !insights.includes('<li>')) {
-            const sentences = insights.split('. ').filter(s => s.trim().length > 0);
+        let bulletPoints = "";
+        if (Array.isArray(auditPoints) && auditPoints.length > 0) {
+            // Priorité aux points d'audit structurés
             bulletPoints = `<ul class="mb-0 ps-3">` + 
-                sentences.map(s => `<li class="mb-2">${s.trim().replace(/\.$/, '')}.</li>`).join('') + 
+                auditPoints.map(p => `<li class="mb-2">${p}</li>`).join('') + 
                 `</ul>`;
+        } else {
+            // Transformation du texte en liste à puces si c'est un paragraphe long
+            bulletPoints = insights;
+            if (insights.length > 50 && !insights.includes('<li>')) {
+                const sentences = insights.split('. ').filter(s => s.trim().length > 0);
+                bulletPoints = `<ul class="mb-0 ps-3">` + 
+                    sentences.map(s => `<li class="mb-2">${s.trim().replace(/\.$/, '')}.</li>`).join('') + 
+                    `</ul>`;
+            }
         }
 
         aiResult.innerHTML = `
@@ -186,6 +364,28 @@ function renderSeverityChart(data) {
 
     const colors = getThemeColors();
 
+    // Priorité aux données IA si disponibles
+    const counts = data.meta?.severity_counts || data.severity_counts;
+    let chartData = [];
+    let labels = ['Erreurs', 'Avertissements', 'Info'];
+
+    if (counts && (counts.Critique !== undefined || counts.Moyen !== undefined)) {
+        chartData = [counts.Critique || 0, counts.Moyen || 0, counts.Faible || 0];
+        labels = ['Critique', 'Moyen', 'Faible'];
+    } else {
+        // Fallback sur les stats de base si l'IA n'a pas renvoyé de counts
+        chartData = [data.stats?.errors || 0, data.stats?.warnings || 0, data.stats?.info || 0];
+    }
+
+    // Vérification si données vides
+    if (chartData.every(v => v === 0)) {
+        ctx.font = "14px Inter";
+        ctx.fillStyle = colors.text;
+        ctx.textAlign = "center";
+        ctx.fillText("Données indisponibles", canvas.width / 2, canvas.height / 2);
+        return;
+    }
+
     // Création de gradients cyber
     const gradRed = ctx.createLinearGradient(0, 0, 0, 200);
     gradRed.addColorStop(0, colors.deepRed);
@@ -198,9 +398,9 @@ function renderSeverityChart(data) {
     severityChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['Erreurs', 'Avertissements', 'Info'],
+            labels: labels,
             datasets: [{
-                data: [data.stats.errors, data.stats.warnings, data.stats.info],
+                data: chartData,
                 backgroundColor: [
                     gradRed,
                     colors.amber,
@@ -238,9 +438,29 @@ function renderActivityChart(data) {
     if (activityChart) activityChart.destroy();
 
     const colors = getThemeColors();
-    const points = buildActivitySeries(data);
-    const labels = points.map(p => p.label);
-    const values = points.map(p => p.count);
+    
+    // Priorité à la tendance IA
+    const aiTrend = data.meta?.activity_trend || data.activity_trend;
+    let labels = [];
+    let values = [];
+
+    if (Array.isArray(aiTrend) && aiTrend.length > 0) {
+        values = aiTrend;
+        labels = aiTrend.map((_, i) => `T${i+1}`);
+    } else {
+        const points = buildActivitySeries(data);
+        labels = points.map(p => p.label);
+        values = points.map(p => p.count);
+    }
+
+    // Vérification si données vides
+    if (values.length === 0 || values.every(v => v === 0)) {
+        ctx.font = "14px Inter";
+        ctx.fillStyle = colors.text;
+        ctx.textAlign = "center";
+        ctx.fillText("Données indisponibles", canvas.width / 2, canvas.height / 2);
+        return;
+    }
 
     const gradient = ctx.createLinearGradient(0, 0, 0, 300);
     gradient.addColorStop(0, colors.softBlueSoft);

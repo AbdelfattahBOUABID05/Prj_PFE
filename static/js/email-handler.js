@@ -20,13 +20,13 @@ document.getElementById('emailForm')?.addEventListener('submit', async function(
     btn.innerText = "Envoi en cours...";
 
     try {
-        const response = await fetch('/send-email', {
+        const response = await fetch('/api/send-report-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
         const res = await response.json();
-        if(res.status === "success") {
+        if(res.success) {
             status.innerHTML = `<div class="alert alert-success">${res.message}</div>`;
         } else {
             throw new Error(res.message);

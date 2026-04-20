@@ -24,19 +24,31 @@
                     type="button"
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
-                    aria-label="Notifications critiques">
+                    aria-label="Notifications"
+                    onclick="markNotificationsAsRead()">
                     <i class="fas fa-bell"></i>
-                    <span id="notification-count" class="notification-count-badge d-none">0</span>
+                    <span id="notification-count" class="notification-count-badge {% if unread_notif_count == 0 %}d-none{% endif %}">{{ unread_notif_count }}</span>
                 </button>
                 <ul class="dropdown-menu notification-dropdown">
                     <li class="notification-header">
-                        <span class="fw-bold">Alertes critiques</span>
-                        <button id="clearNotificationsBtn" type="button" class="btn btn-sm btn-outline-saas py-1 px-2">
+                        <span class="fw-bold">Notifications</span>
+                        <button id="clearNotificationsBtn" type="button" class="btn btn-sm btn-outline-saas py-1 px-2" onclick="markNotificationsAsRead()">
                             Tout effacer
                         </button>
                     </li>
                     <li><hr class="dropdown-divider"></li>
-                    <li id="notification-empty" class="notification-empty px-3 py-2">Aucune alerte pour le moment.</li>
+                    {% if user_notifications %}
+                        {% for notif in user_notifications %}
+                            <li class="px-3 py-2 border-bottom">
+                                <div class="small fw-bold {% if notif.status == 'active' %}text-success{% else %}text-danger{% endif %}">
+                                    {{ "Tâche activée" if notif.status == 'active' else "Tâche refusée" }}
+                                </div>
+                                <div class="small text-muted">{{ notif.message }}</div>
+                            </li>
+                        {% endfor %}
+                    {% else %}
+                        <li id="notification-empty" class="notification-empty px-3 py-2">Aucune nouvelle notification.</li>
+                    {% endif %}
                     <li id="notification-list"></li>
                 </ul>
             </div>
@@ -64,18 +76,21 @@
                         <i class="fas fa-question-circle"></i> Aide & Documentation
                     </a>
                     <div class="sidebar-section-title">Gestion</div>
-                    {% if current_user.is_authenticated %}
-                        <a href="/profile" class="nav-link {% if request.path == '/profile' %}active{% endif %}">
-                            <i class="fas fa-gear"></i> Profil / Paramètres
-                        </a>
                     {% if current_user.role == 'Admin' %}
                         <a href="/admin/users" class="nav-link {% if request.path == '/admin/users' %}active{% endif %}">
                             <i class="fas fa-users-gear"></i> Gérer les utilisateurs
                         </a>
                         <a href="/admin/scheduled-jobs" class="nav-link {% if request.path == '/admin/scheduled-jobs' %}active{% endif %}">
                             <i class="fas fa-clock"></i> Admin Jobs
+                            {% if pending_jobs_count > 0 %}
+                                <span class="badge rounded-pill bg-danger ms-auto">{{ pending_jobs_count }}</span>
+                            {% endif %}
                         </a>
                     {% endif %}
+                        {% if current_user.is_authenticated %}
+                        <a href="/profile" class="nav-link {% if request.path == '/profile' %}active{% endif %}">
+                            <i class="fas fa-gear"></i> Profil / Paramètres
+                        </a>
                         <a href="/logout" class="nav-link nav-link-danger" onclick="localStorage.clear();">
                             <i class="fas fa-right-from-bracket"></i> Déconnexion
                         </a>
@@ -175,6 +190,22 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        function markNotificationsAsRead() {
+            const badge = document.getElementById('notification-count');
+            if (badge && !badge.classList.contains('d-none')) {
+                fetch('/api/notifications/mark-read', { method: 'POST' })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            badge.classList.add('d-none');
+                            badge.textContent = '0';
+                        }
+                    })
+                    .catch(err => console.error('Error marking notifications as read:', err));
+            }
+        }
+    </script>
     {% block extra_js %}{% endblock %}
 
     {# Top-level modals live here to avoid trapped backdrops #}

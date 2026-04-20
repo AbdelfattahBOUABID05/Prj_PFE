@@ -29,78 +29,144 @@ def init_scheduler(app: Flask):
     logger.info("APScheduler initialized successfully")
 
 
-def run_planned_analysis(job_id: int, app: Flask):
+def run_planned_analysis(job_id: int):
     """
-    Fonction principale pour exécuter une tâche d'analyse planifiée.
-    
-    Args:
-        job_id: ID de la tâche AnalysisJob
-        app: Instance Flask pour le contexte applicatif
+    Reçoit UNIQUEMENT un int sérialisable.
+    Reconstruit le contexte Flask en interne.
     """
-    with app.app_context():
-        from models import db, AnalysisJob, Analysis, User
-        from app import (
-            ssh_analyze_for_job, 
-            generate_security_summary, 
-            generate_pdf_report_bytes,
-            send_email_notification
-        )
-        
+    # Imports locaux pour éviter tout circular import au démarrage
+    from extensions import db
+    from models import AnalysisJob, Analysis
+    from datetime import datetime, timezone
+    import paramiko, os
+
+    # Import de l'app en dernier, après que tout le reste est chargé
+    from app import app as flask_app, send_notification
+
+    with flask_app.app_context():
         try:
-            job = AnalysisJob.query.get(job_id)
-            if not job:
-                logger.error(f"AnalysisJob {job_id} not found")
-                return False
+            job = db.session.get(AnalysisJob, job_id)
+            if not job or job.status != 'active':
+                print(f"[SCHEDULER] Job {job_id} introuvable ou inactif.")
+                return
+
+            print(f"[SCHEDULER] Démarrage analyse #{job_id} → {job.target_ip}")
+
+            # Déchiffrement du mot de passe SSH
+            fernet_key = os.getenv("FERNET_KEY")
+            from cryptography.fernet import Fernet
+            f = Fernet(fernet_key.encode())
+            ssh_password = f.decrypt(job.ssh_password_enc.encode()).decode()
+
+            # Connexion SSH et récupération des logs
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(
+                job.target_ip,
+                username=job.ssh_username,
+                password=ssh_password,
+                timeout=15
+            )
+            _, stdout, _ = ssh.exec_command(f"tail -n 500 {job.log_path}")
+            log_content = stdout.read().decode('utf-8', errors='replace')
+            ssh.close()
+
+            # Parser les logs (Import local)
+            from src.parser import parse_log_file
+            # Sauvegarder temporairement
+            temp_path = os.path.join(os.getenv('UPLOAD_FOLDER', 'uploads'), f"job_{job.id}_temp.log")
+            with open(temp_path, "w", encoding="utf-8") as f:
+                f.write(log_content)
             
-            # Vérifier que le statut est 'active'
-            if job.status != 'active':
-                logger.warning(f"Job {job_id} status is {job.status}, skipping execution")
-                return False
-            
-            logger.info(f"Starting analysis job {job_id} for IP {job.target_ip}")
-            
-            # 1. Exécuter l'analyse SSH
-            try:
-                analysis = ssh_analyze_for_job(job)
-                if not analysis:
-                    logger.error(f"SSH analysis failed for job {job_id}")
-                    return False
-            except Exception as e:
-                logger.error(f"SSH analysis error for job {job_id}: {str(e)}")
-                return False
-            
-            # 2. Audit avec Gemini (déjà intégré dans ssh_analyze_for_job via generate_security_summary)
-            logger.info(f"Gemini audit completed for job {job_id}")
-            
-            # 3. Générer le PDF
-            try:
-                pdf_content = generate_pdf_report_bytes(analysis)
-                logger.info(f"PDF generated for job {job_id}")
-            except Exception as e:
-                logger.error(f"PDF generation error for job {job_id}: {str(e)}")
-                pdf_content = None
-            
-            # 4. Mettre à jour les dates d'exécution
+            results = parse_log_file(temp_path)
+            os.remove(temp_path)
+
+            # Calcul des stats
+            stats = {
+                "errors": len(results.get('ERROR', [])),
+                "warnings": len(results.get('WARNING', [])),
+                "info": len(results.get('INFO', [])),
+                "total": sum(len(v) for v in results.values())
+            }
+
+            # Génération métriques IA (Import local)
+            from app import generate_security_summary
+            ai_metrics = generate_security_summary(model=None, log_text=log_content)
+
+            # Créer l'analyse
+            analysis = Analysis(
+                user_id=job.user_id,
+                job_id=job.id,
+                source_type="scheduled_ssh",
+                source_path=job.log_path,
+                server_ip=job.target_ip,
+                stats=stats,
+                segments=results,
+                meta={
+                    "scheduled_job_id": job.id,
+                    "ai_insights": ai_metrics.get("ai_insights"),
+                    "severity_counts": ai_metrics.get("severity_counts"),
+                    "activity_trend": ai_metrics.get("activity_trend"),
+                    "audit_points": ai_metrics.get("audit_points"),
+                    "corrective_actions": ai_metrics.get("corrective_actions", []),
+                    "prevention_steps": ai_metrics.get("prevention_steps", []),
+                    "security_level": ai_metrics.get("security_level")
+                },
+                ai_score=ai_metrics.get("score"),
+                ai_status=ai_metrics.get("status"),
+                ai_menaces=ai_metrics.get("menaces")
+            )
+            db.session.add(analysis)
+
+            # Mise à jour du job
             job.last_run_at = datetime.now(timezone.utc)
-            next_run_time = calculate_next_run_time(job.frequency, job.last_run_at)
-            job.next_run_at = next_run_time
+            
+            # Notification par email si activée
+            from app import send_user_notification
+            if job.user.email_notifications_enabled:
+                if ai_metrics.get('status') == 'Critique' or ai_metrics.get('menaces', 0) > 0:
+                    subject = f"🚨 ALERTE SÉCURITÉ : {job.target_ip}"
+                    content = f"""
+                    <h2>Alerte de sécurité LogAnalyzer</h2>
+                    <p>Une anomalie a été détectée sur le serveur <strong>{job.target_ip}</strong>.</p>
+                    <ul>
+                        <li><strong>Statut :</strong> {ai_metrics.get('status')}</li>
+                        <li><strong>Score :</strong> {ai_metrics.get('score')}/100</li>
+                        <li><strong>Menaces :</strong> {ai_metrics.get('menaces')}</li>
+                    </ul>
+                    <h3>Insights IA :</h3>
+                    <p>{ai_metrics.get('ai_insights')}</p>
+                    <p>Consultez votre tableau de bord pour plus de détails.</p>
+                    """
+                    send_user_notification(job.user, subject, content)
+
             db.session.commit()
-            
-            # 5. Vérifier les anomalies et envoyer email
-            has_anomaly = check_anomalies(analysis)
-            if has_anomaly and job.notify_on_anomaly:
-                try:
-                    send_email_notification(job, analysis, pdf_content)
-                    logger.info(f"Anomaly notification sent for job {job_id}")
-                except Exception as e:
-                    logger.error(f"Email notification error for job {job_id}: {str(e)}")
-            
-            logger.info(f"Analysis job {job_id} completed successfully")
-            return True
-            
+            print(f"[SCHEDULER] Job {job_id} terminé avec succès.")
+
         except Exception as e:
-            logger.error(f"Unexpected error in run_planned_analysis {job_id}: {str(e)}")
-            return False
+            db.session.rollback()
+            error_msg = str(e)
+            print(f"[SCHEDULER] Erreur job {job_id} : {error_msg}")
+            
+            # Enregistrer l'échec dans l'historique pour visibilité utilisateur
+            try:
+                failed_analysis = Analysis(
+                    user_id=job.user_id,
+                    job_id=job.id,
+                    source_type="scheduled_ssh",
+                    source_path=job.log_path,
+                    server_ip=job.target_ip,
+                    stats={"total": 0, "errors": 0, "warnings": 0, "info": 0},
+                    segments={},
+                    meta={"error": error_msg, "status": "failed"},
+                    ai_status="Erreur",
+                    ai_score=0,
+                    ai_menaces=0
+                )
+                db.session.add(failed_analysis)
+                db.session.commit()
+            except Exception as db_e:
+                print(f"[SCHEDULER] Impossible d'enregistrer l'erreur en DB : {db_e}")
 
 
 def ssh_analyze_for_job(job) -> Analysis:

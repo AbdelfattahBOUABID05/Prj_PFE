@@ -74,6 +74,91 @@
     </div>
 </div>
 
+    <!-- Statistics Section with Filters -->
+    <div class="glass-card p-4 mb-4 fade-in-up" style="animation-delay: 50ms;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <div>
+                <h5 class="fw-bold mb-1">Statistiques des Analyses</h5>
+                <p class="text-muted small mb-0">Visualisation intelligente des performances de sécurité</p>
+            </div>
+            
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <div class="btn-group btn-group-sm period-btn-group" role="group">
+                    <input type="radio" class="btn-check" name="period" id="p-24h" value="24h" autocomplete="off">
+                    <label class="btn btn-outline-saas" for="p-24h">Aujourd'hui</label>
+
+                    <input type="radio" class="btn-check" name="period" id="p-7d" value="7d" autocomplete="off" checked>
+                    <label class="btn btn-outline-saas" for="p-7d">7 jours</label>
+
+                    <input type="radio" class="btn-check" name="period" id="p-month" value="30d" autocomplete="off">
+                    <label class="btn btn-outline-saas" for="p-month">Ce mois</label>
+
+                    <input type="radio" class="btn-check" name="period" id="p-year" value="365d" autocomplete="off">
+                    <label class="btn btn-outline-saas" for="p-year">Année</label>
+                </div>
+                
+                <button class="btn btn-sm btn-outline-secondary" id="custom-range-toggle" title="Plage personnalisée">
+                    <i class="fas fa-calendar-alt"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Custom Range Picker (Hidden by default) -->
+        <div id="custom-range-container" class="d-none mb-4 p-3 bg-soft-secondary rounded-3 border">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-5">
+                    <label class="small fw-bold text-muted mb-1">Date de début</label>
+                    <input type="datetime-local" id="start-date" class="form-control form-control-sm input-saas" />
+                </div>
+                <div class="col-md-5">
+                    <label class="small fw-bold text-muted mb-1">Date de fin</label>
+                    <input type="datetime-local" id="end-date" class="form-control form-control-sm input-saas" />
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary btn-sm w-100" id="apply-custom">Appliquer</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="glass-card border-0 bg-soft-primary p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <p class="text-muted small fw-bold mb-0">TOTAL ANALYSÉS</p>
+                        <i class="fas fa-database text-primary opacity-50"></i>
+                    </div>
+                    <h3 class="fw-bold mb-0 counter-value" id="m-total">0</h3>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card border-0 bg-soft-danger p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <p class="text-muted small fw-bold mb-0">ANOMALIES</p>
+                        <i class="fas fa-exclamation-triangle text-danger opacity-50"></i>
+                    </div>
+                    <h3 class="fw-bold text-danger mb-0 counter-value" id="m-anomaly">0</h3>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card border-0 bg-soft-success p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <p class="text-muted small fw-bold mb-0">NORMAUX</p>
+                        <i class="fas fa-check-circle text-success opacity-50"></i>
+                    </div>
+                    <h3 class="fw-bold text-success mb-0 counter-value" id="m-normal">0</h3>
+                </div>
+            </div>
+        </div>
+
+        <div style="position:relative; width:100%; height:350px;">
+            <canvas id="statsChart"></canvas>
+            <div id="chart-loader" class="chart-overlay d-none">
+                <div class="spinner-border text-primary" role="status"></div>
+            </div>
+        </div>
+    </div>
+
+
 <div class="row g-4 fade-in-up" style="animation-delay: 80ms;">
     <div class="col-md-5">
         <div class="stat-card glass-card h-100 text-center">
@@ -205,7 +290,7 @@
 
             {% if scheduled_jobs and scheduled_jobs|length > 0 %}
             <div class="table-responsive">
-                <table class="table table-hover table-cyber align-middle mb-0">
+                <table id="scheduled-jobs-table" class="table table-hover table-cyber align-middle mb-0">
                     <thead class="text-muted small">
                         <tr>
                             <th>IP CIBLE</th>
@@ -219,7 +304,7 @@
                     </thead>
                     <tbody>
                         {% for job in scheduled_jobs %}
-                        <tr>
+                        <tr style="cursor: pointer;" onclick="showJobHistory({{ job.id }})">
                             <td><span class="fw-bold text-main">{{ job.target_ip }}</span></td>
                             <td><code class="small">{{ job.log_path }}</code></td>
                             <td>
@@ -228,7 +313,7 @@
                             <td>
                                 {% if job.status == 'pending' %}
                                     <span class="badge rounded-pill bg-soft-warning text-warning">
-                                        <i class="fas fa-hourglass-half me-1"></i>En attente
+                                        <i class="fas fa-hourglass-half me-1"></i>En attente d'approbation
                                     </span>
                                 {% elif job.status == 'active' %}
                                     <span class="badge rounded-pill bg-soft-success text-success">
@@ -237,6 +322,10 @@
                                 {% elif job.status == 'refused' %}
                                     <span class="badge rounded-pill bg-soft-danger text-danger">
                                         <i class="fas fa-times-circle me-1"></i>Refusé
+                                    </span>
+                                {% elif job.status == 'stopped' %}
+                                    <span class="badge rounded-pill bg-soft-secondary text-secondary">
+                                        <i class="fas fa-stop-circle me-1"></i>Arrêté
                                     </span>
                                 {% else %}
                                     <span class="badge rounded-pill bg-secondary">{{ job.status }}</span>
@@ -250,15 +339,25 @@
                                     <span class="text-muted">--</span>
                                 {% endif %}
                             </td>
-                            <td>
-                                {% if job.status == 'active' %}
-                                    <button type="button" class="btn btn-sm btn-outline-danger py-1" 
-                                            onclick="stopAnalysisJob({{ job.id }})">
-                                        <i class="fas fa-stop me-1"></i>Arrêter
-                                    </button>
-                                {% elif job.status == 'pending' %}
-                                    <span class="small text-muted">En attente d'approbation</span>
-                                {% endif %}
+                            <td onclick="event.stopPropagation()">
+                                <div class="btn-group">
+                                    {% if job.status == 'active' or job.status == 'stopped' %}
+                                        <button type="button" class="btn btn-sm btn-outline-saas py-1" onclick="showJobHistory({{ job.id }})">
+                                            <i class="fas fa-list me-1"></i>Détails
+                                        </button>
+                                    {% else %}
+                                        <button type="button" class="btn btn-sm btn-outline-secondary py-1" disabled title="L'analyse n'a pas encore commencé">
+                                            <i class="fas fa-list me-1"></i>Détails
+                                        </button>
+                                    {% endif %}
+                                    
+                                    {% if job.status == 'active' %}
+                                        <button type="button" class="btn btn-sm btn-outline-danger py-1" 
+                                                onclick="stopAnalysisJob({{ job.id }})">
+                                            <i class="fas fa-stop me-1"></i>Arrêter
+                                        </button>
+                                    {% endif %}
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -328,17 +427,21 @@
                     <!-- Frequency -->
                     <div class="mb-3">
                         <label for="frequency" class="form-label fw-bold">
-                            <i class="fas fa-repeat me-2"></i>Fréquence d'Exécution
+                            <i class="fas fa-clock me-2"></i>Fréquence d'Exécution
                         </label>
-                        <select class="form-select" id="frequency" name="frequency" required>
+                        <select class="form-select" id="frequency" name="frequency" required onchange="toggleCustomMinutes()">
                             <option value="hourly">Toutes les heures</option>
                             <option value="daily" selected>Quotidienne (02:00)</option>
                             <option value="weekly">Hebdomadaire (Lundi 02:00)</option>
                             <option value="monthly">Mensuelle (1er du mois 02:00)</option>
+                            <option value="custom">Personnalisée (en minutes)</option>
                         </select>
-                        <small class="text-muted">La tâche s'exécutera automatiquement selon cette fréquence</small>
                     </div>
 
+                    <div class="mb-3" id="custom_minutes_div" style="display: none;">
+                        <label for="custom_minutes" class="form-label fw-bold">Nombre de minutes :</label>
+                        <input type="number" class="form-control" id="custom_minutes" name="custom_minutes" min="1" placeholder="Ex: 15">
+                    </div>
                     <!-- SSH Username -->
                     <div class="mb-3">
                         <label for="sshUsername" class="form-label fw-bold">
@@ -399,10 +502,176 @@
         </div>
     </div>
 </div>
+
+<!-- Modal: Historique du Job -->
+<div class="modal fade" id="jobHistoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content glass-card border-0">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-history me-2 text-primary"></i>Historique des Analyses : <span id="historyJobIp"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-cyber align-middle mb-0">
+                        <thead class="text-muted small">
+                            <tr>
+                                <th>DATE</th>
+                                <th>STATUT</th>
+                                <th>SCORE</th>
+                                <th>MENACES</th>
+                                <th>ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jobHistoryTableBody">
+                            <!-- Rempli en JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="noHistoryMsg" class="text-center py-4 d-none">
+                    <p class="text-muted">Aucune analyse effectuée pour le moment.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
+    let statsChart = null;
+
+    function buildStatsChart(data) {
+        const ctx = document.getElementById('statsChart');
+        if (statsChart) statsChart.destroy();
+
+        statsChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [
+                    {
+                        label: 'Critique',
+                        data: data.critique,
+                        backgroundColor: '#dc3545', // Rouge
+                        borderColor: '#a71d2a',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                    },
+                    {
+                        label: 'Avertissement',
+                        data: data.avertissement,
+                        backgroundColor: '#ffc107', // Jaune/Orange
+                        borderColor: '#d39e00',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                    },
+                    {
+                        label: 'Info / Sain',
+                        data: data.info,
+                        backgroundColor: '#198754', // Vert
+                        borderColor: '#146c43',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        display: true,
+                        position: 'top',
+                        labels: { boxWidth: 12, font: { size: 11 } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ` ${ctx.dataset.label} : ${ctx.parsed.y}`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true, 
+                        ticks: { autoSkip: false, maxRotation: 30, font: { size: 11 } },
+                        grid: { display: false }
+                    },
+                    y: {
+                        stacked: true, 
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1, 
+                            callback: v => Math.round(v)
+                        }
+                    }
+                }
+            }
+        });
+
+        // Mise à jour des petits compteurs (Metric Cards)
+        const totalC = data.critique.reduce((a, b) => a + b, 0);
+        const totalA = data.avertissement.reduce((a, b) => a + b, 0);
+        const totalI = data.info.reduce((a, b) => a + b, 0);
+
+        if(document.getElementById('m-total')) 
+            document.getElementById('m-total').textContent = (totalC + totalA + totalI).toLocaleString('fr-MA');
+        if(document.getElementById('m-anomaly')) 
+            document.getElementById('m-anomaly').textContent = (totalC + totalA).toLocaleString('fr-MA');
+        if(document.getElementById('m-normal')) 
+            document.getElementById('m-normal').textContent = totalI.toLocaleString('fr-MA');
+    }
+
+        function loadStatsData() {
+            const period = document.getElementById('period-select').value;
+            const status = document.getElementById('chart-status');
+            status.textContent = 'Chargement...';
+
+            let url = `/api/stats?period=${period}`;
+
+            if (period === 'custom') {
+                const s = document.getElementById('start-date').value;
+                const e = document.getElementById('end-date').value;
+                if (!s || !e) {
+                    status.textContent = 'Sélectionne les deux dates s\'il te plaît.';
+                    return;
+                }
+                url += `&start_date=${encodeURIComponent(s)}&end_date=${encodeURIComponent(e)}`;
+            }
+
+            fetch(url)
+                .then(r => {
+                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                    return r.json();
+                })
+                .then(json => {
+                    buildStatsChart(json);
+                    status.textContent = '';
+                })
+                .catch(err => {
+                    console.error('[Stats chart]', err);
+                    status.textContent = 'Erreur de chargement des données.';
+                });
+        }
+
+        // Listeners
+        document.getElementById('period-select').addEventListener('change', function () {
+            const isCustom = this.value === 'custom';
+            const customRange = document.getElementById('custom-range');
+            if (customRange) customRange.classList.toggle('d-none', !isCustom);
+            if (!isCustom) loadStatsData();
+        });
+
+        const applyCustomBtn = document.getElementById('apply-custom');
+        if (applyCustomBtn) applyCustomBtn.addEventListener('click', loadStatsData);
+
+        // Chargement initial
+        loadStatsData();
+
     window.SERVER_ANALYSIS_DATA = {{ analysis_data | tojson | safe if analysis_data else 'null' }};
 
     /**
@@ -410,15 +679,22 @@
      */
     function submitScheduleJobForm() {
         const form = document.getElementById('scheduleJobForm');
-        const formData = new FormData(form);
-
+        
         // Valider le formulaire
         if (!form.checkValidity()) {
             form.reportValidity();
             return;
         }
 
-        const btn = event.target;
+        const formData = new FormData(form);
+        
+        // Afficher les données envoyées pour debug
+        console.log('FormData envoyées:');
+        for (let [key, value] of formData.entries()) {
+            console.log(`  ${key}: ${value}`);
+        }
+
+        const btn = document.querySelector('[onclick="submitScheduleJobForm()"]');
         const originalText = btn.innerHTML;
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Création...';
@@ -427,18 +703,29 @@
             method: 'POST',
             body: formData
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
+        .then(response => {
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers);
+            return response.json().then(data => ({
+                status: response.status,
+                data: data
+            }));
+        })
+        .then(({ status, data }) => {
+            console.log('Response data:', data);
+            
+            if (data.success || status === 201) {
                 Swal.fire({
                     icon: 'success',
                     title: 'Tâche créée!',
-                    text: 'Votre tâche a été créée et est en attente d\'approbation.',
+                    text: data.message || 'Votre tâche a été créée et est en attente d\'approbation.',
                     confirmButtonText: 'OK'
                 }).then(() => {
                     // Fermer le modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('scheduleJobModal'));
-                    modal.hide();
+                    if (modal) {
+                        modal.hide();
+                    }
                     
                     // Réinitialiser le formulaire
                     form.reset();
@@ -447,19 +734,22 @@
                     setTimeout(() => location.reload(), 1000);
                 });
             } else {
+                const errorMsg = data.message || data.error || 'Une erreur est survenue';
+                console.error('Error response:', errorMsg);
                 Swal.fire({
                     icon: 'error',
                     title: 'Erreur',
-                    text: data.message || 'Une erreur est survenue',
+                    text: errorMsg,
                 });
             }
         })
         .catch(error => {
-            console.error('Error:', error);
+            console.error('Fetch error:', error);
             Swal.fire({
                 icon: 'error',
-                title: 'Erreur',
-                text: 'Erreur de communication avec le serveur',
+                title: 'Erreur de Communication',
+                text: `Impossible de contacter le serveur: ${error.message}`,
+                footer: 'Vérifiez la console (F12) pour plus de détails'
             });
         })
         .finally(() => {
@@ -469,7 +759,7 @@
     }
 
     /**
-     * Arrête une tâche d'analyse planifiée
+     * Arrête une tâche d'analyse planifiée (AJAX)
      */
     function stopAnalysisJob(jobId) {
         Swal.fire({
@@ -495,8 +785,12 @@
                             icon: 'success',
                             title: 'Arrêté',
                             text: 'La tâche a été arrêtée avec succès',
-                            confirmButtonText: 'OK'
-                        }).then(() => location.reload());
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            // Rafraîchir uniquement la table ou la page proprement
+                            location.reload(); 
+                        });
                     } else {
                         Swal.fire('Erreur', data.message || 'Une erreur est survenue', 'error');
                     }
@@ -508,5 +802,68 @@
             }
         });
     }
+
+    function showJobHistory(jobId) {
+        const tableBody = document.getElementById('jobHistoryTableBody');
+        const noHistoryMsg = document.getElementById('noHistoryMsg');
+        const jobIpSpan = document.getElementById('historyJobIp');
+        
+        tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4"><span class="spinner-border spinner-border-sm me-2"></span>Chargement...</td></tr>';
+        noHistoryMsg.classList.add('d-none');
+        
+        const modal = new bootstrap.Modal(document.getElementById('jobHistoryModal'));
+        modal.show();
+
+        fetch(`/api/jobs/${jobId}/history`)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success) throw new Error(data.message);
+                
+                jobIpSpan.textContent = data.target_ip;
+                
+                if (data.history.length === 0) {
+                    tableBody.innerHTML = '';
+                    noHistoryMsg.classList.remove('d-none');
+                    return;
+                }
+                
+                tableBody.innerHTML = data.history.map(a => {
+                    const date = new Date(a.created_at).toLocaleString('fr-FR');
+                    let statusClass = 'text-success';
+                    if (a.ai_status === 'Critique' || a.ai_status === 'Erreur') statusClass = 'text-danger';
+                    else if (a.ai_status === 'Attention') statusClass = 'text-warning';
+                    
+                    const badgeBg = statusClass.replace('text-', 'bg-soft-');
+                    
+                    return `
+                        <tr>
+                            <td class="small">${date}</td>
+                            <td><span class="badge rounded-pill ${badgeBg} ${statusClass}">${a.ai_status || 'N/A'}</span></td>
+                            <td>
+                                <div class="progress" style="height: 6px; width: 60px;">
+                                    <div class="progress-bar ${a.ai_status === 'Erreur' ? 'bg-danger' : 'bg-primary'}" style="width: ${a.ai_score || 0}%"></div>
+                                </div>
+                            </td>
+                            <td>${a.ai_menaces || 0}</td>
+                            <td>
+                                ${a.ai_status === 'Erreur' ? 
+                                    '<span class="text-muted small">N/A</span>' : 
+                                    `<a href="/report?id=${a.id}" class="btn btn-sm btn-outline-saas py-0">Rapport</a>`
+                                }
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            })
+            .catch(err => {
+                tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Erreur: ${err.message}</td></tr>`;
+            });
+    }
+
+    function toggleCustomMinutes() {
+    const freq = document.getElementById('frequency').value;
+    const customDiv = document.getElementById('custom_minutes_div');
+    customDiv.style.display = (freq === 'custom') ? 'block' : 'none';
+}
 </script>
 {% endblock %}

@@ -7,9 +7,9 @@
     --text-color-dark: #ffffff;
     --text-muted-color: #5d6e85;
     --border-color: rgba(24, 46, 78, 0.14);
-    --primary-color: #2563eb;
-    --primary-strong: #1d4ed8;
-    --accent-color: #3b82f6;
+    --primary-color: #4f46e5; /* Indigo Blue */
+    --primary-strong: #4338ca;
+    --accent-color: #6366f1;
     --shadow-color: rgba(16, 35, 61, 0.14);
 
     /* Layout */
@@ -46,9 +46,9 @@ html[data-theme="dark"] {
     --text-color: var(--text-color-dark);
     --text-muted-color: #9fb3cf;
     --border-color: rgba(138, 169, 212, 0.16);
-    --primary-color: #4f93e4;
-    --primary-strong: #78acef;
-    --accent-color: #5eb2ff;
+    --primary-color: #818cf8; /* Indigo Soft */
+    --primary-strong: #a5b4fc;
+    --accent-color: #6366f1;
     --shadow-color: rgba(0, 0, 0, 0.36);
 }
 
@@ -1412,6 +1412,67 @@ html[data-theme="dark"] .table-cyber thead th {
     color: white !important;
     transform: translateY(-1px) !important;
     box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3) !important;
+}
+
+.btn-royal {
+    background: linear-gradient(135deg, #4158D0 0%, #302b63 100%);
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-royal:hover {
+    background: linear-gradient(135deg, #302b63 0%, #24243e 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(65, 88, 208, 0.4);
+}
+
+.btn-outline-royal {
+    border: 2px solid #4158D0;
+    color: #4158D0;
+    background: transparent;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-royal:hover {
+    background: #4158D0;
+    color: white;
+}
+
+.bg-soft-royal {
+    background-color: rgba(65, 88, 208, 0.1) !important;
+}
+
+.border-royal {
+    border-color: #4158D0 !important;
+}
+
+.text-royal {
+    color: #4158D0 !important;
+}
+
+.btn-emerald {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-emerald:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .action-card {
