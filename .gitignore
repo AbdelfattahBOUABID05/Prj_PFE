@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+venv/
+.env
+static/uploads/*
+!static/uploads/.gitkeep
+MV_Fedora/
+instance/
+*.db
+uploads/
+.vscode/
+.angular/
+node_modules/
+dist/

@@ -1,0 +1,16 @@
+flask
+flask-cors
+flask-login
+flask-sqlalchemy
+paramiko
+python-dotenv
+google-generativeai
+openai
+fpdf2
+secure-smtplib
+Pillow
+requests
+cryptography
+bcrypt
+
+#pip install -r requirements.txt

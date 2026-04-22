@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --primary-color: #4f46e5;
+  --surface-color: #ffffff;
+  --bg-color: #f1f5f9;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white bg-opacity-80 backdrop-blur-sm rounded-xl shadow-card;
+  }
+
+  .stat-card {
+    @apply bg-white rounded-xl shadow-card transition-all duration-300;
+  }
+
+  .stat-card:hover {
+    @apply shadow-soft transform -translate-y-0.5;
+  }
+
+  .btn-primary {
+    @apply bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 shadow-indigo;
+  }
+
+  .btn-outline {
+    @apply border border-slate-300 text-slate-600 hover:bg-slate-50 font-medium py-2 px-4 rounded-lg transition-all duration-200;
+  }
+}
