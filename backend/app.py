@@ -7,6 +7,7 @@ import logging
 
 from config import Config
 from extensions import db, scheduler
+from scheduler import init_scheduler
 from models import User
 from api_routes import api as api_blueprint
 
@@ -23,13 +24,18 @@ app = Flask(__name__)
 app.config.from_object(Config)
 
 db.init_app(app)
+init_scheduler(app)
 
 # Initialisation des extensions
-# Mise à jour de CORS pour autoriser Authorization et les credentials
-CORS(app, resources={r"/*": {"origins": ["http://localhost:4200"]}}, 
+# Mise à jour de CORS pour être plus robuste
+CORS(app, resources={
+    r"/*": {
+        "origins": ["http://localhost:4200", "http://127.0.0.1:4200"]
+    }
+}, 
     supports_credentials=True, 
     expose_headers=["Authorization"],
-    allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept"])
+    allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"])
 
 # Flask-Login configuration
 login_manager = LoginManager()
@@ -62,7 +68,8 @@ if __name__ == '__main__':
                     email='admin@soc.local',
                     first_name='Admin',
                     last_name='SOC',
-                    role='Admin'
+                    role='Admin',
+                    is_first_login=False
                 )
                 admin_user.set_password('Admin@12345')
                 db.session.add(admin_user)

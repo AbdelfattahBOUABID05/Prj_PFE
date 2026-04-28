@@ -27,6 +27,7 @@ class User(db.Model, UserMixin):
     smtp_server = db.Column(db.String(255), nullable=True)
     smtp_port = db.Column(db.Integer, nullable=True)
     signature_path = db.Column(db.String(255), nullable=True)
+    is_first_login = db.Column(db.Boolean, default=True, nullable=False)
 
     # Nouveaux champs pour les notifications
     email_notifications_enabled = db.Column(db.Boolean, default=False)
@@ -81,7 +82,8 @@ class AnalysisJob(db.Model):
     target_ip = db.Column(db.String(64), nullable=False)  # Adresse IP cible
     log_path = db.Column(db.String(255), nullable=False, default="/var/log/syslog")  # Chemin du fichier log
     frequency = db.Column(db.String(20), nullable=False)  # hourly, daily, weekly, monthly, custom
-    custom_minutes = db.Column(db.Integer, nullable=True)
+    custom_interval = db.Column(db.Integer, nullable=True) # Valeur numérique
+    custom_unit = db.Column(db.String(10), nullable=True) # seconds, minutes, hours, days
     
     # Statut de la tâche
     status = db.Column(db.String(20), nullable=False, default="pending")  # pending, active, refused, stopped
@@ -133,6 +135,44 @@ class SavedServer(db.Model):
 
     def __repr__(self):
         return f"<SavedServer {self.ip}>"
+
+
+class SavedSSHConnection(db.Model):
+    """Connexions SSH récentes pour l'auto-complétion"""
+    __tablename__ = "saved_ssh_connections"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    
+    host = db.Column(db.String(255), nullable=False)
+    username = db.Column(db.String(128), nullable=False)
+    encrypted_password = db.Column(db.Text, nullable=False)
+    
+    last_used_at = db.Column(db.DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    user = db.relationship("User", backref=db.backref("ssh_connections", lazy="dynamic"))
+
+    def __repr__(self):
+        return f"<SavedSSHConnection {self.host} ({self.username})>"
+
+
+class AdminSavedConnection(db.Model):
+    """Connexions SSH enregistrées spécifiquement pour la Console Admin"""
+    __tablename__ = "admin_saved_connections"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    
+    host = db.Column(db.String(255), nullable=False)
+    username = db.Column(db.String(128), nullable=False)
+    encrypted_password = db.Column(db.Text, nullable=False)
+    
+    last_used_at = db.Column(db.DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    user = db.relationship("User", backref=db.backref("admin_ssh_connections", lazy="dynamic"))
+
+    def __repr__(self):
+        return f"<AdminSavedConnection {self.host} ({self.username})>"
 
 
 class Notification(db.Model):

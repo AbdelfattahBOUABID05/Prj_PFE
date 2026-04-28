@@ -22,11 +22,65 @@ logger = logging.getLogger(__name__)
 scheduler = APScheduler()
 
 def init_scheduler(app: Flask):
-    """Initialiser APScheduler avec l'application Flask"""
+    """Initialiser APScheduler avec l'application Flask et recharger les jobs actifs"""
+    if scheduler.running:
+        logger.info("APScheduler is already running")
+        return
+
     app.config['SCHEDULER_API_ENABLED'] = True
+    # Augmenter max_instances pour éviter les "skipped execution"
+    app.config['SCHEDULER_JOB_DEFAULTS'] = {
+        'max_instances': 3,
+        'coalesce': True
+    }
     scheduler.init_app(app)
     scheduler.start()
-    logger.info("APScheduler initialized successfully")
+    
+    with app.app_context():
+        from models import AnalysisJob
+        from extensions import db
+        active_jobs = AnalysisJob.query.filter_by(status='active').all()
+        for job in active_jobs:
+            try:
+                schedule_job(job)
+            except Exception as e:
+                logger.error(f"Erreur lors du rechargement du job {job.id}: {e}")
+    
+    logger.info("APScheduler initialized successfully and active jobs reloaded")
+
+
+def schedule_job(job):
+    """Ajoute ou met à jour un job dans le scheduler APScheduler"""
+    job_id = f"analysis_job_{job.id}"
+    
+    # Déterminer les arguments du trigger
+    trigger_args = {}
+    if job.frequency == 'hourly':
+        trigger_args = {'trigger': 'interval', 'hours': 1}
+    elif job.frequency == 'daily':
+        trigger_args = {'trigger': 'interval', 'days': 1}
+    elif job.frequency == 'weekly':
+        trigger_args = {'trigger': 'interval', 'weeks': 1}
+    elif job.frequency == 'custom':
+        unit = job.custom_unit or 'minutes'
+        interval = job.custom_interval or 30
+        trigger_args = {'trigger': 'interval', unit: interval}
+    else:
+        trigger_args = {'trigger': 'interval', 'days': 1}
+
+    # Supprimer le job s'il existe déjà pour éviter les doublons
+    if scheduler.get_job(job_id):
+        scheduler.remove_job(job_id)
+
+    # Ajouter le job
+    scheduler.add_job(
+        id=job_id,
+        func=run_planned_analysis,
+        args=[job.id],
+        **trigger_args,
+        replace_existing=True
+    )
+    logger.info(f"Job {job_id} scheduled with frequency {job.frequency} ({trigger_args})")
 
 
 def run_planned_analysis(job_id: int):
@@ -40,9 +94,10 @@ def run_planned_analysis(job_id: int):
     from datetime import datetime, timezone
     import paramiko, os
 
-    # Import de l'app en dernier, après que tout le reste est chargé
-    from app import app as flask_app
+    # Utilisation de l'application liée au scheduler pour éviter les imports circulaires
+    flask_app = scheduler.app
     from utils import send_notification
+    from models import Notification
 
     with flask_app.app_context():
         try:
@@ -98,8 +153,9 @@ def run_planned_analysis(job_id: int):
             analysis = Analysis(
                 user_id=job.user_id,
                 job_id=job.id,
-                source_type="scheduled_ssh",
+                source_type="scheduled",
                 source_path=job.log_path,
+                file_path=job.log_path, # Correction du champ N/A dans l'historique
                 server_ip=job.target_ip,
                 stats=stats,
                 segments=results,
@@ -118,6 +174,33 @@ def run_planned_analysis(job_id: int):
                 ai_menaces=ai_metrics.get("menaces")
             )
             db.session.add(analysis)
+            
+            # Commit immédiat de l'analyse pour garantir sa présence dans l'historique
+            try:
+                logger.info(f"[SCHEDULER] Tentative d'enregistrement de l'analyse pour le job {job_id}...")
+                db.session.commit()
+                logger.info(f"[SCHEDULER] Analyse enregistrée avec succès (ID: {analysis.id})")
+            except Exception as commit_err:
+                logger.error(f"[SCHEDULER] Erreur lors du commit de l'analyse : {commit_err}")
+                db.session.rollback()
+                raise
+
+            # Créer une notification système si l'analyse est critique
+            if ai_metrics.get('status') == 'Critique':
+                try:
+                    notification = Notification(
+                        user_id=job.user_id,
+                        title="Alerte Job Automatisé",
+                        message=f"Analyse critique détectée sur {job.target_ip}",
+                        type="error",
+                        link=f"/report?id={analysis.id}"
+                    )
+                    db.session.add(notification)
+                    db.session.commit()
+                    logger.info(f"[SCHEDULER] Notification système créée pour le job {job_id}")
+                except Exception as notif_err:
+                    logger.error(f"[SCHEDULER] Erreur lors de la création de la notification : {notif_err}")
+                    db.session.rollback()
 
             # Mise à jour du job
             job.last_run_at = datetime.now(timezone.utc)
@@ -126,22 +209,26 @@ def run_planned_analysis(job_id: int):
             from utils import send_user_notification
             if job.user.email_notifications_enabled:
                 if ai_metrics.get('status') == 'Critique' or ai_metrics.get('menaces', 0) > 0:
-                    subject = f"🚨 ALERTE SÉCURITÉ : {job.target_ip}"
-                    content = f"""
-                    <h2>Alerte de sécurité LogAnalyzer</h2>
-                    <p>Une anomalie a été détectée sur le serveur <strong>{job.target_ip}</strong>.</p>
-                    <ul>
-                        <li><strong>Statut :</strong> {ai_metrics.get('status')}</li>
-                        <li><strong>Score :</strong> {ai_metrics.get('score')}/100</li>
-                        <li><strong>Menaces :</strong> {ai_metrics.get('menaces')}</li>
-                    </ul>
-                    <h3>Insights IA :</h3>
-                    <p>{ai_metrics.get('ai_insights')}</p>
-                    <p>Consultez votre tableau de bord pour plus de détails.</p>
-                    """
-                    send_user_notification(job.user, subject, content)
+                    try:
+                        subject = f"🚨 ALERTE SÉCURITÉ : {job.target_ip}"
+                        content = f"""
+                        <h2>Alerte de sécurité LogAnalyzer</h2>
+                        <p>Une anomalie a été détectée sur le serveur <strong>{job.target_ip}</strong>.</p>
+                        <ul>
+                            <li><strong>Statut :</strong> {ai_metrics.get('status')}</li>
+                            <li><strong>Score :</strong> {ai_metrics.get('score')}/100</li>
+                            <li><strong>Menaces :</strong> {ai_metrics.get('menaces')}</li>
+                        </ul>
+                        <h3>Insights IA :</h3>
+                        <p>{ai_metrics.get('ai_insights')}</p>
+                        <p>Consultez votre tableau de bord pour plus de détails.</p>
+                        """
+                        send_user_notification(job.user, subject, content)
+                        logger.info(f"[SCHEDULER] Email d'alerte envoyé pour le job {job_id}")
+                    except Exception as email_err:
+                        logger.error(f"[SCHEDULER] Erreur lors de l'envoi de l'email : {email_err}")
 
-            db.session.commit()
+            db.session.commit() # Commit final pour last_run_at
             print(f"[SCHEDULER] Job {job_id} terminé avec succès.")
 
         except Exception as e:
@@ -154,7 +241,7 @@ def run_planned_analysis(job_id: int):
                 failed_analysis = Analysis(
                     user_id=job.user_id,
                     job_id=job.id,
-                    source_type="scheduled_ssh",
+                    source_type="scheduled",
                     source_path=job.log_path,
                     server_ip=job.target_ip,
                     stats={"total": 0, "errors": 0, "warnings": 0, "info": 0},
@@ -239,8 +326,8 @@ def ssh_analyze_for_job(job) -> Analysis:
         # Sauvegarder via le helper utilitaire
         analysis = save_analysis(
             db=db,
-            user_id=user.id,
-            source_type="scheduled_ssh",
+            user_id=job.user_id,
+            source_type="scheduled",
             source_path=job.log_path,
             server_ip=job.target_ip,
             stats=stats,

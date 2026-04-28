@@ -12,114 +12,142 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, SidebarComponent],
   template: `
-    <div class="flex h-screen bg-slate-100">
+    <div class="flex h-screen bg-[#0d1117] text-slate-300">
       <app-sidebar></app-sidebar>
 
       <!-- Main Content -->
-      <main class="flex-1 ml-64 overflow-auto p-8">
-        <div class="max-w-2xl mx-auto space-y-6">
-          <header class="mb-8">
-            <h2 class="text-2xl font-bold text-slate-800">Paramètres</h2>
-            <p class="text-slate-500 text-sm">Configurez vos préférences de notification et SMTP</p>
+      <main class="flex-1 ml-64 overflow-auto p-8 relative">
+        <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <div class="max-w-3xl mx-auto space-y-8 relative z-10">
+          <header class="mb-10">
+            <h2 class="text-3xl font-black text-white tracking-tight uppercase italic flex items-center gap-3">
+              <div class="p-3 bg-indigo-600/20 rounded-xl shadow-indigo-lg">
+                <i class="fas fa-cog text-2xl text-indigo-500"></i>
+              </div>
+              Paramètres <span class="text-indigo-500">Système</span>
+            </h2>
+            <p class="text-slate-500 text-sm font-medium">Configurez vos préférences de notification et vos paramètres de messagerie SOC</p>
           </header>
 
-          <!-- Email Notifications -->
-          <div class="bg-white rounded-xl shadow-card p-6">
-            <h3 class="text-lg font-bold text-slate-800 mb-4">
-              <i class="fas fa-envelope text-indigo-600 mr-2"></i>
-              Notifications Email
-            </h3>
+          <!-- SOC Internal Email Identity -->
+          <div class="bg-[#161b22] rounded-2xl border border-white/5 shadow-2xl overflow-hidden relative">
+            <div class="absolute top-0 left-0 w-1 h-full bg-indigo-600"></div>
+            <div class="p-6 border-b border-white/5 bg-white/[0.02] flex items-center gap-3">
+              <i class="fas fa-id-badge text-indigo-400"></i>
+              <h3 class="font-black text-white uppercase italic tracking-wider text-sm">Identité de Messagerie SOC</h3>
+            </div>
+            <div class="p-8 space-y-6">
+              <div class="p-6 bg-[#0d1117]/50 border border-white/5 rounded-2xl flex items-center gap-6 group">
+                <div class="w-16 h-16 bg-indigo-500/10 rounded-2xl flex items-center justify-center border border-indigo-500/20 group-hover:bg-indigo-500/20 transition-colors">
+                  <i class="fas fa-paper-plane text-2xl text-indigo-400"></i>
+                </div>
+                <div>
+                  <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Votre adresse d'expédition SOC</label>
+                  <p class="text-xl font-black text-white italic tracking-tight">{{ username }}&#64;awb.pfe.ma</p>
+                  <p class="text-[10px] text-slate-500 font-bold uppercase mt-2 flex items-center gap-2">
+                    <i class="fas fa-check-circle text-emerald-500"></i>
+                    Générée automatiquement par le système
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
 
-            <div class="space-y-4">
-              <div class="flex items-center">
-                <input type="checkbox" id="emailNotif" [(ngModel)]="settings.emailNotifications"
-                       class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
-                <label for="emailNotif" class="ml-2 text-sm text-slate-700">
+          <!-- Custom SMTP Server (Optional) -->
+          <div class="bg-[#161b22] rounded-2xl border border-white/5 shadow-2xl overflow-hidden relative">
+            <div class="absolute top-0 left-0 w-1 h-full bg-purple-600"></div>
+            <div class="p-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <i class="fas fa-server text-purple-400"></i>
+                <h3 class="font-black text-white uppercase italic tracking-wider text-sm">Serveur SMTP Personnel (Optionnel)</h3>
+              </div>
+              <button (click)="showAdvanced = !showAdvanced" 
+                      class="px-4 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 rounded-lg transition text-[10px] font-black uppercase tracking-widest border border-purple-500/20 flex items-center gap-2">
+                <i class="fas" [class.fa-plus]="!showAdvanced" [class.fa-minus]="showAdvanced"></i>
+                {{ showAdvanced ? 'Masquer' : 'Configurer' }}
+              </button>
+            </div>
+
+            <div *ngIf="showAdvanced" class="p-8 space-y-6 animate-fadeIn">
+              <p class="text-[11px] text-slate-400 font-medium leading-relaxed italic mb-4">
+                Activez cette option si vous souhaitez utiliser votre propre serveur de messagerie au lieu du service interne.
+              </p>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-2 space-y-2">
+                  <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Serveur SMTP</label>
+                  <input type="text" [(ngModel)]="settings.smtpServer"
+                         class="w-full px-5 py-4 bg-[#0d1117]/50 border border-white/5 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition text-white text-sm placeholder-slate-700"
+                         placeholder="smtp.gmail.com">
+                </div>
+                <div class="space-y-2">
+                  <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Port</label>
+                  <input type="number" [(ngModel)]="settings.smtpPort"
+                         class="w-full px-5 py-4 bg-[#0d1117]/50 border border-white/5 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition text-white text-sm placeholder-slate-700"
+                         placeholder="587">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                  <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Utilisateur SMTP</label>
+                  <input type="text" [(ngModel)]="settings.smtpUser"
+                         class="w-full px-5 py-4 bg-[#0d1117]/50 border border-white/5 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition text-white text-sm placeholder-slate-700"
+                         placeholder="votre-email@exemple.com">
+                </div>
+                <div class="space-y-2">
+                  <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Mot de passe SMTP</label>
+                  <input type="password" [(ngModel)]="settings.smtpPassword"
+                         class="w-full px-5 py-4 bg-[#0d1117]/50 border border-white/5 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition text-white text-sm placeholder-slate-700"
+                         placeholder="••••••••">
+                </div>
+              </div>
+
+              <div class="p-4 bg-amber-500/5 border border-amber-500/10 rounded-xl flex items-start gap-3">
+                <i class="fas fa-exclamation-circle text-amber-500 mt-0.5 text-xs"></i>
+                <p class="text-[10px] text-amber-200/60 leading-relaxed font-medium">
+                  Note: Si ces champs sont vides, le système utilisera le <strong>mode Simulation SOC</strong> ou le relais par défaut.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Email Notifications -->
+          <div class="bg-[#161b22] rounded-2xl border border-white/5 shadow-2xl overflow-hidden relative">
+            <div class="absolute top-0 left-0 w-1 h-full bg-emerald-600"></div>
+            <div class="p-6 border-b border-white/5 bg-white/[0.02] flex items-center gap-3">
+              <i class="fas fa-bell text-emerald-400"></i>
+              <h3 class="font-black text-white uppercase italic tracking-wider text-sm">Alertes & Notifications</h3>
+            </div>
+
+            <div class="p-8 space-y-6">
+              <div class="flex items-center gap-4 p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-xl">
+                <div class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="emailNotif" [(ngModel)]="settings.emailNotifications" class="sr-only peer">
+                  <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                </div>
+                <label for="emailNotif" class="text-sm font-bold text-slate-300 uppercase tracking-tight cursor-pointer">
                   Activer les notifications par email
                 </label>
               </div>
 
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Email de notification</label>
+              <div class="space-y-2">
+                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Email de destination pour les alertes</label>
                 <input type="email" [(ngModel)]="settings.notificationEmail"
-                       class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                       placeholder="notif@exemple.com">
+                       class="w-full px-5 py-4 bg-[#0d1117]/50 border border-white/5 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition text-white text-sm placeholder-slate-700 font-bold"
+                       placeholder="votre-email@exemple.com">
+                <p class="text-[10px] text-slate-500 italic mt-2">C'est ici que vous recevrez les rapports automatiques et les alertes critiques.</p>
               </div>
             </div>
           </div>
 
-          <!-- SMTP Configuration -->
-          <div class="bg-white rounded-xl shadow-card p-6">
-            <h3 class="text-lg font-bold text-slate-800 mb-4">
-              <i class="fas fa-server text-indigo-600 mr-2"></i>
-              Configuration SMTP
-            </h3>
-
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Serveur SMTP</label>
-                <input type="text" [(ngModel)]="settings.smtpServer"
-                       class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                       placeholder="smtp.gmail.com">
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Port SMTP</label>
-                <input type="number" [(ngModel)]="settings.smtpPort"
-                       class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                       placeholder="587">
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Utilisateur SMTP</label>
-                <input type="text" [(ngModel)]="settings.smtpUser"
-                       class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                       placeholder="votre-email@gmail.com">
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Mot de passe SMTP</label>
-                <input type="password" [(ngModel)]="settings.smtpPassword"
-                       class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                       placeholder="App Password">
-              </div>
-            </div>
-          </div>
-
-          <button (click)="saveSettings()"
-                  class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg transition">
-            <i class="fas fa-save mr-2"></i>
-            Enregistrer les paramètres
-          </button>
-
-          <!-- Signature Management -->
-          <div class="bg-white rounded-xl shadow-card p-6 mt-6">
-            <h3 class="text-lg font-bold text-slate-800 mb-4">
-              <i class="fas fa-pen-nib text-indigo-600 mr-2"></i>
-              Signature de l'Analyste
-            </h3>
-
-            <div class="space-y-6 text-center">
-              <div class="relative w-full h-48 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl flex items-center justify-center overflow-hidden">
-                <img *ngIf="signaturePreview" [src]="signaturePreview" class="h-full object-contain filter contrast-125">
-                <div *ngIf="!signaturePreview" class="text-slate-300 italic text-sm">
-                  Aucune signature enregistrée
-                </div>
-              </div>
-
-              <div class="flex gap-4 justify-center">
-                <input #sigInput type="file" (change)="onSignatureSelected($event)" accept="image/*" class="hidden">
-                <button (click)="sigInput.click()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-bold transition flex items-center gap-2">
-                  <i class="fas fa-upload"></i> Charger une image
-                </button>
-                <button (click)="uploadSignature()" [disabled]="!selectedSignature" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition disabled:opacity-50 flex items-center gap-2">
-                  <i class="fas fa-check"></i> Valider la signature
-                </button>
-              </div>
-              <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest">
-                Conseil : Utilisez un fond blanc. Le système supprimera automatiquement l'arrière-plan via Remove.bg.
-              </p>
-            </div>
+          <div class="pt-6">
+            <button (click)="saveSettings()" [disabled]="loading"
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-5 rounded-xl transition disabled:opacity-30 shadow-indigo flex items-center justify-center gap-3 uppercase tracking-widest text-xs">
+              <i class="fas" [class.fa-save]="!loading" [class.fa-spinner]="loading" [class.fa-spin]="loading"></i>
+              {{ loading ? 'Sauvegarde en cours...' : 'Enregistrer les paramètres' }}
+            </button>
           </div>
         </div>
       </main>
@@ -136,8 +164,9 @@ export class SettingsComponent implements OnInit {
     smtpPassword: ''
   };
 
-  selectedSignature: File | null = null;
-  signaturePreview: string | null = null;
+  loading: boolean = false;
+  showAdvanced: boolean = false;
+  username: string = 'analyste';
 
   constructor(private logService: LogService, private http: HttpClient) {}
 
@@ -164,47 +193,21 @@ export class SettingsComponent implements OnInit {
     const apiUrl = environment.apiUrl;
     this.http.get<any>(`${apiUrl}/profile`).subscribe({
       next: (res: any) => {
-        if (res.signature_path) {
-          this.signaturePreview = `${apiUrl}/static/${res.signature_path}`;
-        }
+        this.username = res.username || 'analyste';
       },
       error: (err: any) => console.error('Profile load error:', err)
     });
   }
 
-  onSignatureSelected(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      this.selectedSignature = file;
-      const reader = new FileReader();
-      reader.onload = (e: any) => this.signaturePreview = e.target.result;
-      reader.readAsDataURL(file);
-    }
-  }
-
-  uploadSignature(): void {
-    if (!this.selectedSignature) return;
-
-    const formData = new FormData();
-    formData.append('signature', this.selectedSignature);
-
-    const apiUrl = environment.apiUrl;
-    this.http.post<any>(`${apiUrl}/profile/upload-signature`, formData).subscribe({
-      next: (res: any) => {
-        alert('Signature mise à jour avec succès !');
-        if (res.signature_path) {
-          this.signaturePreview = `${apiUrl}/static/${res.signature_path}`;
-        }
-        this.selectedSignature = null;
-      },
-      error: (err: any) => alert('Erreur lors de l\'upload de la signature.')
-    });
-  }
-
   saveSettings(): void {
+    this.loading = true;
     this.logService.saveSettings(this.settings).subscribe({
-      next: (response: any) => alert(response.message || 'Paramètres enregistrés avec succès !'),
+      next: (response: any) => {
+        this.loading = false;
+        alert(response.message || 'Paramètres enregistrés avec succès !');
+      },
       error: (err: any) => {
+        this.loading = false;
         const message = err?.error?.message || 'Erreur lors de la sauvegarde des paramètres';
         alert(message);
       }

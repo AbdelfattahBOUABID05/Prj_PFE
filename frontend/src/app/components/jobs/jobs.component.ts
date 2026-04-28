@@ -48,16 +48,31 @@ import { NotificationService } from '../../services/notification.service';
                   <td class="px-6 py-4 font-medium text-slate-800">{{ job.target_ip }}</td>
                   <td class="px-6 py-4 font-mono text-xs text-slate-500">{{ job.log_path }}</td>
                   <td class="px-6 py-4">
-                    <span class="px-2 py-1 bg-slate-100 rounded text-xs text-slate-600">{{ job.frequency }}</span>
+                    <span class="px-2 py-1 bg-slate-100 rounded text-xs text-slate-600">
+                      {{ job.frequency === 'custom' ? 'Tous les ' + job.custom_interval + ' ' + job.custom_unit : job.frequency }}
+                    </span>
                   </td>
                   <td class="px-6 py-4">
                     <span [class]="getStatusClass(job.status)">{{ job.status }}</span>
                   </td>
                   <td class="px-6 py-4 text-slate-500">{{ formatDate(job.created_at) }}</td>
                   <td class="px-6 py-4">
-                    <button (click)="deleteJob(job.id)" class="text-red-500 hover:text-red-700 transition">
-                      <i class="fas fa-trash"></i>
-                    </button>
+                    <div class="flex items-center gap-3">
+                      <button *ngIf="job.status === 'active' || job.status === 'inactive'"
+                              (click)="toggleJob(job.id)" 
+                              [disabled]="togglingJobId === job.id"
+                              [title]="job.status === 'active' ? 'Arrêter le job' : 'Reprendre le job'"
+                              class="transition-colors disabled:opacity-50"
+                              [ngClass]="job.status === 'active' ? 'text-amber-500 hover:text-amber-700' : 'text-emerald-500 hover:text-emerald-700'">
+                        <i *ngIf="togglingJobId !== job.id" class="fas" [ngClass]="job.status === 'active' ? 'fa-pause-circle' : 'fa-play-circle'"></i>
+                        <i *ngIf="togglingJobId === job.id" class="fas fa-spinner fa-spin"></i>
+                      </button>
+                      <button (click)="deleteJob(job.id)" 
+                              [disabled]="togglingJobId === job.id"
+                              class="text-red-500 hover:text-red-700 transition disabled:opacity-50" title="Supprimer">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
                   </td>
                 </tr>
                 <tr *ngIf="jobs.length === 0">
@@ -105,7 +120,25 @@ import { NotificationService } from '../../services/notification.service';
                   <option value="hourly">Toutes les heures</option>
                   <option value="daily">Quotidien</option>
                   <option value="weekly">Hebdomadaire</option>
+                  <option value="custom">Personnalisé</option>
                 </select>
+              </div>
+
+              <!-- Custom Interval Fields -->
+              <div *ngIf="newJob.frequency === 'custom'" class="grid grid-cols-2 gap-4 animate-fade-in">
+                <div>
+                  <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Intervalle</label>
+                  <input type="number" [(ngModel)]="newJob.custom_interval" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Ex: 30">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Unité</label>
+                  <select [(ngModel)]="newJob.custom_unit" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <option value="seconds">Secondes</option>
+                    <option value="minutes">Minutes</option>
+                    <option value="hours">Heures</option>
+                    <option value="days">Jours</option>
+                  </select>
+                </div>
               </div>
             </div>
             <div class="p-6 bg-slate-50 flex gap-3">
@@ -121,10 +154,13 @@ import { NotificationService } from '../../services/notification.service';
 export class JobsComponent implements OnInit {
   jobs: any[] = [];
   showCreateModal = false;
+  togglingJobId: number | null = null;
   newJob = {
     target_ip: '',
     log_path: '/var/log/syslog',
     frequency: 'daily',
+    custom_interval: 30,
+    custom_unit: 'minutes',
     ssh_user: '',
     ssh_pass: ''
   };
@@ -164,7 +200,15 @@ export class JobsComponent implements OnInit {
         this.showCreateModal = false;
         this.fetchScheduledJobs();
         // Reset form
-        this.newJob = { target_ip: '', log_path: '/var/log/syslog', frequency: 'daily', ssh_user: '', ssh_pass: '' };
+        this.newJob = { 
+          target_ip: '', 
+          log_path: '/var/log/syslog', 
+          frequency: 'daily', 
+          custom_interval: 30,
+          custom_unit: 'minutes',
+          ssh_user: '', 
+          ssh_pass: '' 
+        };
       },
       error: (err: any) => {
         this.notify.error(err.error?.message || 'Erreur lors de la création du job.');
@@ -193,6 +237,7 @@ export class JobsComponent implements OnInit {
   getStatusClass(status: string): string {
     const base = "px-2 py-1 rounded-full text-[10px] font-bold uppercase ";
     if (status === 'active') return base + "bg-emerald-100 text-emerald-700";
+    if (status === 'inactive') return base + "bg-amber-100 text-amber-700";
     if (status === 'pending') return base + "bg-amber-100 text-amber-700";
     if (status === 'refused') return base + "bg-red-100 text-red-700";
     return base + "bg-slate-100 text-slate-600";
@@ -201,6 +246,21 @@ export class JobsComponent implements OnInit {
   formatDate(dateStr: string): string {
     if (!dateStr) return 'N/A';
     return new Date(dateStr).toLocaleDateString();
+  }
+
+  toggleJob(id: number): void {
+    this.togglingJobId = id;
+    this.logService.toggleJob(id).subscribe({
+      next: (res) => {
+        this.notify.success(res.message);
+        this.fetchScheduledJobs();
+        this.togglingJobId = null;
+      },
+      error: (err) => {
+        this.notify.error('Erreur lors de la modification du statut.');
+        this.togglingJobId = null;
+      }
+    });
   }
 }
 

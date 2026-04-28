@@ -56,7 +56,7 @@ import { NotificationService } from '../../services/notification.service';
       </div>
 
       <!-- Menu de navigation -->
-      <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+      <nav *ngIf="!isFirstLogin()" class="flex-1 p-4 space-y-2 overflow-y-auto">
         <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-4 mb-2">Analyseur</p>
         
         <a routerLink="/dashboard" routerLinkActive="bg-indigo-600 text-white shadow-indigo"
@@ -118,6 +118,12 @@ import { NotificationService } from '../../services/notification.service';
           <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-4">Configuration</p>
         </div>
 
+        <a routerLink="/profile" routerLinkActive="bg-indigo-600 text-white shadow-indigo"
+           class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition group">
+          <i class="fas fa-user-circle w-5 group-hover:scale-110 transition"></i>
+          <span>Mon Profil</span>
+        </a>
+
         <a routerLink="/settings" routerLinkActive="bg-indigo-600 text-white shadow-indigo"
            class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition group">
           <i class="fas fa-cog w-5 group-hover:scale-110 transition"></i>
@@ -171,8 +177,14 @@ export class SidebarComponent implements OnInit {
     const role = localStorage.getItem('role') || 'Analyste';
     this.roleLabel = role === 'Admin' ? 'Administrateur' : 'Analyseur';
     
-    this.fetchNotifications();
-    this.refreshInterval = setInterval(() => this.fetchNotifications(), 60000);
+    if (!this.isFirstLogin()) {
+      this.fetchNotifications();
+      this.refreshInterval = setInterval(() => this.fetchNotifications(), 60000);
+    }
+  }
+
+  isFirstLogin(): boolean {
+    return this.authService.isFirstLogin();
   }
 
   ngOnDestroy(): void {

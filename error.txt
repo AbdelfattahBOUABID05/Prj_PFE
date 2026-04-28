@@ -1,0 +1,15 @@
+I am encountering an error in my project and I need your expert help to debug and fix it systematically. Please follow these steps:
+
+1. Error Analysis: Based on the error message and the code I will provide, explain in simple terms what is happening and why this error occurred (Root Cause).
+
+2. Code Review: Analyze the logic of the provided code snippets. Look for common pitfalls like null pointers, asynchronous race conditions, incorrect service injections, or environment configuration issues.
+
+3. The Fix: Provide the corrected version of the code. Ensure it follows best practices (DRY, Clean Code, and Security).
+
+4. Preventive Measures: Suggest 2-3 tips or 'defensive programming' techniques to prevent this specific error from happening again.
+
+Context:
+
+    Error Message: 
+
+Please start by analyzing the error before providing the solution.

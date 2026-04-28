@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { CryptoService } from './crypto.service';
 
 // Interfaces pour les données de l'application
 export interface Analysis {
@@ -119,8 +120,48 @@ export interface NotificationsResponse {
 })
 export class LogService {
   private apiUrl = environment.apiUrl;
+  private STORAGE_KEY = 'recent_ssh_connections';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private crypto: CryptoService) {}
+
+  // ========== RECENT CONNECTIONS ==========
+  /**
+   * Sauvegarde une connexion dans la liste des 3 dernières connexions uniques.
+   * Chiffre l'intégralité du tableau pour la sécurité.
+   */
+  saveConnection(conn: any): void {
+    let currentHistory = this.getRecentConnections();
+    
+    // Règle : Distinct - Vérifier si l'hôte (IP) existe déjà
+    // On retire l'ancienne entrée si elle existe pour qu'elle remonte en haut de la liste
+    currentHistory = currentHistory.filter(h => h.host !== conn.host);
+    
+    // Règle : Stack Management - Ajouter au début (unshift)
+    currentHistory.unshift(conn);
+    
+    // Règle : Limit - Garder seulement les 3 dernières
+    const updatedHistory = currentHistory.slice(0, 3);
+    
+    // Sécurité : Chiffrer l'ensemble du tableau avant stockage
+    const encryptedData = this.crypto.encryptObject(updatedHistory);
+    localStorage.setItem(this.STORAGE_KEY, encryptedData);
+  }
+
+  /**
+   * Récupère la liste des connexions récentes déchiffrée.
+   */
+  getRecentConnections(): any[] {
+    const encryptedData = localStorage.getItem(this.STORAGE_KEY);
+    if (!encryptedData) return [];
+    
+    try {
+      const decrypted = this.crypto.decryptObject(encryptedData);
+      return Array.isArray(decrypted) ? decrypted : [];
+    } catch (e) {
+      console.error('Erreur lors du déchiffrement de l\'historique SSH:', e);
+      return [];
+    }
+  }
 
   // ========== ADMIN JOBS ==========
   getAdminJobs(): Observable<{ status: string; jobs: Job[] }> {
@@ -184,6 +225,10 @@ export class LogService {
     return this.http.delete<{ status: string; message: string }>(`${this.apiUrl}/jobs/${id}`);
   }
 
+  toggleJob(id: number): Observable<{ status: string; new_status: string; message: string }> {
+    return this.http.post<{ status: string; new_status: string; message: string }>(`${this.apiUrl}/jobs/${id}/toggle`, {});
+  }
+
   // ========== EMAIL & UPLOAD ==========
   sendReportEmail(payload: {
     analysis_id: number;
@@ -203,14 +248,17 @@ export class LogService {
     host: string;
     user: string;
     pass: string;
-    numLines: number;
+    numLines: number | null;
   }): Observable<{ status: string; analysis_id?: number; message?: string }> {
     return this.http.post<{ status: string; analysis_id?: number; message?: string }>(`${this.apiUrl}/ssh/analyze`, payload);
   }
 
-  uploadLogFile(file: File): Observable<any> {
+  uploadLogFile(file: File, numLines: number | null = null): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
+    if (numLines !== null && numLines !== undefined) {
+      formData.append('numLines', numLines.toString());
+    }
     return this.http.post(`${this.apiUrl}/analyze-local`, formData, {
       reportProgress: true,
       observe: 'events'

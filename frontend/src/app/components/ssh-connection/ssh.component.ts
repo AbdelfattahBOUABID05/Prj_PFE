@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { LogService } from '../../services/log.service';
 import { SidebarComponent } from '../sidebar/sidebar.component';
@@ -8,141 +8,160 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
 @Component({
   selector: 'app-ssh-connection',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, SidebarComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, SidebarComponent],
   template: `
-    <div class="flex h-screen bg-slate-100">
+    <div class="flex h-screen bg-slate-900 text-slate-100">
       <app-sidebar></app-sidebar>
 
-      <!-- Main Content -->
-      <main class="flex-1 ml-64 overflow-auto p-8">
-        <div class="max-w-4xl mx-auto">
-          <header class="mb-8">
-            <h2 class="text-3xl font-bold text-slate-800">Analyse de Logs SSH</h2>
-            <p class="text-slate-500">Connectez-vous à un serveur distant pour extraire et analyser les logs en temps réel</p>
+      <main class="flex-1 ml-64 overflow-auto p-8 bg-[#0d1117]">
+        <div class="max-w-6xl mx-auto">
+          <header class="mb-10">
+            <div class="flex items-center gap-4 mb-2">
+              <div class="p-3 bg-indigo-600/20 rounded-xl shadow-indigo-lg">
+                <i class="fas fa-server text-2xl text-indigo-500"></i>
+              </div>
+              <h2 class="text-3xl font-black tracking-tight text-white uppercase italic">Analyse <span class="text-indigo-500">SSH</span> SOC</h2>
+            </div>
+            <p class="text-slate-500 font-medium">Terminal d'extraction et d'analyse de logs distants sécurisé</p>
           </header>
 
-          <div class="grid grid-cols-3 gap-8">
-            <!-- Form Column -->
-            <div class="col-span-2 space-y-6">
-              <div class="bg-white rounded-2xl shadow-card p-8 border border-slate-200">
-                <form (ngSubmit)="onSubmit()" class="space-y-5">
-                  <div class="grid grid-cols-2 gap-5">
-                    <div>
-                      <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Adresse IP / Host</label>
-                      <input type="text" [(ngModel)]="form.host" name="host" required
-                             class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition"
+          <div class="grid grid-cols-12 gap-8">
+            <!-- Formulaire de Connexion -->
+            <div class="col-span-8">
+              <div class="bg-[#161b22] rounded-2xl border border-white/10 shadow-2xl p-8 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-indigo-600"></div>
+                
+                <form [formGroup]="sshForm" (ngSubmit)="onSubmit()" class="space-y-6">
+                  <div class="grid grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                      <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Adresse IP / Host</label>
+                      <input type="text" formControlName="host"
+                             class="w-full px-5 py-4 bg-slate-900/50 border border-white/5 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition text-white placeholder-slate-600"
                              placeholder="192.168.1.100">
                     </div>
-                    <div>
-                      <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Utilisateur</label>
-                      <input type="text" [(ngModel)]="form.user" name="user" required
-                             class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition"
+                    <div class="space-y-2">
+                      <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Utilisateur</label>
+                      <input type="text" formControlName="user"
+                             class="w-full px-5 py-4 bg-slate-900/50 border border-white/5 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition text-white placeholder-slate-600"
                              placeholder="root">
                     </div>
                   </div>
 
-                  <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Mot de passe</label>
+                  <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Mot de passe</label>
                     <div class="relative">
-                      <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="form.pass" name="pass" required
-                             class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition"
+                      <input [type]="showPassword ? 'text' : 'password'" formControlName="pass"
+                             class="w-full px-5 py-4 bg-slate-900/50 border border-white/5 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition text-white placeholder-slate-600"
                              placeholder="••••••••">
-                      <button type="button" (click)="showPassword = !showPassword" class="absolute right-4 top-3.5 text-slate-400">
+                      <button type="button" (click)="showPassword = !showPassword" class="absolute right-5 top-4.5 text-slate-500 hover:text-white transition">
                         <i class="fas" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"></i>
                       </button>
                     </div>
                   </div>
 
-                  <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Chemin du fichier log</label>
-                    <input type="text" [(ngModel)]="form.filePath" name="filePath" required
-                           class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition"
+                  <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Chemin du fichier log</label>
+                    <input type="text" formControlName="filePath"
+                           class="w-full px-5 py-4 bg-slate-900/50 border border-white/5 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition text-white"
                            placeholder="/var/log/syslog">
                   </div>
 
-                  <div class="grid grid-cols-2 gap-5">
-                    <div>
-                      <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Nombre de lignes</label>
-                      <input type="number" [(ngModel)]="form.numLines" name="numLines"
-                             class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition"
-                             placeholder="100">
+                  <div class="grid grid-cols-2 gap-6 pt-2">
+                    <div class="space-y-2">
+                      <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Lignes à extraire</label>
+                      <input type="number" formControlName="numLines"
+                             class="w-full px-5 py-4 bg-slate-900/50 border border-white/5 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition text-white">
                     </div>
-                    <div>
-                      <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Date spécifique (Optionnel)</label>
-                      <input type="date" [(ngModel)]="form.specificDate" name="specificDate"
-                             class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                    <div class="space-y-2">
+                      <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Date (Optionnel)</label>
+                      <input type="date" formControlName="specificDate"
+                             class="w-full px-5 py-4 bg-slate-900/50 border border-white/5 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition text-white">
                     </div>
                   </div>
 
-                  <div class="pt-4 flex flex-col gap-3">
-                    <button type="submit" [disabled]="loading"
-                            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl transition disabled:opacity-50 shadow-indigo flex items-center justify-center gap-3">
+                  <div class="pt-6">
+                    <button type="submit" [disabled]="loading || sshForm.invalid"
+                            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-5 rounded-xl transition disabled:opacity-30 shadow-indigo flex items-center justify-center gap-3 uppercase tracking-widest text-sm">
                       <i class="fas" [class.fa-search]="!loading" [class.fa-spinner]="loading" [class.fa-spin]="loading"></i>
-                      {{ loading ? 'Analyse en cours...' : "Lancer l'analyse" }}
+                      {{ loading ? 'Analyse SOC en cours...' : "Lancer l'analyse sécurisée" }}
                     </button>
-                    
-                    <div class="grid grid-cols-2 gap-3">
-                      <button type="button" (click)="analyzeToday()" [disabled]="loading"
-                              class="flex-1 bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-xl transition text-sm">
-                        Logs d'aujourd'hui
-                      </button>
-                      <button type="button" (click)="chooseDate()" [disabled]="loading"
-                              class="flex-1 border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-3 rounded-xl transition text-sm">
-                        Choisir une date
-                      </button>
-                    </div>
                   </div>
                 </form>
 
-                <div *ngIf="error" class="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 flex items-center gap-3">
-                  <i class="fas fa-exclamation-circle"></i>
-                  <span class="text-sm font-medium">{{ error }}</span>
+                <!-- Status Messages -->
+                <div *ngIf="error" class="mt-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm font-bold flex items-center gap-3">
+                  <i class="fas fa-shield-virus text-lg"></i>
+                  {{ error }}
                 </div>
 
-                <div *ngIf="success" class="mt-6 p-6 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700">
-                  <div class="flex items-center gap-3 mb-2">
-                    <i class="fas fa-check-circle text-xl"></i>
-                    <span class="font-bold">Analyse terminée avec succès !</span>
+                <div *ngIf="success" class="mt-6 p-6 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                  <div class="flex items-center gap-4 mb-4">
+                    <div class="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center text-emerald-500">
+                      <i class="fas fa-check-double text-xl"></i>
+                    </div>
+                    <div>
+                      <h4 class="font-black text-white uppercase italic">Analyse Réussie</h4>
+                      <p class="text-xs text-emerald-400/80 font-bold">Données traitées et rapport généré</p>
+                    </div>
                   </div>
-                  <p class="text-sm mb-4">Les données ont été traitées par l'IA et sont disponibles dans votre rapport.</p>
-                  <a routerLink="/report" [queryParams]="{id: lastAnalysisId}" 
-                     class="inline-block bg-emerald-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-emerald-700 transition">
-                    Consulter le Rapport
+                  <a [routerLink]="['/report']" [queryParams]="{id: lastAnalysisId}"
+                     class="flex items-center justify-center gap-2 w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-black uppercase tracking-widest text-xs transition">
+                    Consulter le Rapport SOC
                   </a>
                 </div>
               </div>
             </div>
 
-            <!-- Help/Info Column -->
-            <div class="col-span-1 space-y-6">
-              <div class="bg-indigo-600 rounded-2xl p-6 text-white shadow-indigo">
-                <h3 class="font-bold mb-4 flex items-center gap-2">
-                  <i class="fas fa-info-circle"></i>
-                  Conseils d'Analyse
-                </h3>
-                <ul class="text-sm space-y-3 text-indigo-100">
-                  <li class="flex gap-2">
-                    <i class="fas fa-caret-right mt-1"></i>
-                    Utilisez un compte avec des droits de lecture sur les fichiers logs.
-                  </li>
-                  <li class="flex gap-2">
-                    <i class="fas fa-caret-right mt-1"></i>
-                    Le format de date doit correspondre aux logs du serveur (ex: Jan 10).
-                  </li>
-                  <li class="flex gap-2">
-                    <i class="fas fa-caret-right mt-1"></i>
-                    L'IA SOC priorise les erreurs de type "Authentication failure" et "Root access".
-                  </li>
-                </ul>
+            <!-- Sidebar : Historique & Infos -->
+            <div class="col-span-4 space-y-6">
+              <!-- Connexions Récentes -->
+              <div class="bg-[#161b22] rounded-2xl border border-white/10 shadow-xl overflow-hidden">
+                <div class="p-5 border-b border-white/5 bg-white/5 flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <i class="fas fa-history text-indigo-400"></i>
+                    <h3 class="font-bold text-[10px] uppercase tracking-widest text-white">Connexions Récentes</h3>
+                  </div>
+                  <span class="text-[9px] bg-indigo-600/20 text-indigo-400 px-2 py-0.5 rounded-full font-bold">{{ recentConnections.length }}</span>
+                </div>
+                
+                <div class="p-4 space-y-3 max-h-[450px] overflow-y-auto">
+                  <div *ngIf="recentConnections.length === 0" class="text-center py-12">
+                    <i class="fas fa-terminal text-slate-800 text-3xl mb-3"></i>
+                    <p class="text-[10px] text-slate-600 font-bold uppercase tracking-widest">Aucun historique</p>
+                  </div>
+
+                  <button *ngFor="let conn of recentConnections" 
+                          (click)="fillForm(conn)"
+                          class="w-full p-4 rounded-xl bg-slate-900/50 border border-white/5 hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all text-left group relative overflow-hidden">
+                    <div class="absolute left-0 top-0 w-1 h-0 bg-indigo-500 group-hover:h-full transition-all"></div>
+                    <div class="flex justify-between items-start mb-2">
+                      <span class="text-xs font-black text-white group-hover:text-indigo-400 transition">{{ conn.host }}</span>
+                      <i class="fas fa-chevron-right text-[10px] text-slate-700 group-hover:text-indigo-500 transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                    <div class="flex items-center gap-2 text-[9px] text-slate-500 font-bold uppercase tracking-tighter">
+                      <i class="fas fa-user text-[8px]"></i>
+                      {{ conn.user }}
+                      <span class="text-slate-700">|</span>
+                      <i class="fas fa-folder text-[8px]"></i>
+                      <span class="truncate">{{ conn.filePath }}</span>
+                    </div>
+                  </button>
+                </div>
               </div>
 
-              <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-card">
-                <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                  <i class="fas fa-shield-alt text-indigo-600"></i>
-                  Sécurité
-                </h3>
-                <p class="text-xs text-slate-500 leading-relaxed">
-                  Vos identifiants SSH sont cryptés avec l'algorithme AES-256 avant d'être envoyés et ne sont jamais stockés en clair.
+              <!-- Rappel Sécurité -->
+              <div class="bg-indigo-600/5 rounded-2xl p-6 border border-indigo-500/20 relative group overflow-hidden">
+                <div class="absolute -right-4 -bottom-4 text-indigo-500/10 text-6xl transform -rotate-12 group-hover:scale-110 transition">
+                  <i class="fas fa-user-shield"></i>
+                </div>
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="w-10 h-10 bg-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-500">
+                    <i class="fas fa-lock"></i>
+                  </div>
+                  <h4 class="font-black text-white text-xs uppercase italic">Sécurité End-to-End</h4>
+                </div>
+                <p class="text-[11px] text-slate-500 leading-relaxed font-medium">
+                  Le chiffrement <span class="text-indigo-400 font-bold">AES-256</span> garantit que vos credentials ne sont jamais exposés, même en cas d'accès physique à la machine.
                 </p>
               </div>
             </div>
@@ -153,65 +172,69 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
   `
 })
 export class SshComponent implements OnInit {
-  form = { 
-    host: '', 
-    user: '', 
-    pass: '', 
-    filePath: '/var/log/syslog', 
-    numLines: 100,
-    specificDate: ''
-  };
+  sshForm: FormGroup;
   loading = false;
   error = '';
   success = false;
   showPassword = false;
   lastAnalysisId: number | null = null;
+  recentConnections: any[] = [];
 
-  constructor(private logService: LogService) {}
+  constructor(private fb: FormBuilder, private logService: LogService) {
+    this.sshForm = this.fb.group({
+      host: ['', [Validators.required]],
+      user: ['', [Validators.required]],
+      pass: ['', [Validators.required]],
+      filePath: ['/var/log/syslog', [Validators.required]],
+      numLines: [null],
+      specificDate: ['']
+    });
+  }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.loadRecent();
+  }
+
+  loadRecent(): void {
+    this.recentConnections = this.logService.getRecentConnections();
+  }
+
+  fillForm(conn: any): void {
+    this.sshForm.patchValue({
+      host: conn.host,
+      user: conn.user,
+      pass: conn.pass,
+      filePath: conn.filePath,
+      numLines: conn.numLines || 100,
+      specificDate: conn.specificDate || ''
+    });
+  }
 
   onSubmit(): void {
+    if (this.sshForm.invalid) return;
+
     this.loading = true;
     this.error = '';
     this.success = false;
 
-    // Use a clean payload for the service
-    const payload = {
-      host: this.form.host,
-      user: this.form.user,
-      pass: this.form.pass,
-      numLines: this.form.numLines,
-      filePath: this.form.filePath,
-      specificDate: this.form.specificDate
-    };
-
-    this.logService.analyzeSshLog(payload as any).subscribe({
+    this.logService.analyzeSshLog(this.sshForm.value).subscribe({
       next: (response) => {
         this.loading = false;
         if (response?.status === 'success') {
           this.success = true;
           this.lastAnalysisId = response.analysis_id || null;
+          
+          // Sauvegarder la connexion réussie
+          this.logService.saveConnection(this.sshForm.value);
+          this.loadRecent();
           return;
         }
-        this.error = response?.message || `Erreur lors de l'analyse SSH`;
+        this.error = response?.message || "Erreur lors de l'analyse SSH";
       },
       error: (err) => {
         this.loading = false;
-        this.error = err.error?.message || `Erreur lors de l'analyse SSH`;
+        this.error = err.error?.message || "Erreur de connexion au serveur SOC";
       }
     });
   }
-
-  analyzeToday(): void {
-    const today = new Date().toISOString().split('T')[0];
-    this.form.specificDate = today;
-    this.onSubmit();
-  }
-
-  chooseDate(): void {
-    const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement;
-    if (dateInput) dateInput.showPicker();
-  }
 }
-

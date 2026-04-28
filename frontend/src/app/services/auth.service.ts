@@ -16,6 +16,7 @@ export interface AuthResponse {
   role?: string;
   firstName?: string;
   lastName?: string;
+  isFirstLogin?: boolean;
 }
 
 @Injectable({
@@ -46,7 +47,16 @@ export class AuthService {
       if (res.role) localStorage.setItem('role', res.role);
       if (res.firstName) localStorage.setItem('firstName', res.firstName);
       if (res.lastName) localStorage.setItem('lastName', res.lastName);
+      if (res.isFirstLogin !== undefined) localStorage.setItem('isFirstLogin', String(res.isFirstLogin));
     }
+  }
+
+  updateFirstLoginStatus(status: boolean): void {
+    localStorage.setItem('isFirstLogin', String(status));
+  }
+
+  isFirstLogin(): boolean {
+    return localStorage.getItem('isFirstLogin') === 'true';
   }
 
   logout(): Observable<AuthResponse> {
@@ -72,6 +82,13 @@ export class AuthService {
 
   isLoggedIn(): boolean {
     const token = this.getToken();
-    return token !== null && token !== '';
+    return !!token && token.trim() !== '';
+  }
+
+  /**
+   * Vérifie la validité du token actuel auprès du serveur
+   */
+  checkSession(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/auth/me`);
   }
 }

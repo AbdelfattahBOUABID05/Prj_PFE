@@ -4,19 +4,29 @@ from datetime import datetime, timezone, timedelta
 import os
 import requests
 import paramiko
+import base64
 from itsdangerous import URLSafeTimedSerializer
 from werkzeug.utils import secure_filename
 from functools import wraps
 from utils_security import encrypt_data, decrypt_data
 
-from models import db, Analysis, User
+from models import db, Analysis, User, Notification, AnalysisJob, SavedSSHConnection, AdminSavedConnection
 from utils import (
     generate_security_summary,
-    generate_pdf_report_bytes
+    generate_pdf_report_bytes,
+    encrypt_ssh_password,
+    decrypt_ssh_password,
+    encrypt_admin_password,
+    decrypt_admin_password,
+    generate_user_qr,
+    send_report_email_async
 )
 
 api = Blueprint('api', __name__, url_prefix='/api')
 
+
+def get_serializer():
+    return URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
 
 def token_required(f):
     @wraps(f)
@@ -26,25 +36,27 @@ def token_required(f):
         if 'Authorization' in request.headers:
             auth_header = request.headers['Authorization']
             if auth_header.startswith('Bearer '):
-                token = auth_header.split(" ")[1]
+                parts = auth_header.split()
+                if len(parts) == 2:
+                    token = parts[1]
         
         if not token:
+            current_app.logger.warning("Accès refusé : Token manquant")
             return jsonify({'status': 'error', 'message': 'Token manquant'}), 401
         
         try:
-            # Utilisation de la SECRET_KEY de l'application et du sel fixe
-            s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
-            # Le sel doit être identique à celui utilisé lors du dumps()
-            user_id = s.loads(token, salt='auth-token', max_age=86400) # Valide 24h
+            s = get_serializer()
+            # On tente de charger l'ID utilisateur. Salt doit correspondre à celui du login.
+            user_id = s.loads(token, salt='auth-token', max_age=86400) # Expire après 24h
             
             user = db.session.get(User, user_id)
             if not user:
-                return jsonify({'status': 'error', 'message': 'Utilisateur introuvable'}), 401
+                current_app.logger.warning(f"Accès refusé : Utilisateur {user_id} inexistant")
+                return jsonify({'status': 'error', 'message': 'Utilisateur non trouvé'}), 401
             
-            # Injection de l'utilisateur dans l'objet request
             request.current_user = user
         except Exception as e:
-            # Erreur explicite pour le frontend
+            current_app.logger.error(f"Erreur d'authentification : {str(e)}")
             return jsonify({'status': 'error', 'message': 'Token invalide ou expiré'}), 401
         
         return f(*args, **kwargs)
@@ -78,6 +90,56 @@ def _compute_severity_counts(analysis: Analysis | None) -> dict:
         "medium": int(stats.get("warnings", 0)),
         "low": int(stats.get("info", 0))
     }
+
+@api.route('/auth/me', methods=['GET'])
+@token_required
+def get_me():
+    user = request.current_user
+    return jsonify({
+        "status": "success",
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "role": user.role,
+            "firstName": user.first_name,
+            "lastName": user.last_name,
+            "email": user.email,
+            "isFirstLogin": user.is_first_login
+        }
+    })
+
+@api.route('/jobs/<int:id>/toggle', methods=['POST'])
+@token_required
+def toggle_job(id):
+    from scheduler import scheduler as apscheduler
+    job = db.session.get(AnalysisJob, id)
+    if not job:
+        return jsonify({"status": "error", "message": "Job introuvable"}), 404
+    
+    # Inverser le statut
+    if job.status == 'active':
+        job.status = 'inactive'
+        # Suspendre dans APScheduler
+        job_id = f"analysis_job_{job.id}"
+        if apscheduler.get_job(job_id):
+            apscheduler.pause_job(job_id)
+    else:
+        job.status = 'active'
+        # Reprendre dans APScheduler
+        job_id = f"analysis_job_{job.id}"
+        if apscheduler.get_job(job_id):
+            apscheduler.resume_job(job_id)
+        else:
+            # Si le job n'est pas dans le scheduler, le rajouter
+            from scheduler import schedule_job
+            schedule_job(job)
+
+    db.session.commit()
+    return jsonify({
+        "status": "success", 
+        "new_status": job.status,
+        "message": f"Job {'activé' if job.status == 'active' else 'désactivé'}"
+    })
 
 @api.route('/notifications', methods=['GET'])
 @token_required
@@ -119,8 +181,7 @@ def login():
     data = request.get_json()
     user = User.query.filter_by(username=data.get('username')).first()
     if user and user.check_password(data.get('password')):
-        # login_user(user) # Flask-Login n'est plus nécessaire avec les tokens
-        s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+        s = get_serializer()
         token = s.dumps(user.id, salt='auth-token')
         return jsonify({
             "status": "success", 
@@ -129,7 +190,8 @@ def login():
             "username": user.username,
             "role": user.role,
             "firstName": user.first_name,
-            "lastName": user.last_name
+            "lastName": user.last_name,
+            "isFirstLogin": user.is_first_login
         })
     return jsonify({"status": "error", "message": "Identifiants invalides"}), 401
 
@@ -423,8 +485,16 @@ def ssh_analyze():
     host = data.get('host')
     ssh_user = data.get('user')
     pwd = data.get('pass')
-    num_lines = data.get('numLines', 100)
-    cmd = f"tail -n {num_lines} /var/log/syslog"
+    file_path = data.get('filePath', '/var/log/syslog')
+    num_lines = data.get('numLines')
+    
+    # Construction de la commande tail : 
+    # Si num_lines est présent, on prend les X dernières lignes.
+    # Sinon, on prend tout le fichier (tail -n +1).
+    if num_lines and str(num_lines).isdigit():
+        cmd = f"tail -n {num_lines} {file_path}"
+    else:
+        cmd = f"tail -n +1 {file_path}"
 
     try:
         ssh = paramiko.SSHClient()
@@ -498,9 +568,9 @@ def settings():
             "settings": {
                 "emailNotifications": bool(user.email_notifications_enabled),
                 "notificationEmail": user.notification_email or user.email or "",
-                "smtpServer": user.smtp_server or os.getenv("MAIL_SERVER", "smtp.gmail.com"),
-                "smtpPort": user.smtp_port or int(os.getenv("MAIL_PORT", 587)),
-                "smtpUser": user.email_sender or os.getenv("MAIL_USERNAME", ""),
+                "smtpServer": user.smtp_server or "",
+                "smtpPort": user.smtp_port or 587,
+                "smtpUser": user.email_sender or "",
                 "smtpPassword": ""
             }
         })
@@ -544,15 +614,29 @@ def analyze_local():
     file_path = os.path.join(upload_dir, f"{user.id}_{filename}")
     file.save(file_path)
 
+    num_lines = request.form.get('numLines')
+
     try:
         from src.parser import parse_log_file
-        # Appel du parser existant
+        # On lit le contenu pour l'analyse
+        with open(file_path, "r", encoding="utf-8", errors='replace') as f:
+            lines = f.readlines()
+        
+        # Si num_lines est spécifié, on ne garde que les X dernières lignes
+        if num_lines and str(num_lines).isdigit():
+            n = int(num_lines)
+            lines = lines[-n:]
+        
+        log_content = "".join(lines)
+        
+        # On sauvegarde le contenu tronqué dans un fichier temporaire pour le parser si besoin
+        # ou on passe directement le contenu au parser s'il le supporte.
+        # Ici on va réécrire le fichier temporairement pour le parser.
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(log_content)
+
         results = parse_log_file(file_path)
         
-        # Lecture du contenu pour l'analyse IA
-        with open(file_path, "r", encoding="utf-8", errors='replace') as f:
-            log_content = f.read()
-
         # Calcul des statistiques
         stats = {
             "errors": len(results.get('ERROR', [])),
@@ -664,6 +748,8 @@ def get_user_jobs():
                 "target_ip": j.target_ip,
                 "log_path": j.log_path,
                 "frequency": j.frequency,
+                "custom_interval": j.custom_interval,
+                "custom_unit": j.custom_unit,
                 "status": j.status,
                 "created_at": j.created_at.isoformat() if j.created_at else None
             }
@@ -683,6 +769,8 @@ def create_user_job():
         target_ip=data.get('target_ip'),
         log_path=data.get('log_path', '/var/log/syslog'),
         frequency=data.get('frequency', 'daily'),
+        custom_interval=data.get('custom_interval') if data.get('frequency') == 'custom' else None,
+        custom_unit=data.get('custom_unit') if data.get('frequency') == 'custom' else None,
         ssh_username=data.get('ssh_user'),
         ssh_password_enc=encrypt_data(data.get('ssh_pass')),
         status='pending'
@@ -714,6 +802,13 @@ def delete_user_job(job_id):
     if not job:
         return jsonify({"status": "error", "message": "Job introuvable"}), 404
     
+    # Retirer du scheduler si actif
+    if job.status == 'active':
+        from extensions import scheduler as apscheduler
+        job_id = f"analysis_job_{job.id}"
+        if apscheduler.get_job(job_id):
+            apscheduler.remove_job(job_id)
+
     db.session.delete(job)
     db.session.commit()
     return jsonify({"status": "success", "message": "Job supprimé"})
@@ -721,15 +816,9 @@ def delete_user_job(job_id):
 
 @api.route('/email/send-report', methods=['POST'])
 @token_required
-def send_report():
+def send_report_email():
     user = request.current_user
-    import smtplib
-    import ssl
-    from email.mime.text import MIMEText
-    from email.mime.multipart import MIMEMultipart
-    from email.mime.application import MIMEApplication
-
-    data = request.get_json() or {}
+    data = request.get_json()
     analysis_id = data.get('analysis_id')
     recipient = data.get('recipient') or data.get('email') or user.notification_email or user.email
     
@@ -740,70 +829,59 @@ def send_report():
     if not analysis or analysis.user_id != user.id:
         return jsonify({"status": "error", "message": "Analyse introuvable"}), 404
         
-    # Configuration SMTP avec flexibilité (Priorité aux paramètres de l'utilisateur)
-    smtp_server = user.smtp_server or os.getenv("MAIL_SERVER", "smtp.gmail.com")
-    smtp_port = user.smtp_port or int(os.getenv("MAIL_PORT", 587))
-    smtp_user = user.email_sender or os.getenv("MAIL_USERNAME") or os.getenv("SMTP_USER")
-    smtp_pass = decrypt_data(user.email_password_enc) if user.email_password_enc else (os.getenv("MAIL_PASSWORD") or os.getenv("SMTP_PASS"))
-    use_tls = os.getenv("MAIL_USE_TLS", "True").lower() == "true"
+    # 1. Configuration SMTP
+    smtp_config = {
+        'server': user.smtp_server or os.getenv("MAIL_SERVER", "smtp.gmail.com"),
+        'port': user.smtp_port or int(os.getenv("MAIL_PORT", 587)),
+        'user': user.email_sender or os.getenv("MAIL_USERNAME", "admin@awb.pfe.ma"),
+        'password': decrypt_data(user.email_password_enc) if user.email_password_enc else os.getenv("MAIL_PASSWORD"),
+        'use_tls': os.getenv("MAIL_USE_TLS", "True").lower() == "true"
+    }
 
-    if not smtp_user:
-        return jsonify({"status": "error", "message": "Configuration SMTP incomplète (expéditeur manquant)."}), 400
-
-    # 1. Génération du PDF
+    # 2. Génération du PDF
     pdf_bytes = generate_pdf_report_bytes(analysis)
     if not pdf_bytes:
         return jsonify({"status": "error", "message": "Erreur lors de la génération du PDF"}), 500
         
-    # 2. Préparation du message
-    subject = data.get('subject') or f"Rapport d'Audit Logs - {analysis.server_ip or 'Local'}"
-    message_notes = data.get('message') or ""
+    # 3. Préparation du contenu
+    subject = data.get('subject') or f"Rapport d'Audit Logs SOC - {analysis.server_ip or 'Local'}"
+    date_str = analysis.created_at.strftime('%d/%m/%Y %H:%M') if analysis.created_at else "N/A"
     
     html_body = f"""
     <html>
-    <body style="font-family: Arial, sans-serif; color: #333;">
-        <h2>Rapport d'analyse LogAnalyzer</h2>
-        <p>Bonjour,</p>
-        <p>Voici le rapport d'analyse pour le serveur <strong>{analysis.server_ip or 'Local'}</strong>.</p>
-        <ul>
-            <li><strong>Score de sécurité :</strong> {analysis.ai_score}/100</li>
-            <li><strong>Statut :</strong> {analysis.ai_status}</li>
-        </ul>
-        {f'<p><strong>Note :</strong> {message_notes}</p>' if message_notes else ''}
-        <p>Le rapport PDF est joint à cet email.</p>
+    <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
+            <h2 style="color: #4f46e5; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">Rapport d'Audit SOC</h2>
+            <p>Bonjour,</p>
+            <p>Veuillez trouver ci-joint le rapport d'analyse technique généré par le système SOC LogAnalyzer.</p>
+            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <p style="margin: 5px 0;"><strong>ID Analyse :</strong> #{analysis.id}</p>
+                <p style="margin: 5px 0;"><strong>Score Sécurité :</strong> {analysis.ai_score}/100</p>
+                <p style="margin: 5px 0;"><strong>Statut :</strong> {analysis.ai_status}</p>
+                <p style="margin: 5px 0;"><strong>Source :</strong> {analysis.server_ip if analysis.source_type == 'SSH' else 'Hôte Local'}</p>
+                <p style="margin: 5px 0;"><strong>Date :</strong> {date_str}</p>
+            </div>
+            <p style="font-size: 12px; color: #64748b;">Ce document est confidentiel et authentifié par l'expert via QR Code.</p>
+        </div>
     </body>
     </html>
     """
     
-    msg = MIMEMultipart("mixed")
-    msg['Subject'] = subject
-    msg['To'] = recipient
-    msg['From'] = smtp_user
-    msg.attach(MIMEText(html_body, 'html'))
-    
-    attachment = MIMEApplication(pdf_bytes)
-    attachment.add_header('Content-Disposition', 'attachment', filename=f"Rapport_Audit_{analysis_id}.pdf")
-    msg.attach(attachment)
+    # 4. Envoi asynchrone
+    send_report_email_async(
+        current_app._get_current_object(),
+        smtp_config,
+        recipient,
+        subject,
+        html_body,
+        pdf_bytes,
+        f"Rapport_Audit_{analysis_id}.pdf"
+    )
 
-    # 3. Envoi SMTP
-    try:
-        context = ssl.create_default_context()
-        with smtplib.SMTP(smtp_server, smtp_port, timeout=20) as server:
-            if use_tls:
-                server.starttls(context=context)
-            
-            if smtp_pass:
-                try:
-                    server.login(smtp_user, smtp_pass)
-                except smtplib.SMTPAuthenticationError:
-                    return jsonify({"status": "error", "message": "Authentification SMTP échouée. Vérifiez vos identifiants."}), 401
-            
-            server.send_message(msg)
-        
-        return jsonify({"status": "success", "message": f"Email envoyé avec succès à {recipient}"})
-        
-    except Exception as e:
-        return jsonify({"status": "error", "message": f"Erreur de connexion SMTP : {str(e)}"}), 500
+    return jsonify({
+        "status": "success", 
+        "message": f"L'envoi du rapport à {recipient} a été initié en arrière-plan."
+    })
 
 
 # --- Admin: User Management ---
@@ -927,6 +1005,14 @@ def admin_approve_job(job_id):
         job.status = 'active'
         job.approved_at = datetime.now(timezone.utc)
         
+        # Planifier le job dans APScheduler
+        from scheduler import schedule_job
+        try:
+            schedule_job(job)
+        except Exception as e:
+            current_app.logger.error(f"Erreur lors de la planification du job {job.id}: {e}")
+            return jsonify({"status": "error", "message": "Erreur lors de la planification technique du job"}), 500
+
         # Notification à l'utilisateur
         notif = Notification(
             user_id=job.user_id,
@@ -962,20 +1048,53 @@ def admin_approve_job(job_id):
 @api.route('/admin/console', methods=['POST'])
 @admin_required
 def admin_remote_console():
+    user = request.current_user
     data = request.get_json()
     host = data.get('host')
-    user = data.get('user')
+    ssh_user = data.get('user')
     pwd = data.get('pass')
     cmd = data.get('command')
 
-    if not all([host, user, pwd, cmd]):
+    if not all([host, ssh_user, pwd, cmd]):
         return jsonify({"status": "error", "message": "Données SSH manquantes"}), 400
 
     try:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(host, username=user, password=pwd, timeout=10)
+        ssh.connect(host, username=ssh_user, password=pwd, timeout=10)
         
+        # Sauvegarde de la connexion Admin sur succès
+        try:
+            encrypted_pwd = encrypt_admin_password(pwd)
+            existing_conn = AdminSavedConnection.query.filter_by(
+                user_id=user.id, host=host, username=ssh_user
+            ).first()
+            
+            if existing_conn:
+                existing_conn.encrypted_password = encrypted_pwd
+                existing_conn.last_used_at = datetime.now(timezone.utc)
+            else:
+                new_conn = AdminSavedConnection(
+                    user_id=user.id,
+                    host=host,
+                    username=ssh_user,
+                    encrypted_password=encrypted_pwd
+                )
+                db.session.add(new_conn)
+            
+            db.session.commit()
+            
+            # Limiter à 3 connexions pour la console admin
+            admin_conns = AdminSavedConnection.query.filter_by(user_id=user.id)\
+                .order_by(AdminSavedConnection.last_used_at.desc()).all()
+            
+            if len(admin_conns) > 3:
+                for old_conn in admin_conns[3:]:
+                    db.session.delete(old_conn)
+                db.session.commit()
+        except Exception as save_err:
+            current_app.logger.error(f"Erreur sauvegarde Console Admin: {str(save_err)}")
+
         stdin, stdout, stderr = ssh.exec_command(cmd)
         output = stdout.read().decode('utf-8', errors='replace')
         error = stderr.read().decode('utf-8', errors='replace')
@@ -988,6 +1107,28 @@ def admin_remote_console():
         })
     except Exception as e:
         return jsonify({"status": "error", "message": f"Erreur Console: {str(e)}"}), 500
+
+
+@api.route('/admin/console/recent', methods=['GET'])
+@admin_required
+def get_admin_console_recent():
+    user = request.current_user
+    connections = AdminSavedConnection.query.filter_by(user_id=user.id)\
+        .order_by(AdminSavedConnection.last_used_at.desc()).limit(3).all()
+    
+    return jsonify({
+        "status": "success",
+        "connections": [
+            {
+                "id": c.id,
+                "host": c.host,
+                "username": c.username,
+                "password": decrypt_admin_password(c.encrypted_password),
+                "last_used_at": c.last_used_at.isoformat()
+            }
+            for c in connections
+        ]
+    })
 
 
 # --- User: Profile & Signature ---
@@ -1018,57 +1159,25 @@ def change_password():
         return jsonify({"status": "error", "message": "Ancien mot de passe incorrect"}), 400
 
     user.set_password(new_pass)
+    user.is_first_login = False # Débloquer l'utilisateur après le premier changement de mot de passe
     db.session.commit()
     return jsonify({"status": "success", "message": "Mot de passe mis à jour"})
 
-@api.route('/profile/upload-signature', methods=['POST'])
+@api.route('/generate-qr', methods=['GET'])
 @token_required
-def upload_signature():
+def generate_qr():
     user = request.current_user
-    if 'signature' not in request.files:
-        return jsonify({"status": "error", "message": "Aucun fichier fourni"}), 400
+    qr_bytes = generate_user_qr(user)
     
-    file = request.files['signature']
-    if file.filename == '':
-        return jsonify({"status": "error", "message": "Nom de fichier vide"}), 400
-
-    # Process with Remove.bg
-    # Traitement avec Remove.bg
-    api_key = os.getenv("REMOVE_BG_API_KEY")
-    if not api_key:
-        return jsonify({"status": "error", "message": "Clé API Remove.bg manquante"}), 500
-
-    try:
-        response = requests.post(
-            'https://api.remove.bg/v1.0/removebg',
-            files={'image_file': file},
-            data={'size': 'auto'},
-            headers={'X-Api-Key': api_key},
-        )
-        if response.status_code == requests.codes.ok:
-            # Save processed image
-            # Sauvegarder l'image traitée
-            filename = f"sig_{user.id}.png"
-            static_dir = os.path.join(current_app.root_path, 'static', 'signatures')
-            if not os.path.exists(static_dir):
-                os.makedirs(static_dir)
-            
-            file_path = os.path.join(static_dir, filename)
-            with open(file_path, 'wb') as out:
-                out.write(response.content)
-            
-            user.signature_path = f"signatures/{filename}"
-            db.session.commit()
-            
-            return jsonify({
-                "status": "success", 
-                "message": "Signature mise à jour",
-                "signature_path": user.signature_path
-            })
-        else:
-            return jsonify({"status": "error", "message": f"Erreur Remove.bg: {response.text}"}), 400
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+    if not qr_bytes:
+        return jsonify({"status": "error", "message": "Erreur lors de la génération du QR Code"}), 500
+        
+    img_str = base64.b64encode(qr_bytes).decode()
+    
+    return jsonify({
+        "status": "success",
+        "qr_code": f"data:image/png;base64,{img_str}"
+    })
 
 
 

@@ -12,21 +12,146 @@ from cryptography.fernet import Fernet
 from openai import OpenAI
 import logging
 from fpdf import FPDF
+from flask import current_app
+from utils_security import decrypt_data
+import qrcode
+import io
+import base64
+import threading
 
 logger = logging.getLogger(__name__)
 
-def get_decrypted_removebg_key():
-    """Déchiffre la clé API Remove.bg depuis les variables d'environnement."""
+def send_report_email_async(app, smtp_config, recipient, subject, html_body, pdf_bytes, filename):
+    """Envoie un rapport par email de manière asynchrone."""
+    def send_thread(app_context):
+        with app_context:
+            try:
+                import smtplib
+                import ssl
+                from email.mime.text import MIMEText
+                from email.mime.multipart import MIMEMultipart
+                from email.mime.application import MIMEApplication
+
+                msg = MIMEMultipart("mixed")
+                msg['Subject'] = subject
+                msg['To'] = recipient
+                msg['From'] = smtp_config['user']
+                msg.attach(MIMEText(html_body, 'html'))
+                
+                attachment = MIMEApplication(pdf_bytes)
+                attachment.add_header('Content-Disposition', 'attachment', filename=filename)
+                msg.attach(attachment)
+
+                context = ssl.create_default_context()
+                with smtplib.SMTP(smtp_config['server'], smtp_config['port'], timeout=30) as server:
+                    if smtp_config.get('use_tls'):
+                        server.starttls(context=context)
+                    if smtp_config.get('password'):
+                        server.login(smtp_config['user'], smtp_config['password'])
+                    server.send_message(msg)
+                logger.info(f"Email envoyé avec succès à {recipient}")
+            except Exception as e:
+                logger.error(f"Erreur envoi email asynchrone: {str(e)}")
+
+    threading.Thread(
+        target=send_thread,
+        args=(app.app_context(),)
+    ).start()
+
+def generate_user_qr(user):
+    """Génère un QR Code pour l'utilisateur Expert SOC."""
     try:
-        fernet_key = os.getenv("FERNET_KEY")
-        encrypted_key = os.getenv("ENCRYPTED_REMOVEBG_KEY")
-        if not fernet_key or not encrypted_key:
-            return None
-        f = Fernet(fernet_key.encode())
-        return f.decrypt(encrypted_key.encode()).decode()
+        # Données sécurisées : Nom, Prénom, Email uniquement
+        qr_data = f"Expert SOC: {user.first_name} {user.last_name}\nEmail: {user.email}"
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(qr_data)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        
+        buffered = io.BytesIO()
+        img.save(buffered, format="PNG")
+        return buffered.getvalue()
     except Exception as e:
-        logger.error(f"Erreur de déchiffrement API Key: {str(e)}")
+        logger.error(f"Erreur génération QR: {e}")
         return None
+
+def encrypt_ssh_password(password: str) -> str:
+    """Chiffre un mot de passe SSH."""
+    if not password:
+        return ""
+    try:
+        fernet_key = os.getenv("FERNET_KEY") or os.getenv("SECRET_KEY")
+        if not fernet_key:
+            return password
+        
+        import base64
+        import hashlib
+        key = base64.urlsafe_b64encode(hashlib.sha256(fernet_key.encode()).digest())
+        f = Fernet(key)
+        return f.encrypt(password.encode()).decode()
+    except Exception as e:
+        logger.error(f"Encryption error: {str(e)}")
+        return password
+
+def decrypt_ssh_password(token: str) -> str:
+    """Déchiffre un mot de passe SSH."""
+    if not token:
+        return ""
+    try:
+        fernet_key = os.getenv("FERNET_KEY") or os.getenv("SECRET_KEY")
+        if not fernet_key:
+            return token
+            
+        import base64
+        import hashlib
+        key = base64.urlsafe_b64encode(hashlib.sha256(fernet_key.encode()).digest())
+        f = Fernet(key)
+        return f.decrypt(token.encode()).decode()
+    except Exception as e:
+        logger.error(f"Decryption error: {str(e)}")
+        return token
+
+def encrypt_admin_password(password: str) -> str:
+    """Chiffre un mot de passe pour la console Admin."""
+    if not password:
+        return ""
+    try:
+        # Utilisation de MASTER_CONSOLE_KEY spécifiquement pour l'admin
+        fernet_key = os.getenv("MASTER_CONSOLE_KEY") or os.getenv("SECRET_KEY")
+        if not fernet_key:
+            return password
+        
+        import base64
+        import hashlib
+        key = base64.urlsafe_b64encode(hashlib.sha256(fernet_key.encode()).digest())
+        f = Fernet(key)
+        return f.encrypt(password.encode()).decode()
+    except Exception as e:
+        logger.error(f"Admin Encryption error: {str(e)}")
+        return password
+
+def decrypt_admin_password(token: str) -> str:
+    """Déchiffre un mot de passe pour la console Admin."""
+    if not token:
+        return ""
+    try:
+        fernet_key = os.getenv("MASTER_CONSOLE_KEY") or os.getenv("SECRET_KEY")
+        if not fernet_key:
+            return token
+            
+        import base64
+        import hashlib
+        key = base64.urlsafe_b64encode(hashlib.sha256(fernet_key.encode()).digest())
+        f = Fernet(key)
+        return f.decrypt(token.encode()).decode()
+    except Exception as e:
+        logger.error(f"Admin Decryption error: {str(e)}")
+        return token
 
 def file_metadata(filepath: str) -> dict:
     return {
@@ -263,14 +388,44 @@ def clean_text_for_pdf(text: str) -> str:
     if not text: return ""
     return str(text).encode('latin-1', 'replace').decode('latin-1')
 
+class SOC_Report(FPDF):
+    def __init__(self, qr_bytes=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.qr_bytes = qr_bytes
+
+    def header(self):
+        # Watermark (QR Code avec Opacité 0.05) au centre de chaque page
+        if self.qr_bytes:
+            with self.local_context(fill_opacity=0.05):
+                qr_stream = io.BytesIO(self.qr_bytes)
+                # Positionner au centre de la page (A4: 210x297)
+                self.image(qr_stream, x=55, y=100, w=100)
+
+    def footer(self):
+        self.set_y(-15)
+        self.set_font("Helvetica", "I", 8)
+        self.set_text_color(150, 150, 150)
+        
+        # Numéro de page à gauche
+        self.cell(0, 10, f"Page {self.page_no()}/{{nb}}", align="L")
+        
+        # Note d'authentification à droite
+        self.set_x(-100)
+        self.cell(90, 10, clean_text_for_pdf("Document Authentifié par le SOC - Rapport Officiel"), align="R")
+
 def generate_pdf_report_bytes(analysis):
     """
     Génère un rapport PDF professionnel à partir d'une analyse.
     """
     try:
-        pdf = FPDF()
+        from models import User
+        user = User.query.get(analysis.user_id)
+        qr_bytes = generate_user_qr(user) if user else None
+
+        pdf = SOC_Report(qr_bytes=qr_bytes)
+        pdf.alias_nb_pages()
         pdf.add_page()
-        pdf.set_auto_page_break(auto=True, margin=15)
+        pdf.set_auto_page_break(auto=True, margin=20)
         
         # --- Header with Logos ---
         static_img_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "img")
@@ -308,10 +463,19 @@ def generate_pdf_report_bytes(analysis):
         pdf.set_text_color(55, 65, 81)
         
         stats = analysis.stats or {}
+        
+        # Date formatée
+        analysis_date = analysis.created_at
+        if isinstance(analysis_date, datetime):
+            date_str = analysis_date.strftime('%d/%m/%Y %H:%M')
+        else:
+            date_str = str(analysis_date)
+
         rows = [
-            ("Date du rapport", datetime.now().strftime('%d/%m/%Y %H:%M')),
-            ("Fichier Source", analysis.source_path or "/var/log/syslog"),
-            ("Serveur Cible (IP)", analysis.server_ip or "Localhost"),
+            ("ID du Rapport", f"#{analysis.id}"),
+            ("Date de l'Analyse", date_str),
+            ("Source des Logs", analysis.server_ip if analysis.source_type == 'SSH' else "Hôte Local"),
+            ("Fichier Source", analysis.source_path or "N/A"),
             ("Total lignes analysées", str(stats.get('total', 0)))
         ]
         
@@ -322,7 +486,37 @@ def generate_pdf_report_bytes(analysis):
             pdf.cell(140, 8, clean_text_for_pdf(value), border=0, ln=True)
 
         pdf.ln(10)
-        return pdf.output(dest='S').encode('latin-1')
+
+        # --- Contenu additionnel (ex: Patterns, AI Insights) si nécessaire ---
+        # (Logique existante pour les sections peut être ajoutée ici)
+
+        # --- Signature Finale (QR Code Opacité 1.0) ---
+        if qr_bytes:
+            # S'assurer qu'il y a assez d'espace pour la signature, sinon nouvelle page
+            if pdf.get_y() > 220:
+                pdf.add_page()
+            
+            pdf.ln(20)
+            pdf.set_y(-70) # Positionner vers le bas
+            
+            # Label au dessus du QR Code
+            pdf.set_x(130)
+            pdf.set_font("Helvetica", "B", 10)
+            pdf.set_text_color(17, 24, 39)
+            pdf.cell(60, 10, clean_text_for_pdf("Authentifié par l'Expert SOC :"), ln=True, align="C")
+            
+            # QR Code à droite (Full Opacity)
+            pdf.set_x(145)
+            qr_stream = io.BytesIO(qr_bytes)
+            pdf.image(qr_stream, h=30)
+            
+            # Nom de l'expert
+            pdf.set_x(130)
+            pdf.set_font("Helvetica", "I", 9)
+            pdf.set_text_color(75, 85, 99)
+            pdf.cell(60, 10, clean_text_for_pdf(f"{user.first_name} {user.last_name}"), align="C")
+
+        return bytes(pdf.output(dest='S'))
     except Exception as e:
         logger.error(f"Erreur génération PDF: {e}")
         return None
@@ -371,24 +565,41 @@ def send_user_notification(user, subject, content):
     """Envoie une notification à l'utilisateur si une adresse de destination est configurée."""
     dest = user.notification_email or user.email
     if dest:
-        return send_notification(dest, subject, content)
+        # On génère l'expéditeur dynamique : {username}@awb.pfe.ma
+        sender = f"{user.username}@awb.pfe.ma"
+        return send_notification(dest, subject, content, sender=sender, user=user)
     return False
 
-def send_notification(email_dest, subject, content):
-    """Envoie une notification par email en utilisant un compte Gmail SMTP fixe."""
-    msg = MIMEMultipart()
-    smtp_user = os.getenv("MAIL_USERNAME") or os.getenv("SMTP_USER")
-    smtp_pass = os.getenv("MAIL_PASSWORD") or os.getenv("SMTP_PASS")
-    smtp_server = os.getenv("MAIL_SERVER", "smtp.gmail.com")
-    smtp_port = int(os.getenv("MAIL_PORT", 587))
-    use_tls = os.getenv("MAIL_USE_TLS", "True").lower() == "true"
+def send_notification(email_dest, subject, content, sender=None, user=None):
+    """Envoie une notification par email ou simule l'envoi si SMTP non configuré."""
+    # Priorité aux paramètres personnalisés de l'utilisateur
+    if user:
+        smtp_server = user.smtp_server or os.getenv("MAIL_SERVER")
+        smtp_user = user.email_sender or os.getenv("MAIL_USERNAME") or os.getenv("SMTP_USER")
+        smtp_pass = decrypt_data(user.email_password_enc) if user.email_password_enc else (os.getenv("MAIL_PASSWORD") or os.getenv("SMTP_PASS"))
+        smtp_port = user.smtp_port or int(os.getenv("MAIL_PORT", 587))
+    else:
+        smtp_server = os.getenv("MAIL_SERVER")
+        smtp_user = os.getenv("MAIL_USERNAME") or os.getenv("SMTP_USER")
+        smtp_pass = os.getenv("MAIL_PASSWORD") or os.getenv("SMTP_PASS")
+        smtp_port = int(os.getenv("MAIL_PORT", 587))
     
-    if not smtp_user or not smtp_pass:
-        logger.error("Configuration SMTP incomplète (MAIL_USERNAME/MAIL_PASSWORD manquants).")
-        return False
+    # Si les paramètres SMTP sont absents, on passe en mode simulation
+    is_simulated = not (smtp_server and smtp_user and smtp_pass)
+    
+    # Expéditeur dynamique par défaut si aucun expéditeur SMTP n'est fourni
+    dynamic_sender = f"{user.username}@awb.pfe.ma" if user else "system@awb.pfe.ma"
+    final_sender = sender or smtp_user or dynamic_sender
+    
+    if is_simulated:
+        logger.info(f"[SIMULATION EMAIL] De: {final_sender} À: {email_dest} | Sujet: {subject}")
+        return True
+
+    msg = MIMEMultipart()
+    use_tls = os.getenv("MAIL_USE_TLS", "True").lower() == "true"
 
     msg['Subject'] = subject
-    msg['From'] = smtp_user
+    msg['From'] = final_sender
     msg['To'] = email_dest
     msg.attach(MIMEText(content, 'html'))
 

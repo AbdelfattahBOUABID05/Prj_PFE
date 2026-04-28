@@ -17,6 +17,13 @@ export const authGuard: CanActivateFn = (route: ActivatedRouteSnapshot, state: R
     return false;
   }
 
+  // Check for first login - Must change password
+  // Vérifier s'il s'agit de la première connexion - Doit changer le mot de passe
+  if (authService.isFirstLogin() && state.url !== '/profile') {
+    router.navigate(['/profile']);
+    return false;
+  }
+
   // Check if route has role restrictions
   // Vérifier si la route a des restrictions de rôle
   const expectedRole = route.data['role'];
