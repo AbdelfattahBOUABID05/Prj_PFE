@@ -1,0 +1,411 @@
+<div class="flex h-screen bg-[#f0f2f5] dark:bg-[#0a192f] transition-colors duration-500">
+  <!-- Full-screen Loading Overlay -->
+  <div *ngIf="isLoading" class="fixed inset-0 z-[100] bg-[#001f3f]/80 backdrop-blur-xl flex flex-col items-center justify-center text-white animate-fade-in">
+    <div class="w-20 h-20 rounded-3xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 shadow-2xl mb-6">
+      <mat-spinner diameter="40" color="primary"></mat-spinner>
+    </div>
+    <p class="font-black uppercase tracking-[0.3em] text-xs animate-pulse text-indigo-400">SOC Processing Agent...</p>
+  </div>
+
+  <app-sidebar></app-sidebar>
+
+  <main class="flex-1 ml-64 overflow-auto pt-24 pb-8 no-scrollbar">
+    <div class="w-full px-12 mx-auto">
+      <header class="mb-10 animate-fade-in flex justify-between items-end">
+        <div class="flex items-center gap-4">
+          <div class="p-3 bg-indigo-600/10 dark:bg-indigo-600/20 rounded-2xl border border-indigo-500/20 shadow-xl shadow-indigo-500/10">
+            <i class="fas fa-file-invoice text-2xl text-indigo-500"></i>
+          </div>
+          <div>
+            <h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight uppercase italic">Rapport d'Audit <span class="text-indigo-500 not-italic">SOC</span></h2>
+            <p class="text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-1">Intelligence Artificielle & Forensics</p>
+          </div>
+        </div>
+        <div class="flex gap-4">
+          <button (click)="sendEmail()" [disabled]="!analysis"
+                  class="bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white/60 px-6 py-4 rounded-2xl hover:bg-indigo-600 hover:text-white transition-all duration-300 disabled:opacity-20 flex items-center gap-3 font-black uppercase tracking-widest text-[10px] border border-slate-200 dark:border-white/10 group">
+            <i class="fas fa-envelope group-hover:scale-110 transition-transform"></i>
+            Email Report
+          </button>
+          <button (click)="exportToPdf()" [disabled]="!analysis"
+                  class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl transition-all duration-300 disabled:opacity-20 shadow-[0_10px_20px_rgba(79,70,229,0.3)] flex items-center gap-3 font-black uppercase tracking-widest text-[10px] group">
+            <i class="fas fa-file-pdf group-hover:scale-110 transition-transform"></i>
+            Exporter PDF
+          </button>
+        </div>
+      </header>
+
+      <div *ngIf="loading" class="flex flex-col items-center justify-center p-32 text-slate-400">
+        <div class="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-white/5 flex items-center justify-center border border-slate-100 dark:border-white/5 mb-6">
+          <mat-spinner diameter="30"></mat-spinner>
+        </div>
+        <p class="font-black text-[10px] uppercase tracking-[0.3em] animate-pulse">Chargement des données...</p>
+      </div>
+
+      <div *ngIf="!loading && !analysis" class="p-32 max-w-2xl mx-auto text-center animate-fade-in">
+        <div class="glass-card p-12 relative group overflow-hidden">
+          <div class="absolute inset-0 bg-indigo-500/[0.02] pointer-events-none"></div>
+          <div class="w-24 h-24 bg-slate-50 dark:bg-white/5 rounded-[2.5rem] flex items-center justify-center mx-auto mb-10 text-slate-200 dark:text-white/5 border border-slate-100 dark:border-white/5 shadow-inner group-hover:scale-110 transition-transform duration-700">
+            <i class="fas fa-file-invoice text-5xl"></i>
+          </div>
+          <h3 class="text-2xl font-black text-slate-900 dark:text-white mb-4 uppercase tracking-tight">Aucun Rapport Sélectionné</h3>
+          <p class="text-slate-500 dark:text-slate-400 text-xs font-medium mb-10 leading-relaxed uppercase tracking-wider">Veuillez choisir une analyse dans l'historique pour visualiser son rapport détaillé.</p>
+          <a routerLink="/history" class="inline-flex items-center gap-4 bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] transition-all shadow-xl group">
+            <i class="fas fa-history group-hover:rotate-[-45deg] transition-transform"></i>
+            Consulter l'Historique
+          </a>
+        </div>
+      </div>
+
+      <div *ngIf="analysis" class="space-y-8 animate-fade-in">
+        <!-- 1. File Metadata Section -->
+        <div class="glass-card p-10 grid grid-cols-4 gap-10 items-center border-l-4 border-indigo-600 relative overflow-hidden group">
+          <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-500/[0.03] rounded-full blur-3xl -mr-32 -mt-32"></div>
+          
+          <div class="flex items-center gap-5 relative z-10">
+            <div class="w-14 h-14 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl flex items-center justify-center text-indigo-500 shadow-xl shadow-indigo-500/5">
+              <i class="fas fa-file-alt text-xl"></i>
+            </div>
+            <div class="overflow-hidden">
+              <p class="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mb-1">Fichier Analysé</p>
+              <p class="text-xs font-black text-slate-900 dark:text-white truncate uppercase tracking-tighter" [title]="analysis.source_path">
+                {{ analysis.source_path || 'N/A' }}
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-5 relative z-10 border-l border-slate-200 dark:border-white/5 pl-10">
+            <div class="w-12 h-12 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-500 shadow-xl shadow-emerald-500/5">
+              <i class="fas fa-calendar-check text-lg"></i>
+            </div>
+            <div>
+              <p class="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mb-1">Date d'Audit</p>
+              <p class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-tighter">{{ formatCreationDate(analysis.created_at) }}</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-5 relative z-10 border-l border-slate-200 dark:border-white/5 pl-10">
+            <div class="w-12 h-12 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center justify-center text-amber-500 shadow-xl shadow-amber-500/5">
+              <i class="fas fa-network-wired text-lg"></i>
+            </div>
+            <div>
+              <p class="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mb-1">Source Target</p>
+              <p class="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-tighter">
+                {{ analysis.source_type === 'SSH' ? analysis.server_ip : 'Audit Local' }}
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-6 relative z-10 border-l border-slate-200 dark:border-white/5 pl-10">
+            <div class="text-right">
+              <p class="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mb-1">Rapport ID</p>
+              <p class="text-2xl font-black text-slate-900 dark:text-white italic tracking-tighter">#{{ analysis.id }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-8 items-stretch">
+          <!-- 2. Log Distribution Chart -->
+          <div class="w-full lg:w-1/3 glass-card p-10 flex flex-col group">
+            <div class="flex items-center justify-between mb-10">
+              <h3 class="font-black text-slate-900 dark:text-white uppercase tracking-wider text-sm italic">Distribution Logs</h3>
+              <i class="fas fa-chart-pie text-indigo-500/50"></i>
+            </div>
+            <div class="flex-1 flex items-center justify-center relative min-h-[300px]">
+              <canvas #logChart></canvas>
+            </div>
+            <div class="grid grid-cols-3 gap-4 mt-10">
+              <div class="text-center p-4 bg-red-500/5 rounded-2xl border border-red-500/10">
+                <p class="text-[8px] font-black text-red-500 uppercase tracking-[0.2em] mb-1">Erreurs</p>
+                <p class="text-xl font-black text-slate-900 dark:text-white italic">{{ analysis.stats.errors }}</p>
+              </div>
+              <div class="text-center p-4 bg-amber-500/5 rounded-2xl border border-amber-500/10">
+                <p class="text-[8px] font-black text-amber-500 uppercase tracking-[0.2em] mb-1">Warnings</p>
+                <p class="text-xl font-black text-slate-900 dark:text-white italic">{{ analysis.stats.warnings }}</p>
+              </div>
+              <div class="text-center p-4 bg-indigo-500/5 rounded-2xl border border-indigo-500/10">
+                <p class="text-[8px] font-black text-indigo-500 uppercase tracking-[0.2em] mb-1">Infos</p>
+                <p class="text-xl font-black text-slate-900 dark:text-white italic">{{ analysis.stats.info }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Summary Stats - Centered -->
+          <div class="w-full lg:w-2/3 flex flex-wrap justify-center items-stretch gap-8">
+            <div class="glass-card p-10 flex flex-col justify-between relative overflow-hidden group min-w-[400px] max-w-[550px] flex-1">
+              <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-emerald-500/[0.03] rounded-full blur-3xl group-hover:bg-emerald-500/[0.08] transition-all duration-1000"></div>
+              
+              <div class="flex items-center gap-10">
+                <!-- Circular Score -->
+                <div class="relative w-40 h-40 flex items-center justify-center shrink-0">
+                  <svg class="w-full h-full transform -rotate-90">
+                    <circle cx="80" cy="80" r="74" stroke="currentColor" stroke-width="12" fill="transparent"
+                            class="text-slate-100 dark:text-white/5" />
+                    <circle cx="80" cy="80" r="74" stroke="currentColor" stroke-width="12" fill="transparent"
+                            [attr.stroke-dasharray]="464.7"
+                            [attr.stroke-dashoffset]="464.7 - (464.7 * analysis.ai_score / 100)"
+                            [class.text-red-500]="analysis.ai_score < 50"
+                            [class.text-amber-500]="analysis.ai_score >= 50 && analysis.ai_score < 80"
+                            [class.text-emerald-500]="analysis.ai_score >= 80"
+                            stroke-linecap="round" class="transition-all duration-1000 ease-out shadow-[0_0_20px_rgba(0,0,0,0.5)]" />
+                  </svg>
+                  <div class="absolute flex flex-col items-center">
+                    <span class="text-4xl font-black text-slate-900 dark:text-white italic tracking-tighter">{{ analysis.ai_score }}</span>
+                    <span class="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mt-1">Confiance IA</span>
+                  </div>
+                </div>
+                
+                <div class="flex-1 space-y-6">
+                  <div>
+                    <p class="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mb-2">Verdict de Sécurité</p>
+                    <div [class]="getSecurityBadgeClass(analysis.ai_status) + ' inline-flex items-center gap-3 px-5 py-2 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg'">
+                      <i class="fas fa-shield-alt"></i>
+                      {{ analysis.ai_status || 'Inconnu' }}
+                    </div>
+                  </div>
+                  <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium italic border-l-2 border-indigo-500/20 pl-4">
+                    "{{ analysis.meta?.ai_insights || 'Analyse heuristique complétée avec succès.' | slice:0:120 }}..."
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-card p-10 flex flex-col justify-between min-w-[300px] max-w-[400px] flex-1">
+              <h4 class="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mb-8">Indicateurs Critiques</h4>
+              <div class="space-y-6">
+                <div class="flex items-center justify-between p-5 bg-red-500/[0.03] dark:bg-red-500/5 rounded-2xl border border-red-500/10 group/item hover:bg-red-500/10 transition-all">
+                  <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center text-red-500 shadow-lg shadow-red-500/10">
+                      <mat-icon class="text-sm">security</mat-icon>
+                    </div>
+                    <span class="text-xs font-black text-slate-600 dark:text-white/60 uppercase tracking-widest">Menaces Détectées</span>
+                  </div>
+                  <span class="text-2xl font-black text-red-600 italic group-hover/item:scale-110 transition-transform">{{ analysis.ai_menaces || 0 }}</span>
+                </div>
+                <div class="flex items-center justify-between p-5 bg-indigo-500/[0.03] dark:bg-indigo-500/5 rounded-2xl border border-indigo-500/10 group/item hover:bg-indigo-500/10 transition-all">
+                  <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-500 shadow-lg shadow-indigo-500/10">
+                      <mat-icon class="text-sm">analytics</mat-icon>
+                    </div>
+                    <span class="text-xs font-black text-slate-600 dark:text-white/60 uppercase tracking-widest">Logs Analysés</span>
+                  </div>
+                  <span class="text-2xl font-black text-indigo-600 italic group-hover/item:scale-110 transition-transform">{{ analysis.stats.total || 0 }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. All Analyzed Logs Section -->
+        <div class="glass-card overflow-hidden shadow-2xl animate-slide-up">
+          <div class="p-8 bg-slate-50/50 dark:bg-white/5 border-b border-slate-200 dark:border-white/10 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+                <i class="fas fa-list-ul"></i>
+              </div>
+              <h3 class="font-black text-slate-900 dark:text-white uppercase tracking-wider text-sm italic">Journaux d'Événements Analysés</h3>
+            </div>
+            <div class="flex gap-4">
+              <div class="px-5 py-2 bg-red-500/10 border border-red-500/20 rounded-xl">
+                <span class="text-[10px] font-black text-red-500 uppercase tracking-widest">{{ analysis.stats.errors }} Erreurs</span>
+              </div>
+              <div class="px-5 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                <span class="text-[10px] font-black text-amber-500 uppercase tracking-widest">{{ analysis.stats.warnings }} Alertes</span>
+              </div>
+              <div class="px-5 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
+                <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest">{{ analysis.stats.info }} Infos</span>
+              </div>
+            </div>
+          </div>
+          
+          <mat-tab-group class="custom-tabs-premium" animationDuration="500ms">
+            <mat-tab>
+              <ng-template mat-tab-label>
+                <div class="flex items-center gap-3 font-black uppercase tracking-widest text-[10px] px-8 py-4">
+                  <i class="fas fa-exclamation-circle text-red-500"></i>
+                  <span class="text-red-500">Errors</span>
+                </div>
+              </ng-template>
+              <div class="p-0 bg-black/5 dark:bg-white/[0.02]">
+                <ng-container *ngTemplateOutlet="fullLogTable; context: { logs: errorLogs }"></ng-container>
+              </div>
+            </mat-tab>
+            <mat-tab>
+              <ng-template mat-tab-label>
+                <div class="flex items-center gap-3 font-black uppercase tracking-widest text-[10px] px-8 py-4">
+                  <i class="fas fa-exclamation-triangle text-amber-500"></i>
+                  <span class="text-amber-500">Warnings</span>
+                </div>
+              </ng-template>
+              <div class="p-0 bg-black/5 dark:bg-white/[0.02]">
+                <ng-container *ngTemplateOutlet="fullLogTable; context: { logs: warningLogs }"></ng-container>
+              </div>
+            </mat-tab>
+            <mat-tab>
+              <ng-template mat-tab-label>
+                <div class="flex items-center gap-3 font-black uppercase tracking-widest text-[10px] px-8 py-4">
+                  <i class="fas fa-info-circle text-indigo-500"></i>
+                  <span class="text-indigo-500">Info</span>
+                </div>
+              </ng-template>
+              <div class="p-0 bg-black/5 dark:bg-white/[0.02]">
+                <ng-container *ngTemplateOutlet="fullLogTable; context: { logs: infoLogs }"></ng-container>
+              </div>
+            </mat-tab>
+          </mat-tab-group>
+
+          <ng-template #fullLogTable let-logs="logs">
+            <div *ngIf="!logs || logs.length === 0" class="p-12 text-center text-slate-500 dark:text-slate-400 italic font-medium uppercase tracking-widest text-[10px]">
+              Aucun log trouvé dans cette catégorie.
+            </div>
+            <div class="overflow-x-auto no-scrollbar max-h-[400px] overflow-y-auto" *ngIf="logs && logs.length > 0">
+              <table class="w-full text-left border-collapse">
+                <thead class="bg-slate-50/50 dark:bg-white/5 text-slate-900 dark:text-white uppercase text-[10px] font-black tracking-widest border-b border-slate-200 dark:border-white/10 sticky top-0 z-10 backdrop-blur-md">
+                  <tr>
+                    <th class="px-8 py-4 w-24">#</th>
+                    <th class="px-8 py-4">Message Brut du Log</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 dark:divide-white/5">
+                  <tr *ngFor="let log of logs; let i = index" class="hover:bg-indigo-500/[0.03] dark:hover:bg-[#00f2ff]/[0.03] transition-colors">
+                    <td class="px-8 py-4">
+                      <span class="text-[10px] font-black text-slate-400 dark:text-white/20">L{{ i + 1 }}</span>
+                    </td>
+                    <td class="px-8 py-4 font-mono text-xs text-slate-500 dark:text-slate-400 break-all leading-relaxed">
+                      {{ getLogMessage(log) }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- 4. Intelligent Log Aggregation Toggle -->
+        <div class="flex justify-center py-4">
+          <button (click)="showAggregatedLogs = !showAggregatedLogs" 
+                  class="group flex items-center gap-4 px-10 py-5 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-[2rem] shadow-xl hover:border-indigo-500/50 transition-all">
+            <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform">
+              <i class="fas" [ngClass]="showAggregatedLogs ? 'fa-eye-slash' : 'fa-brain'"></i>
+            </div>
+            <div class="text-left">
+              <p class="text-[10px] font-black text-slate-500 dark:text-white/40 uppercase tracking-[0.2em] mb-1">Analyse de Récurrence</p>
+              <p class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest">
+                {{ showAggregatedLogs ? 'Masquer les Insights' : 'Voir les Récurrences (Aggregats)' }}
+              </p>
+            </div>
+            <i class="fas fa-chevron-right ml-4 text-slate-300 group-hover:translate-x-1 transition-transform" [ngClass]="{'rotate-90': showAggregatedLogs}"></i>
+          </button>
+        </div>
+
+        <!-- 5. Intelligent Log Aggregation -->
+        <div *ngIf="showAggregatedLogs" class="glass-card overflow-hidden shadow-2xl animate-slide-up">
+          <div class="p-8 bg-slate-50/50 dark:bg-white/5 border-b border-slate-200 dark:border-white/10 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+                <i class="fas fa-layer-group"></i>
+              </div>
+              <h3 class="font-black text-slate-900 dark:text-white uppercase tracking-wider text-sm italic">Agrégation Intelligente <span class="text-indigo-500 not-italic">(Récurrences ≥ 5)</span></h3>
+            </div>
+            <div class="px-5 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
+              <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest">{{ totalAggregatedCount }} Événements Unifiés</span>
+            </div>
+          </div>
+          
+          <mat-tab-group class="custom-tabs-premium" animationDuration="500ms">
+            <mat-tab>
+              <ng-template mat-tab-label>
+                <div class="flex items-center gap-3 font-black uppercase tracking-widest text-[10px] px-8 py-4">
+                  <i class="fas fa-exclamation-circle text-red-500"></i>
+                  <span class="text-red-500">Errors</span>
+                  <span class="ml-2 px-2 py-0.5 bg-red-500/10 rounded-lg text-[9px]">{{ aggregatedLogs.error.length }}</span>
+                </div>
+              </ng-template>
+              <div class="p-0 bg-black/5 dark:bg-white/[0.02]">
+                <ng-container *ngTemplateOutlet="logTable; context: { logs: aggregatedLogs.error }"></ng-container>
+              </div>
+            </mat-tab>
+            <mat-tab>
+              <ng-template mat-tab-label>
+                <div class="flex items-center gap-3 font-black uppercase tracking-widest text-[10px] px-8 py-4">
+                  <i class="fas fa-exclamation-triangle text-amber-500"></i>
+                  <span class="text-amber-500">Warnings</span>
+                  <span class="ml-2 px-2 py-0.5 bg-red-500/10 rounded-lg text-[9px]">{{ aggregatedLogs.warning.length }}</span>
+                </div>
+              </ng-template>
+              <div class="p-0 bg-black/5 dark:bg-white/[0.02]">
+                <ng-container *ngTemplateOutlet="logTable; context: { logs: aggregatedLogs.warning }"></ng-container>
+              </div>
+            </mat-tab>
+            <mat-tab>
+              <ng-template mat-tab-label>
+                <div class="flex items-center gap-3 font-black uppercase tracking-widest text-[10px] px-8 py-4">
+                  <i class="fas fa-info-circle text-indigo-500"></i>
+                  <span class="text-indigo-500">Info</span>
+                  <span class="ml-2 px-2 py-0.5 bg-indigo-500/10 rounded-lg text-[9px]">{{ aggregatedLogs.info.length }}</span>
+                </div>
+              </ng-template>
+              <div class="p-0 bg-black/5 dark:bg-white/[0.02]">
+                <ng-container *ngTemplateOutlet="logTable; context: { logs: aggregatedLogs.info }"></ng-container>
+              </div>
+            </mat-tab>
+          </mat-tab-group>
+
+          <ng-template #logTable let-logs="logs">
+            <div *ngIf="logs.length === 0" class="p-12 text-center text-slate-500 dark:text-slate-400 italic font-medium uppercase tracking-widest text-[10px]">
+              Aucun log récurrent (≥ 5x) trouvé dans cette catégorie.
+            </div>
+            <div class="overflow-x-auto no-scrollbar" *ngIf="logs.length > 0">
+              <table class="w-full text-left border-collapse">
+                <thead class="bg-slate-50/50 dark:bg-white/5 text-slate-900 dark:text-white uppercase text-[10px] font-black tracking-widest border-b border-slate-200 dark:border-white/10">
+                  <tr>
+                    <th class="px-8 py-4 w-32">Occurrence</th>
+                    <th class="px-8 py-4">Message du Log</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 dark:divide-white/5">
+                  <tr *ngFor="let log of logs" class="hover:bg-indigo-500/[0.03] dark:hover:bg-[#00f2ff]/[0.03] transition-colors">
+                    <td class="px-8 py-4">
+                      <span class="px-3 py-1 bg-indigo-500/10 text-indigo-500 rounded-lg font-black text-[10px] border border-indigo-500/20 uppercase tracking-widest">
+                        {{ log.count }}x
+                      </span>
+                    </td>
+                    <td class="px-8 py-4 font-mono text-xs text-slate-500 dark:text-slate-400 break-all leading-relaxed">{{ getLogMessage(log) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- 4. Expert Authentication Footer -->
+        <div class="flex justify-end pt-12 pb-8">
+          <div class="glass-card p-6 flex items-center gap-8 animate-slide-up border-none shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+            <div class="text-right space-y-2">
+              <div>
+                <p class="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Expert Analyste SOC</p>
+                <p class="text-xl font-black text-slate-900 dark:text-white italic tracking-tighter">{{ expertName }}</p>
+                <p class="text-sm text-indigo-500 font-bold">{{ expertEmail }}</p>
+              </div>
+              <div class="flex justify-end gap-2">
+                <span class="px-2 py-1 bg-emerald-500/10 text-emerald-500 text-[8px] font-black uppercase tracking-widest rounded border border-emerald-500/20">
+                  Certifié SOC-L3
+                </span>
+              </div>
+            </div>
+            <div class="relative group">
+              <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+              <div class="relative w-28 h-28 bg-white dark:bg-[#001f3f]/40 p-2 rounded-xl border border-slate-200 dark:border-white/10 shadow-inner flex items-center justify-center overflow-hidden backdrop-blur-xl">
+                <img *ngIf="qrCodeBase64" [src]="qrCodeBase64" class="w-full h-full object-contain transform scale-90 group-hover:scale-100 transition duration-500 filter dark:invert dark:brightness-200" alt="QR Code Expert">
+                <div *ngIf="!qrCodeBase64" class="text-[8px] text-slate-400 font-black uppercase text-center">
+                  <i class="fas fa-qrcode text-2xl mb-2 block opacity-20"></i>
+                  Génération...
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

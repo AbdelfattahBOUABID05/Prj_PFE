@@ -1,0 +1,17 @@
+.shadow-indigo-lg {
+  box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4);
+}
+
+.shadow-indigo {
+  box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.39);
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}

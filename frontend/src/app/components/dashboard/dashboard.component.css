@@ -1,0 +1,19 @@
+.glass-card {
+  @apply bg-white/80 dark:bg-[#001f3f]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-3xl shadow-xl transition-all duration-500;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 dark:bg-white/10 rounded-full;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-300 dark:bg-white/20;
+}

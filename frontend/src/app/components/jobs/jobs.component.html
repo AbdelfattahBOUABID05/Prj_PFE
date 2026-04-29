@@ -1,0 +1,223 @@
+<div class="flex h-screen bg-[#f0f2f5] dark:bg-[#0a192f] transition-colors duration-500">
+  <app-sidebar></app-sidebar>
+
+  <main class="flex-1 ml-64 overflow-auto pt-24 pb-8 no-scrollbar">
+    <div class="w-full px-12 mx-auto">
+      <header class="mb-10 animate-fade-in flex justify-between items-end">
+        <div class="flex items-center gap-4">
+          <div class="p-3 bg-indigo-600/10 dark:bg-indigo-600/20 rounded-2xl border border-indigo-500/20 shadow-xl shadow-indigo-500/10">
+            <i class="fas fa-tasks text-2xl text-indigo-500"></i>
+          </div>
+          <div>
+            <h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight uppercase italic">
+              Gestion des <span class="text-indigo-500 not-italic">Jobs</span> SOC
+            </h2>
+            <p class="text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-1">Automatisation & Tâches Planifiées</p>
+          </div>
+        </div>
+        <button (click)="showCreateModal = true" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl transition-all duration-300 shadow-[0_10px_20px_rgba(79,70,229,0.3)] font-black uppercase tracking-widest text-xs flex items-center gap-3 group">
+          <i class="fas fa-plus group-hover:rotate-90 transition-transform"></i>
+          Nouveau Job
+        </button>
+      </header>
+
+      <!-- Jobs List -->
+      <div class="glass-card overflow-hidden shadow-2xl animate-slide-up">
+        <div class="p-6 border-b border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-white/5 flex items-center justify-between">
+          <h3 class="font-black text-[10px] uppercase tracking-[0.3em] text-slate-500 dark:text-white/30">Liste des Tâches Planifiées</h3>
+          <div class="px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
+            <span class="text-[9px] font-black text-indigo-500 uppercase tracking-widest">{{ jobs.length }} Jobs actifs</span>
+          </div>
+        </div>
+        
+        <div class="overflow-x-auto no-scrollbar">
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-slate-50/50 dark:bg-white/5 text-slate-900 dark:text-white uppercase text-[10px] font-black tracking-widest border-b border-slate-200 dark:border-white/10">
+              <tr>
+                <th class="px-8 py-6">Serveur (IP)</th>
+                <th class="px-8 py-6">Chemin du Log</th>
+                <th class="px-8 py-6">Fréquence</th>
+                <th class="px-8 py-6">Statut</th>
+                <th class="px-8 py-6 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-white/5">
+              <tr *ngFor="let job of jobs" class="hover:bg-indigo-500/[0.03] dark:hover:bg-[#00f2ff]/[0.03] transition-colors group">
+                <td class="px-8 py-5">
+                  <div class="flex items-center gap-4">
+                    <div class="w-2.5 h-2.5 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(79,70,229,0.5)]"></div>
+                    <span class="font-black text-xs text-slate-900 dark:text-white uppercase tracking-tight">{{ job.target_ip }}</span>
+                  </div>
+                </td>
+                <td class="px-8 py-5">
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-file-code text-[10px] text-slate-400 dark:text-white/20"></i>
+                    <span class="px-3 py-1.5 bg-slate-100 dark:bg-white/5 rounded-xl font-mono text-[10px] text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/10">
+                      {{ job.log_path }}
+                    </span>
+                  </div>
+                </td>
+                <td class="px-8 py-5">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/10">
+                      <i class="fas fa-redo-alt text-[10px] text-indigo-500"></i>
+                    </div>
+                    <span class="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                      {{ job.frequency === 'custom' ? 'Chaque ' + job.custom_interval + ' ' + job.custom_unit : job.frequency }}
+                    </span>
+                  </div>
+                </td>
+                <td class="px-8 py-5">
+                  <span [class]="getStatusClass(job.status) + ' px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all duration-300'">
+                    {{ job.status }}
+                  </span>
+                </td>
+                <td class="px-8 py-5">
+                  <div class="flex items-center justify-center gap-3">
+                    <button *ngIf="job.status === 'active' || job.status === 'inactive'"
+                            (click)="toggleJob(job.id)" 
+                            [disabled]="togglingJobId === job.id"
+                            [title]="job.status === 'active' ? 'Arrêter le job' : 'Reprendre le job'"
+                            class="w-10 h-10 rounded-xl flex items-center justify-center transition-all shadow-lg group/btn"
+                            [ngClass]="job.status === 'active' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500 hover:text-white' : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white'">
+                      <i *ngIf="togglingJobId !== job.id" class="fas group-hover/btn:scale-110 transition-transform" [ngClass]="job.status === 'active' ? 'fa-pause' : 'fa-play'"></i>
+                      <i *ngIf="togglingJobId === job.id" class="fas fa-spinner fa-spin"></i>
+                    </button>
+                    <button (click)="deleteJob(job.id)" 
+                            [disabled]="togglingJobId === job.id"
+                            class="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center group/btn shadow-lg shadow-red-500/5" title="Supprimer">
+                      <i class="fas fa-trash-alt text-xs group-hover/btn:scale-110 transition-transform"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="jobs.length === 0">
+                <td colspan="5" class="p-24 text-center">
+                  <div class="flex flex-col items-center gap-6">
+                    <div class="w-24 h-24 bg-slate-50 dark:bg-white/5 rounded-[2rem] flex items-center justify-center text-slate-200 dark:text-white/5 border border-slate-100 dark:border-white/5 shadow-inner">
+                      <i class="fas fa-robot text-4xl"></i>
+                    </div>
+                    <div>
+                      <h3 class="font-black text-xl text-slate-900 dark:text-white uppercase tracking-tight">Aucune Automatisation</h3>
+                      <p class="text-[10px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-[0.3em] mt-2">Activez la surveillance SOC continue</p>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create Job Modal -->
+    <div *ngIf="showCreateModal" class="fixed inset-0 bg-[#001f3f]/80 backdrop-blur-xl z-[100] flex items-center justify-center p-6 animate-fade-in">
+        <div class="glass-card w-full max-w-2xl overflow-hidden animate-slide-up border-none shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+          <div class="p-8 border-b border-slate-200 dark:border-white/5 bg-white/50 dark:bg-white/5 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-2xl bg-indigo-600/10 flex items-center justify-center text-indigo-600 border border-indigo-600/20 shadow-xl">
+                <i class="fas fa-robot text-xl"></i>
+              </div>
+              <div>
+                <h3 class="font-black text-xl text-slate-900 dark:text-white uppercase tracking-wider italic">Nouveau <span class="text-indigo-500">Agent</span> SOC</h3>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-[0.2em] mt-1">Configuration de l'audit automatique</p>
+              </div>
+            </div>
+            <button (click)="showCreateModal = false" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 hover:text-red-500 transition-all border border-transparent hover:border-red-500/20">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          
+          <div class="p-10 space-y-8 max-h-[70vh] overflow-y-auto no-scrollbar">
+            <div class="grid grid-cols-2 gap-8">
+              <div class="space-y-3">
+                <label class="block text-[10px] font-black text-slate-500 dark:text-white/30 uppercase tracking-[0.2em] ml-1">Cible Serveur (IP)</label>
+                <div class="relative group/input">
+                  <i class="fas fa-network-wired absolute left-5 top-5 text-slate-400 group-focus-within/input:text-indigo-500 transition-colors"></i>
+                  <input type="text" [(ngModel)]="newJob.target_ip" 
+                         class="w-full pl-12 pr-5 py-4 bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all text-indigo-900 dark:text-white font-bold placeholder-slate-400 dark:placeholder-white/10" 
+                         placeholder="192.168.1.1">
+                </div>
+              </div>
+              <div class="space-y-3">
+                <label class="block text-[10px] font-black text-slate-500 dark:text-white/30 uppercase tracking-[0.2em] ml-1">Chemin du Log</label>
+                <div class="relative group/input">
+                  <i class="fas fa-file-code absolute left-5 top-5 text-slate-400 group-focus-within/input:text-indigo-500 transition-colors"></i>
+                  <input type="text" [(ngModel)]="newJob.log_path" 
+                         class="w-full pl-12 pr-5 py-4 bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all text-indigo-900 dark:text-white font-bold placeholder-slate-400 dark:placeholder-white/10" 
+                         placeholder="/var/log/syslog">
+                </div>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-8">
+              <div class="space-y-3">
+                <label class="block text-[10px] font-black text-slate-500 dark:text-white/30 uppercase tracking-[0.2em] ml-1">Credentials : User</label>
+                <div class="relative group/input">
+                  <i class="fas fa-user-shield absolute left-5 top-5 text-slate-400 group-focus-within/input:text-indigo-500 transition-colors"></i>
+                  <input type="text" [(ngModel)]="newJob.ssh_user" 
+                         class="w-full pl-12 pr-5 py-4 bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all text-indigo-900 dark:text-white font-bold placeholder-slate-400 dark:placeholder-white/10" 
+                         placeholder="root">
+                </div>
+              </div>
+              <div class="space-y-3">
+                <label class="block text-[10px] font-black text-slate-500 dark:text-white/30 uppercase tracking-[0.2em] ml-1">Credentials : Pass</label>
+                <div class="relative group/input">
+                  <i class="fas fa-key absolute left-5 top-5 text-slate-400 group-focus-within/input:text-indigo-500 transition-colors"></i>
+                  <input type="password" [(ngModel)]="newJob.ssh_pass" 
+                         class="w-full pl-12 pr-5 py-4 bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all text-indigo-900 dark:text-white font-bold placeholder-slate-400 dark:placeholder-white/10" 
+                         placeholder="••••••••">
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <label class="block text-[10px] font-black text-slate-500 dark:text-white/30 uppercase tracking-[0.2em] ml-1">Planification</label>
+              <div class="relative group/input">
+                <i class="fas fa-clock absolute left-5 top-5 text-slate-400 group-focus-within/input:text-indigo-500 transition-colors"></i>
+                <select [(ngModel)]="newJob.frequency" 
+                        class="w-full pl-12 pr-10 py-4 bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all text-indigo-900 dark:text-white font-bold cursor-pointer appearance-none">
+                  <option value="hourly">Toutes les heures (Analyse continue)</option>
+                  <option value="daily">Quotidien (Extraction à minuit)</option>
+                  <option value="weekly">Hebdomadaire (Audit global)</option>
+                  <option value="custom">Intervalle Personnalisé (Expert)</option>
+                </select>
+                <i class="fas fa-chevron-down absolute right-5 top-5 text-slate-400 pointer-events-none text-xs"></i>
+              </div>
+            </div>
+
+            <!-- Custom Interval Fields -->
+            <div *ngIf="newJob.frequency === 'custom'" class="grid grid-cols-2 gap-8 animate-fade-in bg-indigo-500/5 dark:bg-[#00f2ff]/5 p-8 rounded-[2rem] border border-indigo-500/20 dark:border-[#00f2ff]/10">
+              <div class="space-y-3">
+                <label class="block text-[10px] font-black text-indigo-500 dark:text-[#00f2ff] uppercase tracking-[0.2em] ml-1">Valeur Intervalle</label>
+                <input type="number" [(ngModel)]="newJob.custom_interval" 
+                       class="w-full px-6 py-4 bg-white dark:bg-white/5 border border-indigo-500/20 dark:border-[#00f2ff]/20 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition text-indigo-900 dark:text-white font-black" 
+                       placeholder="Ex: 30">
+              </div>
+              <div class="space-y-3">
+                <label class="block text-[10px] font-black text-indigo-500 dark:text-[#00f2ff] uppercase tracking-[0.2em] ml-1">Unité Temporelle</label>
+                <select [(ngModel)]="newJob.custom_unit" 
+                        class="w-full px-6 py-4 bg-white dark:bg-white/5 border border-indigo-500/20 dark:border-[#00f2ff]/20 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition text-indigo-900 dark:text-white font-black cursor-pointer appearance-none">
+                  <option value="seconds">Secondes</option>
+                  <option value="minutes">Minutes</option>
+                  <option value="hours">Heures</option>
+                  <option value="days">Jours</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-8 bg-slate-50/50 dark:bg-white/5 flex gap-4 border-t border-slate-200 dark:border-white/10">
+            <button (click)="showCreateModal = false" 
+                    class="flex-1 px-8 py-5 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-white/40 font-black uppercase tracking-[0.2em] text-xs rounded-2xl hover:bg-white dark:hover:bg-white/10 transition-all">
+              Annuler
+            </button>
+            <button (click)="createJob()" 
+                    class="flex-1 px-8 py-5 bg-indigo-600 text-white font-black uppercase tracking-[0.2em] text-xs rounded-2xl hover:bg-indigo-700 transition-all shadow-[0_10px_20px_rgba(79,70,229,0.3)]">
+              Activer l'Agent SOC
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>

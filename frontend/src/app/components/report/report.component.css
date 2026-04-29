@@ -1,0 +1,77 @@
+/* Masquage Global des Scrollbars */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+/* Application spécifique pour les conteneurs d'overflow */
+main, aside, .overflow-auto, .overflow-y-auto {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+main::-webkit-scrollbar, 
+aside::-webkit-scrollbar, 
+.overflow-auto::-webkit-scrollbar, 
+.overflow-y-auto::-webkit-scrollbar {
+  display: none !important;
+}
+
+.no-scrollbar {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* Animations */
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Utility classes for SOC Look */
+.glass-card {
+  @apply bg-white/80 dark:bg-[#001f3f]/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-3xl shadow-xl transition-all duration-500;
+}
+
+/* Material Tabs Styling Overrides */
+:host ::ng-deep {
+  .mat-mdc-tab-group {
+    --mdc-tab-indicator-active-indicator-color: #4f46e5;
+    --mat-tab-header-active-label-text-color: #4f46e5;
+    --mat-tab-header-inactive-label-text-color: #64748b;
+  }
+  .dark .mat-mdc-tab-group {
+    --mat-tab-header-inactive-label-text-color: #94a3b8;
+    background: transparent;
+  }
+  .mat-mdc-tab-header {
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .dark .mat-mdc-tab-header {
+    border-bottom-color: #334155;
+  }
+  .mat-mdc-tab-labels {
+    @apply font-black uppercase tracking-widest text-[10px];
+  }
+}

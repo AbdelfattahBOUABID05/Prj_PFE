@@ -1,161 +1,149 @@
-<div class="flex h-screen bg-[#0a0c10] text-slate-300 font-sans">
+<div class="flex h-screen bg-[#f0f2f5] dark:bg-[#0a192f] transition-colors duration-500">
   <app-sidebar></app-sidebar>
 
-  <!-- Main Content -->
-  <main class="flex-1 ml-64 overflow-auto relative">
-    <!-- Background Decoration -->
-    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/5 rounded-full blur-[120px] pointer-events-none"></div>
-    <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none"></div>
-
-    <!-- Header -->
-    <header class="p-8 border-b border-white/5 bg-[#0d1117]/50 backdrop-blur-md sticky top-0 z-10">
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-3xl font-black text-white tracking-tight uppercase italic">
-            Analyse <span class="text-indigo-500 not-italic">Locale</span>
-          </h2>
-          <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">Téléchargement et audit de fichiers logs</p>
-        </div>
-        <div class="flex items-center gap-3">
-          <div class="px-4 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
-            <span class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">IA : Opérationnelle</span>
+  <main class="flex-1 ml-64 overflow-auto pt-24 pb-8 no-scrollbar">
+    <div class="w-full px-12 mx-auto">
+      <header class="mb-10 animate-fade-in">
+        <div class="flex items-center gap-4 mb-2">
+          <div class="p-3 bg-indigo-600/10 dark:bg-indigo-600/20 rounded-2xl border border-indigo-500/20 shadow-xl shadow-indigo-500/10">
+            <i class="fas fa-shield-virus text-2xl text-indigo-500"></i>
+          </div>
+          <div>
+            <h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight uppercase italic">
+              Analyse <span class="text-indigo-500 not-italic">Locale</span> SOC
+            </h2>
+            <p class="text-slate-500 dark:text-white/60 text-[10px] font-black uppercase tracking-[0.2em] mt-1">Audit de fichiers journaux & Extraction SOC</p>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
 
-    <div class="p-8 max-w-4xl mx-auto">
-      <!-- Upload Card -->
-      <div class="bg-[#0d1117] border border-white/5 rounded-3xl shadow-2xl overflow-hidden relative group">
-        <div class="absolute inset-0 bg-gradient-to-br from-indigo-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-        
-        <div class="p-12 relative z-10">
-          <div class="text-center mb-10">
-            <div class="w-20 h-20 bg-indigo-600/10 border border-indigo-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-500">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
-            </div>
-            <h3 class="text-2xl font-bold text-white mb-2">Audit de Fichier Source</h3>
-            <p class="text-slate-500 text-sm">Déposez vos journaux d'événements pour une analyse approfondie.</p>
-          </div>
-
-          <!-- Drag & Drop Zone -->
-          <div 
-            class="relative border-2 border-dashed rounded-3xl p-12 text-center transition-all duration-300 group/drop"
-            [ngClass]="{
-              'border-indigo-500/50 bg-indigo-500/5': isDragging,
-              'border-white/10 hover:border-indigo-500/30 hover:bg-white/5': !isDragging && !selectedFile,
-              'border-emerald-500/50 bg-emerald-500/5': selectedFile && !error
-            }"
-            (dragover)="onDragOver($event)"
-            (dragleave)="onDragLeave($event)"
-            (drop)="onDrop($event)"
-            (click)="!loading && fileInput.click()"
-          >
-            <input #fileInput type="file" accept=".log,.txt" class="hidden" (change)="onFileSelected($event)">
-            
-            <div *ngIf="!selectedFile">
-              <div class="mb-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
-                <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">En attente de fichier</span>
+      <div class="max-w-4xl mx-auto">
+        <!-- Upload Card -->
+        <div class="glass-card overflow-hidden relative group">
+          <div class="absolute inset-0 bg-gradient-to-br from-indigo-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          
+          <div class="p-12 relative z-10">
+            <div class="text-center mb-10">
+              <div class="w-24 h-24 bg-indigo-600/10 border border-indigo-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-500 shadow-xl shadow-indigo-500/10">
+                <i class="fas fa-cloud-upload-alt text-4xl text-indigo-500"></i>
               </div>
-              <p class="text-lg font-medium text-slate-300 mb-1">Glissez-déposez ici</p>
-              <p class="text-xs text-slate-500 font-bold uppercase tracking-widest">Formats supportés : .log, .txt</p>
+              <h3 class="text-2xl font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tight">Audit de Fichier Source</h3>
+              <p class="text-slate-500 dark:text-white/60 text-sm font-medium">Déposez vos journaux d'événements pour une analyse approfondie.</p>
             </div>
 
-          <!-- Selected File State -->
-          <div *ngIf="selectedFile" class="animate-fade-in">
-            <div class="flex items-center justify-center gap-4 mb-4">
-              <div class="w-16 h-16 bg-emerald-500/20 border border-emerald-500/30 rounded-2xl flex items-center justify-center text-emerald-400">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+            <!-- Drag & Drop Zone -->
+            <div 
+              class="relative border-2 border-dashed rounded-[2.5rem] p-16 text-center transition-all duration-500 group/drop cursor-pointer"
+              [ngClass]="{
+                'border-indigo-500 bg-indigo-500/5 shadow-[0_0_50px_rgba(79,70,229,0.1)]': isDragging,
+                'border-slate-200 dark:border-white/10 hover:border-indigo-500/50 hover:bg-slate-50 dark:hover:bg-white/5': !isDragging && !selectedFile,
+                'border-emerald-500/50 bg-emerald-500/5': selectedFile && !error
+              }"
+              (dragover)="onDragOver($event)"
+              (dragleave)="onDragLeave($event)"
+              (drop)="onDrop($event)"
+              (click)="!loading && fileInput.click()"
+            >
+              <input #fileInput type="file" accept=".log,.txt" class="hidden" (change)="onFileSelected($event)">
+              
+              <div *ngIf="!selectedFile" class="space-y-4">
+                <div class="mb-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                  <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                  <span class="text-[9px] font-black text-slate-500 dark:text-white/60 uppercase tracking-[0.2em]">En attente de fichier</span>
+                </div>
+                <p class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Glissez-déposez ici</p>
+                <p class="text-[10px] text-slate-500 dark:text-white/60 font-black uppercase tracking-[0.3em]">Formats supportés : .log, .txt</p>
               </div>
-              <div class="text-left">
-                <p class="text-white font-bold truncate max-w-[300px]">{{ selectedFile.name }}</p>
-                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{{ (selectedFile.size / 1024).toFixed(2) }} KB</p>
-              </div>
-              <button 
-                *ngIf="!loading"
-                (click)="removeFile($event)"
-                class="ml-4 w-8 h-8 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 hover:bg-red-500 hover:text-white transition-colors"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
 
-            <!-- Optional Lines Count -->
-            <div class="mt-6 max-w-xs mx-auto">
-              <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Lignes à analyser (Optionnel)</label>
-              <div class="relative">
-                <input 
-                  type="number" 
-                  [(ngModel)]="numLines" 
-                  name="numLines"
-                  class="w-full px-5 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition text-white placeholder-slate-600 text-sm"
-                  placeholder="Ex: 100 (Vide = Tout le fichier)"
-                >
-                <div class="absolute right-4 top-1/2 -translate-y-1/2">
-                  <i class="fas fa-list-ol text-slate-600 text-xs"></i>
+              <!-- Selected File State -->
+              <div *ngIf="selectedFile" class="animate-fade-in flex flex-col items-center">
+                <div class="flex items-center gap-6 p-6 bg-white dark:bg-white/5 rounded-3xl shadow-2xl border border-slate-100 dark:border-white/10">
+                  <div class="w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-500">
+                    <i class="fas fa-file-alt text-2xl"></i>
+                  </div>
+                  <div class="text-left">
+                    <p class="font-black text-slate-900 dark:text-white truncate max-w-[250px] uppercase tracking-tight">{{ selectedFile.name }}</p>
+                    <p class="text-[10px] text-emerald-500 font-black uppercase tracking-widest mt-1">{{ (selectedFile.size / 1024).toFixed(2) }} KB</p>
+                  </div>
+                  <button 
+                    *ngIf="!loading"
+                    (click)="removeFile($event)"
+                    class="ml-4 w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300"
+                  >
+                    <i class="fas fa-times text-sm"></i>
+                  </button>
+                </div>
+
+                <!-- Optional Lines Count -->
+                <div class="mt-10 w-full max-w-xs text-left">
+                  <label class="block text-[10px] font-black text-slate-500 dark:text-white/60 uppercase tracking-[0.2em] mb-3 ml-1">Lignes à analyser (Optionnel)</label>
+                  <div class="relative group/input">
+                    <i class="fas fa-list-ol absolute left-5 top-5 text-slate-400 group-focus-within/input:text-indigo-500 transition-colors"></i>
+                    <input 
+                      type="number" 
+                      [(ngModel)]="numLines" 
+                      name="numLines"
+                      class="w-full pl-12 pr-5 py-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all text-indigo-900 dark:text-white font-bold placeholder-slate-400 dark:placeholder-white/10"
+                      placeholder="Ex: 100 (Vide = Tout)">
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
 
-          <!-- Progress Bar -->
-          <div *ngIf="loading" class="mt-8 space-y-3">
-            <div class="flex justify-between items-end mb-1">
-              <span class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em]">{{ statusMessage }}</span>
-              <span class="text-xs font-bold text-white">{{ progressValue }}%</span>
+            <!-- Progress Bar -->
+            <div *ngIf="loading" class="mt-10 space-y-4 animate-fade-in">
+              <div class="flex justify-between items-end px-1">
+                <div class="flex flex-col">
+                  <span class="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] mb-1">SOC Processing</span>
+                  <span class="text-xs font-bold text-slate-500 dark:text-white/60">{{ statusMessage }}</span>
+                </div>
+                <span class="text-2xl font-black text-indigo-500 italic">{{ progressValue }}%</span>
+              </div>
+              <div class="w-full h-3 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden border border-slate-200 dark:border-white/10 p-0.5">
+                <div 
+                  class="h-full bg-indigo-600 rounded-full transition-all duration-500 progress-bar-animated shadow-[0_0_20px_rgba(79,70,229,0.5)]"
+                  [style.width.%]="progressValue"
+                ></div>
+              </div>
             </div>
-            <div class="w-full h-3 bg-white/5 rounded-full overflow-hidden border border-white/5">
-              <div 
-                class="h-full bg-indigo-600 rounded-full transition-all duration-300 progress-bar-animated"
-                [style.width.%]="progressValue"
-              ></div>
+
+            <!-- Error Message -->
+            <div *ngIf="error" class="mt-8 p-5 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4 text-red-500 animate-shake">
+              <div class="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center">
+                <i class="fas fa-exclamation-triangle text-lg"></i>
+              </div>
+              <span class="text-[11px] font-black uppercase tracking-widest text-white">{{ error }}</span>
             </div>
+
+            <!-- Action Button -->
+            <button 
+              *ngIf="!loading"
+              (click)="upload()" 
+              [disabled]="!selectedFile || error"
+              class="mt-12 w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-30 disabled:cursor-not-allowed text-white font-black py-5 rounded-2xl shadow-[0_10px_30px_rgba(79,70,229,0.3)] transition-all duration-500 flex items-center justify-center gap-4 group uppercase tracking-[0.2em] text-sm"
+            >
+              <i class="fas" [ngClass]="loading ? 'fa-spinner fa-spin' : 'fa-shield-alt text-lg'"></i>
+              <span class="text-white">{{ loading ? 'Initialisation...' : "Démarrer l'Audit SOC" }}</span>
+              <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform text-white" *ngIf="!loading"></i>
+            </button>
           </div>
+        </div>
 
-          <!-- Error Message -->
-          <div *ngIf="error" class="mt-8 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 text-red-400 animate-shake">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-            </svg>
-            <span class="text-xs font-bold">{{ error }}</span>
+        <!-- Security Notice -->
+        <div class="mt-12 p-8 glass-card border-none bg-indigo-600/5 dark:bg-indigo-600/10 flex items-start gap-6 relative overflow-hidden group">
+          <div class="absolute -right-6 -bottom-6 text-indigo-500/5 text-8xl transform rotate-12">
+            <i class="fas fa-user-shield"></i>
           </div>
-
-          <!-- Action Button -->
-          <button 
-            *ngIf="!loading"
-            (click)="upload()" 
-            [disabled]="!selectedFile || error"
-            class="mt-10 w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed text-white font-black py-4 rounded-2xl shadow-[0_0_20px_rgba(79,70,229,0.3)] transition-all flex items-center justify-center gap-3 group uppercase tracking-widest text-sm"
-          >
-            <span>Démarrer l'Analyse</span>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Security Notice -->
-      <div class="mt-12 p-6 rounded-3xl bg-indigo-500/5 border border-indigo-500/10 flex items-start gap-5">
-        <div class="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 shrink-0">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-          </svg>
-        </div>
-        <div>
-          <h4 class="text-white font-bold text-sm mb-1 uppercase tracking-tight">Confidentialité & Sécurité</h4>
-          <p class="text-[11px] text-slate-500 leading-relaxed font-medium">
-            Les fichiers téléchargés sont analysés de manière isolée et supprimés immédiatement après le traitement. 
-            Toutes les métadonnées extraites sont liées exclusivement à votre compte administrateur.
-          </p>
+          <div class="w-14 h-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 shrink-0 shadow-lg shadow-indigo-500/5">
+            <i class="fas fa-fingerprint text-2xl"></i>
+          </div>
+          <div class="relative z-10">
+            <h4 class="font-black text-slate-900 dark:text-white text-sm mb-2 uppercase tracking-tight italic">Confidentialité & Sécurité End-to-End</h4>
+            <p class="text-xs text-slate-500 dark:text-white/60 leading-relaxed font-medium">
+              Les fichiers téléchargés sont analysés de manière isolée dans un environnement <span class="text-indigo-500 font-black underline decoration-indigo-500/30">Sandboxed</span> et supprimés immédiatement après le traitement. 
+              Toutes les métadonnées extraites sont liées exclusivement à votre session sécurisée.
+            </p>
+          </div>
         </div>
       </div>
     </div>

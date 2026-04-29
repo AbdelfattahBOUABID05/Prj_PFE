@@ -1,0 +1,227 @@
+<div class="flex h-screen bg-[#f0f2f5] dark:bg-[#0a192f] transition-colors duration-500">
+  <app-sidebar></app-sidebar>
+
+  <main class="flex-1 ml-64 overflow-auto">
+    <header class="bg-white/80 dark:bg-[#001f3f]/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 px-8 py-4 flex justify-between items-center sticky top-0 z-10">
+      <div class="pt-24 pb-6">
+        <h2 class="text-2xl font-black text-[#001f3f] dark:text-white tracking-tight">Tableau de bord</h2>
+        <p class="text-slate-500 dark:text-white/50 text-xs font-medium uppercase tracking-wider">Intelligence SOC & Visualisation</p>
+      </div>
+      
+      <div class="flex items-center gap-4 bg-slate-100/50 dark:bg-white/5 p-1.5 rounded-2xl border border-slate-200 dark:border-white/10 mr-32">
+        <div class="flex gap-1">
+          <button (click)="loadStats('24h')"
+                  [ngClass]="period === '24h' ? 'bg-white dark:bg-white/10 shadow-xl text-indigo-600 dark:text-[#00f2ff]' : 'text-slate-500 dark:text-white/40'"
+                  class="px-4 py-2 rounded-xl hover:text-indigo-600 dark:hover:text-[#00f2ff] text-[10px] font-black uppercase transition-all duration-300">
+            24H
+          </button>
+          <button (click)="loadStats('7d')"
+                  [ngClass]="period === '7d' ? 'bg-white dark:bg-white/10 shadow-xl text-indigo-600 dark:text-[#00f2ff]' : 'text-slate-500 dark:text-white/40'"
+                  class="px-4 py-2 rounded-xl text-slate-500 dark:text-white/40 hover:text-indigo-600 dark:hover:text-[#00f2ff] text-[10px] font-black uppercase transition-all duration-300">
+            7J
+          </button>
+          <button (click)="loadStats('30d')"
+                  [ngClass]="period === '30d' ? 'bg-white dark:bg-white/10 shadow-xl text-indigo-600 dark:text-[#00f2ff]' : 'text-slate-500 dark:text-white/40'"
+                  class="px-4 py-2 rounded-xl text-slate-500 dark:text-white/40 hover:text-indigo-600 dark:hover:text-[#00f2ff] text-[10px] font-black uppercase transition-all duration-300">
+            1M
+          </button>
+        </div>
+        
+        <div class="h-6 w-[1px] bg-slate-200 dark:bg-white/10"></div>
+        
+        <div class="flex items-center gap-2 px-3">
+          <input type="date" [(ngModel)]="dateRange.start" (change)="onDateChange()"
+                 class="bg-transparent border-none text-[10px] font-black text-[#001f3f] dark:text-[#00f2ff] outline-none cursor-pointer">
+          <span class="text-slate-400 dark:text-white/20 text-[10px] font-black">TO</span>
+          <input type="date" [(ngModel)]="dateRange.end" (change)="onDateChange()"
+                 class="bg-transparent border-none text-[10px] font-black text-[#001f3f] dark:text-[#00f2ff] outline-none cursor-pointer">
+        </div>
+      </div>
+    </header>
+
+    <!-- Stats Cards -->
+    <div class="p-8 grid grid-cols-4 gap-6">
+      <div class="glass-card p-6 border-l-4 border-indigo-500 group hover:scale-[1.02]">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-slate-500 dark:text-white/40 text-[10px] font-black uppercase tracking-[0.2em]">Serveurs</p>
+            <p class="text-3xl font-black text-[#001f3f] dark:text-white mt-1 group-hover:text-indigo-500 transition-colors">{{ summary?.active_servers || 0 }}</p>
+          </div>
+          <div class="w-14 h-14 rounded-2xl bg-indigo-500/10 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-500 shadow-lg shadow-indigo-500/10">
+            <i class="fas fa-server text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card p-6 border-l-4 border-[#00f2ff] group hover:scale-[1.02]">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-slate-500 dark:text-white/40 text-[10px] font-black uppercase tracking-[0.2em]">Audits Total</p>
+            <p class="text-3xl font-black text-[#001f3f] dark:text-white mt-1 group-hover:text-[#00f2ff] transition-colors">{{ summary?.total_audits || 0 }}</p>
+          </div>
+          <div class="w-14 h-14 rounded-2xl bg-[#00f2ff]/10 dark:bg-[#00f2ff]/20 flex items-center justify-center text-[#00f2ff] shadow-lg shadow-[#00f2ff]/10">
+            <i class="fas fa-shield-alt text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card p-6 border-l-4 border-red-500 group hover:scale-[1.02]">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-slate-500 dark:text-white/40 text-[10px] font-black uppercase tracking-[0.2em]">Menaces</p>
+            <p class="text-3xl font-black text-red-600 dark:text-red-500 mt-1 group-hover:scale-110 transition-transform">{{ summary?.critical_threats || 0 }}</p>
+          </div>
+          <div class="w-14 h-14 rounded-2xl bg-red-500/10 dark:bg-red-500/20 flex items-center justify-center text-red-500 shadow-lg shadow-red-500/10">
+            <i class="fas fa-bug text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card p-6 border-l-4 border-emerald-500 group hover:scale-[1.02]">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-slate-500 dark:text-white/40 text-[10px] font-black uppercase tracking-[0.2em]">Santé Système</p>
+            <p class="text-3xl font-black text-emerald-600 dark:text-emerald-500 mt-1">{{ summary?.system_health || 100 }}%</p>
+          </div>
+          <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center text-emerald-500 shadow-lg shadow-emerald-500/10">
+            <i class="fas fa-heartbeat text-xl"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Charts Grid -->
+    <div class="px-8 grid grid-cols-12 gap-6 mb-8">
+      <!-- Activity Line Chart -->
+      <div class="glass-card p-8 col-span-8 group">
+        <div class="flex justify-between items-center mb-8">
+          <div>
+            <h3 class="font-black text-[#001f3f] dark:text-white uppercase tracking-wider">Activité des Logs</h3>
+            <p class="text-[10px] text-slate-400 dark:text-white/30 font-bold uppercase mt-1">Flux de données en temps réel</p>
+          </div>
+          <div class="flex gap-4">
+            <span class="flex items-center gap-2 text-[10px] font-black text-slate-400 dark:text-white/40 uppercase tracking-widest">
+              <span class="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(79,70,229,0.5)]"></span> Entrées
+            </span>
+          </div>
+        </div>
+        <div class="h-80">
+          <canvas id="activityLineChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Severity Pie Chart -->
+      <div class="glass-card p-8 col-span-4 group">
+        <h3 class="font-black text-[#001f3f] dark:text-white uppercase tracking-wider mb-2">Sévérité</h3>
+        <p class="text-[10px] text-slate-400 dark:text-white/30 font-bold uppercase mb-8">Répartition critique</p>
+        <div class="h-80 flex items-center justify-center">
+          <canvas id="severityPieChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Time Series Line Chart -->
+      <div class="glass-card p-8 col-span-12">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+          <div>
+            <h3 class="font-black text-[#001f3f] dark:text-white uppercase tracking-wider">Fréquence Temporelle</h3>
+            <p class="text-[10px] text-slate-400 dark:text-white/30 font-bold uppercase mt-1">Analyse comparative des événements</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button (click)="filterLogs('error')" 
+                    [class.bg-red-500]="activeFilter === 'error'"
+                    [class.text-white]="activeFilter === 'error'"
+                    class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all border border-red-500/20 dark:border-red-500/10 hover:bg-red-500/10 text-red-500">
+              Erreurs
+            </button>
+            <button (click)="filterLogs('warning')" 
+                    [class.bg-amber-500]="activeFilter === 'warning'"
+                    [class.text-white]="activeFilter === 'warning'"
+                    class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all border border-amber-500/20 dark:border-amber-500/10 hover:bg-amber-500/10 text-amber-500">
+              Warnings
+            </button>
+            <button (click)="filterLogs('info')" 
+                    [class.bg-blue-500]="activeFilter === 'info'"
+                    [class.text-white]="activeFilter === 'info'"
+                    class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all border border-blue-500/20 dark:border-blue-500/10 hover:bg-blue-500/10 text-blue-500">
+              Infos
+            </button>
+            <button (click)="filterLogs('all')" 
+                    [class.bg-[#001f3f]]="activeFilter === 'all'"
+                    [class.dark:bg-[#00f2ff]]="activeFilter === 'all'"
+                    [class.text-white]="activeFilter === 'all'"
+                    [class.dark:text-[#001f3f]]="activeFilter === 'all'"
+                    class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 dark:text-white/40">
+              Tous les logs
+            </button>
+          </div>
+        </div>
+        <div class="h-80 mb-8">
+          <canvas id="timeSeriesLineChart"></canvas>
+        </div>
+        
+        <!-- Log Details List -->
+        <div class="mt-8 pt-8 border-t border-slate-100 dark:border-white/5">
+          <div class="flex justify-between items-center mb-6">
+            <h4 class="text-xs font-black text-[#001f3f] dark:text-white/60 uppercase tracking-[0.2em]">Événements récents - {{ getFilterLabel() }}</h4>
+            <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest">{{ filteredLogs.length }} entrées</span>
+          </div>
+          <div class="max-h-64 overflow-y-auto space-y-2 custom-scrollbar pr-2">
+            <div *ngFor="let log of filteredLogs" 
+                 class="flex items-center gap-4 p-4 rounded-xl border border-transparent hover:border-slate-200 dark:hover:border-white/10 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-all group">
+              <span class="text-[10px] font-black text-slate-400 dark:text-white/20 w-32 tracking-tighter">{{ log.timestamp }}</span>
+              <div [class]="'w-24 text-center py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ' + getLevelClass(log.level)">
+                {{ log.level }}
+              </div>
+              <span class="text-xs font-bold text-slate-600 dark:text-white/70 truncate flex-1 group-hover:text-[#001f3f] dark:group-hover:text-[#00f2ff] transition-colors">{{ log.message }}</span>
+              <i class="fas fa-chevron-right text-[10px] text-slate-300 dark:text-white/10"></i>
+            </div>
+            <div *ngIf="filteredLogs.length === 0" class="flex flex-col items-center justify-center py-12 gap-4">
+              <div class="w-16 h-16 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center border border-slate-100 dark:border-white/5">
+                <i class="fas fa-ghost text-2xl text-slate-200 dark:text-white/10"></i>
+              </div>
+              <p class="text-[10px] font-black text-slate-400 dark:text-white/30 uppercase tracking-[0.2em]">Aucun événement détecté</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Audit Section -->
+    <div class="px-8 pb-8">
+      <div class="glass-card p-8 bg-gradient-to-br from-[#001f3f] to-[#001529] border-none shadow-[0_20px_50px_rgba(0,31,63,0.3)] relative overflow-hidden group">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-[#00f2ff]/5 rounded-full blur-3xl -mr-32 -mt-32 transition-all duration-700 group-hover:bg-[#00f2ff]/10"></div>
+        
+        <div class="flex items-center justify-between mb-8 relative z-10">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-[#00f2ff]/10 flex items-center justify-center border border-[#00f2ff]/20 shadow-[0_0_20px_rgba(0,242,255,0.1)]">
+              <i class="fas fa-brain text-[#00f2ff] text-xl"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-black text-white uppercase tracking-wider">Audit Prédictif IA</h3>
+              <p class="text-[10px] text-[#00f2ff] font-black uppercase tracking-[0.2em] mt-1">SOC Intelligent Agent</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10 backdrop-blur-md">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-[9px] font-black text-white/60 uppercase tracking-widest">Analyse active</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 relative z-10">
+          <div *ngFor="let point of auditPoints" 
+               class="flex items-start gap-4 p-5 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 hover:border-[#00f2ff]/30 transition-all duration-300 cursor-default group/item">
+            <div class="w-6 h-6 rounded-lg bg-[#00f2ff]/10 flex items-center justify-center mt-0.5 group-hover/item:scale-110 transition-transform">
+              <i class="fas fa-check text-[10px] text-[#00f2ff]"></i>
+            </div>
+            <span class="text-sm font-medium text-white/70 leading-relaxed group-hover/item:text-white transition-colors">{{ point }}</span>
+          </div>
+        </div>
+        
+        <div *ngIf="auditPoints.length === 0" class="flex flex-col items-center justify-center py-12 gap-4 relative z-10">
+          <i class="fas fa-microchip text-4xl text-white/5 mb-2"></i>
+          <p class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Initialisation du moteur IA...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

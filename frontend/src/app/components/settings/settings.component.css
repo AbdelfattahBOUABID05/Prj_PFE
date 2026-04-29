@@ -1,0 +1,16 @@
+.shadow-indigo-lg {
+  box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4);
+}
+
+.shadow-indigo {
+  box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.39);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}

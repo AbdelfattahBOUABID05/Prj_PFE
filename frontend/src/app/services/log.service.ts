@@ -249,6 +249,7 @@ export class LogService {
     user: string;
     pass: string;
     numLines: number | null;
+    auditDate?: string;
   }): Observable<{ status: string; analysis_id?: number; message?: string }> {
     return this.http.post<{ status: string; analysis_id?: number; message?: string }>(`${this.apiUrl}/ssh/analyze`, payload);
   }

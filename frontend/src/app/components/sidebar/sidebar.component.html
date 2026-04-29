@@ -1,0 +1,161 @@
+<!-- Top Right Actions (Theme & Notifications) -->
+<div *ngIf="!isFirstLogin()" class="fixed top-6 right-8 z-[100] flex items-center gap-4">
+  <!-- Theme Toggle Icon -->
+  <button (click)="toggleTheme()" 
+          class="w-12 h-12 rounded-2xl bg-white/5 dark:bg-white/5 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white/60 hover:text-[#00f2ff] hover:border-[#00f2ff]/30 transition-all duration-300 shadow-xl group">
+    <i class="fas" [class.fa-moon]="isDark()" [class.fa-sun]="!isDark()" [class.text-[#00f2ff]]="isDark()" [class.text-amber-400]="!isDark()"></i>
+  </button>
+
+  <!-- Notification Bell -->
+  <div class="relative">
+    <button (click)="toggleNotifications()" 
+            class="w-12 h-12 rounded-2xl bg-white/5 dark:bg-white/5 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white/60 hover:text-[#00f2ff] hover:border-[#00f2ff]/30 transition-all duration-300 shadow-xl relative group">
+      <i class="fas fa-bell"></i>
+      <span *ngIf="unreadCount > 0" class="absolute top-3 right-3 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#001f3f] animate-ping"></span>
+      <span *ngIf="unreadCount > 0" class="absolute top-3 right-3 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#001f3f]"></span>
+    </button>
+
+    <!-- Notification Dropdown (Premium Style) -->
+    <div *ngIf="showNotifications" class="absolute right-0 mt-4 w-80 bg-[#001f3f]/95 dark:bg-[#001f3f]/95 border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 overflow-hidden backdrop-blur-2xl animate-slide-up">
+      <div class="p-5 border-b border-white/5 flex justify-between items-center bg-white/5">
+        <h4 class="text-xs font-black uppercase tracking-widest text-white/60">Centre d'alertes</h4>
+        <span class="px-2 py-1 bg-[#00f2ff]/20 text-[#00f2ff] text-[9px] font-black rounded-full border border-[#00f2ff]/30">{{ unreadCount }} nouvelles</span>
+      </div>
+      <div class="max-h-[400px] overflow-y-auto custom-scrollbar">
+        <div *ngFor="let n of notifications" 
+             (click)="onNotificationClick(n)"
+             [class]="'p-5 border-b border-white/5 hover:bg-white/5 transition-all cursor-pointer relative group ' + (!n.is_read ? 'bg-[#00f2ff]/5' : '')">
+          <div *ngIf="!n.is_read" class="absolute left-0 top-0 bottom-0 w-1 bg-[#00f2ff] shadow-[0_0_10px_#00f2ff]"></div>
+          <p class="text-xs font-bold text-white mb-2 group-hover:text-[#00f2ff] transition-colors">{{ n.title }}</p>
+          <p class="text-[10px] text-white/50 leading-relaxed">{{ n.message }}</p>
+          <div class="flex justify-between items-center mt-3">
+            <span class="text-[8px] text-white/30 uppercase font-black tracking-widest">{{ n.created_at | date:'HH:mm' }}</span>
+            <span *ngIf="!n.is_read" class="text-[8px] text-[#00f2ff] font-black uppercase">Nouveau</span>
+          </div>
+        </div>
+        <div *ngIf="notifications.length === 0" class="p-10 text-center flex flex-col items-center gap-3">
+          <i class="fas fa-check-circle text-2xl text-white/10"></i>
+          <p class="text-xs text-white/30 italic">Tout est sous contrôle</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<aside class="w-64 flex flex-col h-screen fixed left-0 top-0 shadow-2xl z-20 transition-all duration-500"
+       [style.background]="'var(--sidebar-bg)'"
+       [style.color]="'var(--sidebar-text)'">
+  <!-- Section du logo -->
+  <div class="p-6 flex flex-col items-center justify-center">
+    <div class="w-[180px] h-auto flex items-center justify-center transition-all duration-500 neon-glow overflow-hidden group hover:scale-105">
+      <img src="assets/img/logo.png" alt="LogSOC Logo" class="w-full h-full object-contain filter drop-shadow-[0_0_15px_rgba(0,242,255,0.4)]">
+    </div>
+  </div>
+
+  <!-- Menu de navigation (Premium Layout) -->
+  <nav *ngIf="!isFirstLogin()" class="flex-1 p-6 space-y-2 overflow-y-auto sidebar-content">
+    <div class="sidebar-scroll-container">
+      <p class="text-[10px] font-black text-slate-400 dark:text-white/30 uppercase tracking-[0.3em] px-4 mb-4">OPERATIONS</p>
+      
+      <a routerLink="/dashboard" routerLinkActive="active-link"
+         class="flex items-center gap-4 px-5 py-3.5 rounded-xl text-slate-500 dark:text-white/60 hover:text-indigo-600 dark:hover:text-white transition-all duration-300 glass-highlight group">
+        <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center group-hover:bg-indigo-500/10 dark:group-hover:bg-[#00f2ff]/20 transition-all duration-300">
+          <i class="fas fa-th-large text-sm group-hover:text-indigo-600 dark:group-hover:text-[#00f2ff]"></i>
+        </div>
+        <span class="text-sm font-bold tracking-wide">Tableau de bord</span>
+      </a>
+      
+      <a routerLink="/ssh" routerLinkActive="active-link"
+         class="flex items-center gap-4 px-5 py-3.5 rounded-xl text-slate-500 dark:text-white/60 hover:text-indigo-600 dark:hover:text-white transition-all duration-300 glass-highlight group">
+        <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center group-hover:bg-indigo-500/10 dark:group-hover:bg-[#00f2ff]/20 transition-all duration-300">
+          <i class="fas fa-terminal text-sm group-hover:text-indigo-600 dark:group-hover:text-[#00f2ff]"></i>
+        </div>
+        <span class="text-sm font-bold tracking-wide">Analyse SSH</span>
+      </a>
+
+      <a routerLink="/local-analysis" routerLinkActive="active-link"
+         class="flex items-center gap-4 px-5 py-3.5 rounded-xl text-slate-500 dark:text-white/60 hover:text-indigo-600 dark:hover:text-white transition-all duration-300 glass-highlight group">
+        <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center group-hover:bg-indigo-500/10 dark:group-hover:bg-[#00f2ff]/20 transition-all duration-300">
+          <i class="fas fa-shield-virus text-sm group-hover:text-indigo-600 dark:group-hover:text-[#00f2ff]"></i>
+        </div>
+        <span class="text-sm font-bold tracking-wide">Analyse Locale</span>
+      </a>
+
+      <a routerLink="/history" routerLinkActive="active-link"
+         class="flex items-center gap-4 px-5 py-3.5 rounded-xl text-slate-500 dark:text-white/60 hover:text-indigo-600 dark:hover:text-white transition-all duration-300 glass-highlight group">
+        <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center group-hover:bg-indigo-500/10 dark:group-hover:bg-[#00f2ff]/20 transition-all duration-300">
+          <i class="fas fa-folder-open text-sm group-hover:text-indigo-600 dark:group-hover:text-[#00f2ff]"></i>
+        </div>
+        <span class="text-sm font-bold tracking-wide">Historique</span>
+      </a>
+
+      <a routerLink="/jobs" routerLinkActive="active-link"
+         class="flex items-center gap-4 px-5 py-3.5 rounded-xl text-slate-500 dark:text-white/60 hover:text-indigo-600 dark:hover:text-white transition-all duration-300 glass-highlight group">
+        <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center group-hover:bg-indigo-500/10 dark:group-hover:bg-[#00f2ff]/20 transition-all duration-300">
+          <i class="fas fa-tasks text-sm group-hover:text-indigo-600 dark:group-hover:text-[#00f2ff]"></i>
+        </div>
+        <span class="text-sm font-bold tracking-wide">Mes Jobs</span>
+      </a>
+
+      <!-- Admin Section -->
+      <ng-container *ngIf="isAdmin()">
+        <div class="pt-8 pb-4">
+          <p class="text-[10px] font-black text-slate-400 dark:text-white/30 uppercase tracking-[0.3em] px-4">MANAGEMENT</p>
+        </div>
+
+        <a routerLink="/admin/users" routerLinkActive="active-link"
+           class="flex items-center gap-4 px-5 py-3.5 rounded-xl text-slate-500 dark:text-white/60 hover:text-indigo-600 dark:hover:text-white transition-all duration-300 glass-highlight group">
+          <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center group-hover:bg-indigo-500/10 dark:group-hover:bg-[#00f2ff]/20 transition-all duration-300">
+            <i class="fas fa-user-shield text-sm group-hover:text-indigo-600 dark:group-hover:text-[#00f2ff]"></i>
+          </div>
+          <span class="text-sm font-bold tracking-wide">Team SOC</span>
+        </a>
+
+        <a routerLink="/admin/jobs" routerLinkActive="active-link"
+           class="flex items-center gap-4 px-5 py-3.5 rounded-xl text-slate-500 dark:text-white/60 hover:text-indigo-600 dark:hover:text-white transition-all duration-300 glass-highlight group">
+          <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center group-hover:bg-indigo-500/10 dark:group-hover:bg-[#00f2ff]/20 transition-all duration-300">
+            <i class="fas fa-check-double text-sm group-hover:text-indigo-600 dark:group-hover:text-[#00f2ff]"></i>
+          </div>
+          <span class="text-sm font-bold tracking-wide">Valider Jobs</span>
+        </a>
+
+        <a routerLink="/admin/console" routerLinkActive="active-link"
+           class="flex items-center gap-4 px-5 py-3.5 rounded-xl text-slate-500 dark:text-white/60 hover:text-indigo-600 dark:hover:text-white transition-all duration-300 glass-highlight group">
+          <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center group-hover:bg-indigo-500/10 dark:group-hover:bg-[#00f2ff]/20 transition-all duration-300">
+            <i class="fas fa-desktop text-sm group-hover:text-indigo-600 dark:group-hover:text-[#00f2ff]"></i>
+          </div>
+          <span class="text-sm font-bold tracking-wide">Console Remote</span>
+        </a>
+      </ng-container>
+    </div>
+  </nav>
+
+  <!-- Bottom Actions -->
+  <div class="p-6 bg-black/5 dark:bg-black/20 border-t border-slate-200 dark:border-white/10 space-y-2">
+    <a routerLink="/profile" routerLinkActive="active-link"
+       class="flex items-center gap-4 px-5 py-3 rounded-xl text-slate-500 dark:text-white/60 hover:text-indigo-600 dark:hover:text-white transition-all duration-300 group">
+      <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center group-hover:bg-indigo-500/10 dark:group-hover:bg-[#00f2ff]/20">
+        <i class="fas fa-user-circle text-sm"></i>
+      </div>
+      <span class="text-sm font-bold tracking-wide">Profil</span>
+    </a>
+
+    <a routerLink="/settings" routerLinkActive="active-link"
+       class="flex items-center gap-4 px-5 py-3 rounded-xl text-slate-500 dark:text-white/60 hover:text-indigo-600 dark:hover:text-white transition-all duration-300 group">
+      <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center group-hover:bg-indigo-500/10 dark:group-hover:bg-[#00f2ff]/20">
+        <i class="fas fa-cog text-sm"></i>
+      </div>
+      <span class="text-sm font-bold tracking-wide">Paramètres</span>
+    </a>
+
+    <div class="h-4"></div>
+
+    <button (click)="logout()" 
+            class="w-full flex items-center gap-4 px-5 py-4 rounded-xl text-red-400/70 hover:text-red-400 hover:bg-red-400/10 transition-all duration-300 group">
+      <div class="w-8 h-8 rounded-lg bg-red-400/5 flex items-center justify-center group-hover:bg-red-400/20">
+        <i class="fas fa-power-off text-sm"></i>
+      </div>
+      <span class="text-sm font-black uppercase tracking-widest">Déconnexion</span>
+    </button>
+  </div>
+</aside>

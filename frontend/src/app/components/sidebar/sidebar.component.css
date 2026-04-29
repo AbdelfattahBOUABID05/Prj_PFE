@@ -1,0 +1,55 @@
+.active-link {
+  background: rgba(0, 242, 255, 0.15) !important;
+  color: #00f2ff !important;
+  box-shadow: inset 4px 0 0 #00f2ff;
+}
+
+.active-link i {
+  color: #00f2ff !important;
+}
+
+/* Sidebar Scrollbar Removal */
+aside, .sidebar-content, .sidebar-scroll-container {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+aside::-webkit-scrollbar, 
+.sidebar-content::-webkit-scrollbar, 
+.sidebar-scroll-container::-webkit-scrollbar {
+  display: none !important;
+}
+
+.sidebar-scroll-container {
+  height: auto;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.neon-glow {
+  filter: drop-shadow(0 0 10px rgba(0, 242, 255, 0.2));
+}
+
+.glass-highlight {
+  @apply hover:bg-white/5 dark:hover:bg-white/5;
+}
